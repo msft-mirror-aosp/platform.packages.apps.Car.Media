@@ -16,7 +16,6 @@
 -->
 <resources>
     <!-- Music -->
-    <item name="media_scrim_alpha" format="float" type="dimen">0.6</item>
     <dimen name="apps_max_content_width">748dp</dimen>
 
     <!-- Music now playing screen -->

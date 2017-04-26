@@ -47,7 +47,7 @@ public class PlayPauseStopImageView extends ImageView {
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({MODE_PAUSE, MODE_STOP})
-    public @interface ActionModes {}
+    @interface ActionModes {}
     public static final int MODE_PAUSE = 1;
     public static final int MODE_STOP = 2;
 
@@ -68,6 +68,11 @@ public class PlayPauseStopImageView extends ImageView {
         setBackground(new FabDrawable(context));
     }
 
+    /**
+     * Sets the current play state to be represented by this Button.
+     *
+     * @param playState One of the values returned by {@link PlaybackState#getState()}.
+     */
     public void setPlayState(int playState) {
         mPlaybackState = playState;
     }
