@@ -15,7 +15,8 @@
  */
 package com.android.car.media.drawer;
 
-import com.android.car.app.CarDrawerActivity;
+import android.content.Context;
+import android.support.annotation.Nullable;
 import com.android.car.app.CarDrawerAdapter;
 import com.android.car.app.DrawerItemViewHolder;
 
@@ -26,12 +27,34 @@ import com.android.car.app.DrawerItemViewHolder;
  * {@link MediaItemsFetcher}. The current fetcher being used can be updated at runtime.
  */
 class MediaDrawerAdapter extends CarDrawerAdapter {
-    private final CarDrawerActivity mActivity;
     private MediaItemsFetcher mCurrentFetcher;
+    private MediaFetchCallback mFetchCallback;
 
-    MediaDrawerAdapter(CarDrawerActivity activity) {
-        super(activity, true /* showDisabledListOnEmpty */);
-        mActivity = activity;
+    /**
+     * Interface for a callback object that will be notified of changes to the fetch status of
+     * items in a media drawer.
+     */
+    interface MediaFetchCallback {
+        /**
+         * Called when a fetch for items starts.
+         */
+        void onFetchStart();
+
+        /**
+         * Called when a fetch for items ends.
+         */
+        void onFetchEnd();
+    }
+
+    MediaDrawerAdapter(Context context) {
+        super(context, true /* showDisabledListOnEmpty */);
+    }
+
+    /**
+     * Sets the object to be notified of changes to the fetching of items in the media drawer.
+     */
+    void setFetchCallback(@Nullable MediaFetchCallback callback) {
+        mFetchCallback = callback;
     }
 
     /**
@@ -47,12 +70,15 @@ class MediaDrawerAdapter extends CarDrawerAdapter {
         }
         mCurrentFetcher = fetcher;
         mCurrentFetcher.start(() -> {
-            mActivity.showLoadingProgressBar(false);
+            if (mFetchCallback != null) {
+                mFetchCallback.onFetchEnd();
+            }
             notifyDataSetChanged();
         });
-        // Initially there will be no items and we don't want to show empty-list indicator briefly
-        // until items are fetched.
-        mActivity.showLoadingProgressBar(true);
+
+        if (mFetchCallback != null) {
+            mFetchCallback.onFetchStart();
+        }
     }
 
     @Override
@@ -77,5 +103,15 @@ class MediaDrawerAdapter extends CarDrawerAdapter {
         if (mCurrentFetcher != null) {
             mCurrentFetcher.onItemClick(position);
         }
+    }
+
+    @Override
+    public void cleanup() {
+        super.cleanup();
+        if (mCurrentFetcher != null) {
+            mCurrentFetcher.cleanup();
+            mCurrentFetcher = null;
+        }
+        mFetchCallback = null;
     }
 }
