@@ -213,7 +213,7 @@ public class MediaActivity extends CarDrawerActivity
 
     @Override
     public void showPlayQueue() {
-        mDrawerController.showQueueInDrawer();
+        mDrawerController.showPlayQueue();
     }
 
     private final MediaManager.Listener mListener = new MediaManager.Listener() {
