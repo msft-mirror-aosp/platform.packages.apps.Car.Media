@@ -105,17 +105,7 @@ class MediaQueueItemsFetcher implements MediaItemsFetcher {
 
     private void updateItemsFrom(List<MediaSession.QueueItem> queue) {
         mItems.clear();
-        // We only show items starting from active-item in the queue.
-        final long activeItemId = getActiveQueueItemId();
-        boolean activeItemFound = false;
-        for (MediaSession.QueueItem item : queue) {
-            if (activeItemId == item.getQueueId()) {
-                activeItemFound = true;
-            }
-            if (activeItemFound) {
-                mItems.add(item);
-            }
-        }
+        mItems.addAll(queue);
     }
 
     private long getActiveQueueItemId() {

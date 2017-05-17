@@ -92,9 +92,14 @@ public class CrossfadeImageView extends FrameLayout {
     }
 
     public void setImageBitmap(Bitmap bitmap, boolean showAnimation) {
-        if (bitmap != null && bitmap.sameAs(mCurrentBitmap)) {
+        if (bitmap == null) {
             return;
         }
+
+        if (mCurrentBitmap != null && bitmap.sameAs(mCurrentBitmap)) {
+            return;
+        }
+
         mCurrentBitmap = bitmap;
         mCurrentColor = null;
         mInactiveImageView.setImageBitmap(bitmap);
