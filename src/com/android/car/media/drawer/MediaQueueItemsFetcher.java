@@ -103,6 +103,21 @@ class MediaQueueItemsFetcher implements MediaItemsFetcher {
         mMediaPlaybackModel.removeListener(mListener);
     }
 
+    @Override
+    public int getScrollPosition() {
+        long activeId = getActiveQueueItemId();
+        // A linear scan isn't really the best thing to do for large lists but we suspect that
+        // the queue isn't going to be very long anyway so we can just do the trivial thing. If
+        // it starts becoming a problem, we can build an index over the ids.
+        for (int position = 0; position < mItems.size(); position++) {
+            MediaSession.QueueItem item = mItems.get(position);
+            if (item.getQueueId() == activeId) {
+                return position;
+            }
+        }
+        return MediaItemsFetcher.DONT_SCROLL;
+    }
+
     private void updateItemsFrom(List<MediaSession.QueueItem> queue) {
         mItems.clear();
         mItems.addAll(queue);

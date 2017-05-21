@@ -33,6 +33,8 @@ import com.android.car.media.R;
  * It also handles ViewHolder population and item clicks.
  */
 interface MediaItemsFetcher {
+    public static final int DONT_SCROLL = -1;
+
     /**
      * Used to inform owning {@link MediaDrawerAdapter} that items have changed.
      */
@@ -81,6 +83,14 @@ interface MediaItemsFetcher {
      * Used when this instance is going to be released. Subclasses should release resources.
      */
     void cleanup();
+
+
+    /**
+     * Get the position to scroll to if any.
+     * @return An integer greater than or equal to 0 if there is a position to scroll to, the
+     *         constant {@link DONT_SCROLL} otherwise.
+     */
+    int getScrollPosition();
 
     /**
      * Utility method to determine if description can be displayed in a small layout.

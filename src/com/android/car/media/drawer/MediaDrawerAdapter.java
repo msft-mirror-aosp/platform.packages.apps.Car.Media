@@ -17,6 +17,7 @@ package com.android.car.media.drawer;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
+import com.android.car.app.CarDrawerActivity;
 import com.android.car.app.CarDrawerAdapter;
 import com.android.car.app.DrawerItemViewHolder;
 
@@ -27,8 +28,10 @@ import com.android.car.app.DrawerItemViewHolder;
  * {@link MediaItemsFetcher}. The current fetcher being used can be updated at runtime.
  */
 class MediaDrawerAdapter extends CarDrawerAdapter {
+    private final CarDrawerActivity mActivity;
     private MediaItemsFetcher mCurrentFetcher;
     private MediaFetchCallback mFetchCallback;
+    private int mCurrentScrollPosition;
 
     /**
      * Interface for a callback object that will be notified of changes to the fetch status of
@@ -46,8 +49,9 @@ class MediaDrawerAdapter extends CarDrawerAdapter {
         void onFetchEnd();
     }
 
-    MediaDrawerAdapter(Context context) {
-        super(context, true /* showDisabledListOnEmpty */);
+    MediaDrawerAdapter(CarDrawerActivity activity) {
+        super(activity, true /* showDisabledListOnEmpty */);
+        mActivity = activity;
     }
 
     /**
@@ -93,9 +97,12 @@ class MediaDrawerAdapter extends CarDrawerAdapter {
 
     @Override
     protected void populateViewHolder(DrawerItemViewHolder holder, int position) {
-        if (mCurrentFetcher != null) {
-            mCurrentFetcher.populateViewHolder(holder, position);
+        if (mCurrentFetcher == null) {
+            return;
         }
+
+        mCurrentFetcher.populateViewHolder(holder, position);
+        scrollToCurrent();
     }
 
     @Override
@@ -113,5 +120,17 @@ class MediaDrawerAdapter extends CarDrawerAdapter {
             mCurrentFetcher = null;
         }
         mFetchCallback = null;
+    }
+
+    public void scrollToCurrent() {
+        if (mCurrentFetcher == null) {
+            return;
+        }
+        int scrollPosition = mCurrentFetcher.getScrollPosition();
+        if (scrollPosition != MediaItemsFetcher.DONT_SCROLL
+                && mCurrentScrollPosition != scrollPosition) {
+            mActivity.scrollToPosition(scrollPosition);
+            mCurrentScrollPosition = scrollPosition;
+        }
     }
 }
