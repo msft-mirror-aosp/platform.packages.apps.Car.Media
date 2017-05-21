@@ -180,4 +180,9 @@ class MediaBrowserItemsFetcher implements MediaItemsFetcher {
         mMediaPlaybackModel.getMediaBrowser().unsubscribe(mMediaId);
         mCallback = null;
     }
+
+    @Override
+    public int getScrollPosition() {
+        return MediaItemsFetcher.DONT_SCROLL;
+    }
 }

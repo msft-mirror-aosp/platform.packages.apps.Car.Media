@@ -134,6 +134,7 @@ public class MediaDrawerController implements MediaDrawerAdapter.MediaFetchCallb
         mRootAdapter.setFetcher(createMediaQueueItemsFetcher());
         mRootAdapter.setTitle(mMediaPlaybackModel.getQueueTitle());
         mActivity.openDrawer();
+        mRootAdapter.scrollToCurrent();
         mActivity.addDrawerListener(mQueueDrawerListener);
     }
 
