@@ -40,6 +40,10 @@
                 <category android:name="android.intent.category.INFO" />
                 <category android:name="android.intent.category.APP_MUSIC" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.car.intent.action.MEDIA_TEMPLATE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
     </application>
 </manifest>
