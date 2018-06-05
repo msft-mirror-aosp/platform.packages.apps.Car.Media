@@ -2,6 +2,8 @@ package com.android.car.media;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.media.session.PlaybackState;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -146,17 +148,19 @@ public class MetadataController {
             return;
         }
         long maxProgress = mModel.getMaxProgress();
-        int visibility = maxProgress > 0 ? View.VISIBLE : View.INVISIBLE;
+        long progress = mModel.getProgress();
+        int visibility = maxProgress > 0 && progress != PlaybackState.PLAYBACK_POSITION_UNKNOWN
+                ? View.VISIBLE : View.INVISIBLE;
         if (mTime != null) {
             String time = String.format("%s / %s",
-                    TIME_FORMAT.format(new Date(mModel.getProgress())),
+                    TIME_FORMAT.format(new Date(progress)),
                     TIME_FORMAT.format(new Date(maxProgress)));
             mTime.setVisibility(visibility);
             mTime.setText(time);
         }
         mSeekBar.setVisibility(visibility);
-        mSeekBar.setMax((int) mModel.getMaxProgress());
-        mSeekBar.setProgress((int) mModel.getProgress());
+        mSeekBar.setMax((int) maxProgress);
+        mSeekBar.setProgress((int) progress);
     }
 
 
