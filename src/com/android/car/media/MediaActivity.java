@@ -231,7 +231,6 @@ public class MediaActivity extends CarDrawerActivity implements BrowseFragment.C
 
         setMainContent(R.layout.media_activity);
         setToolbarElevation(0f);
-        setToolbarClickThrough(true);
 
         mContentForwardBrowseEnabled = getResources()
                 .getBoolean(R.bool.forward_content_browse_enabled);
