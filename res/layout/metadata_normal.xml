@@ -25,36 +25,35 @@
 
     <TextView
         android:id="@+id/title"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/car_padding_1"
         android:ellipsize="end"
         android:includeFontPadding="false"
         android:maxLines="@integer/playback_title_text_max_lines"
         android:textAppearance="@style/TextAppearance.Car.Body1.Light"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Body 1 Header"/>
     <TextView
         android:id="@+id/subtitle"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/car_padding_2"
-        android:layout_marginTop="@dimen/car_padding_1"
+        android:layout_marginTop="@dimen/car_padding_0"
+        android:layout_marginEnd="@dimen/car_padding_5"
         android:ellipsize="end"
-        android:includeFontPadding="false"
         android:maxLines="@integer/playback_subtitle_text_max_lines"
         android:textAppearance="@style/TextAppearance.Car.Body2.Light"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/time"
         app:layout_constraintTop_toBottomOf="@+id/title"
         tools:text="Body 2"/>
     <TextView
         android:id="@+id/time"
         android:layout_width="160dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/car_padding_1"
+        android:layout_marginTop="@dimen/car_padding_0"
         android:ellipsize="end"
-        android:includeFontPadding="false"
         android:maxLines="@integer/playback_subtitle_text_max_lines"
         android:gravity="end"
         android:textAppearance="@style/TextAppearance.Car.Body2.Light"
@@ -63,9 +62,9 @@
         tools:text="3:27 / 4:03"/>
     <SeekBar
         android:id="@+id/seek_bar"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="@dimen/playback_seekbar_height"
-        android:layout_marginTop="@dimen/car_padding_2"
+        android:layout_marginTop="@dimen/car_padding_4"
         android:clickable="false"
         android:focusable="false"
         android:paddingEnd="0dp"
@@ -75,6 +74,7 @@
         android:background="@null"
         android:visibility="invisible"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/subtitle"
         tools:progress="70"
         tools:visibility="visible"/>
