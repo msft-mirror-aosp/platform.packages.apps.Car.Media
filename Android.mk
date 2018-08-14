@@ -33,15 +33,19 @@ LOCAL_PRIVILEGED_MODULE := true
 
 LOCAL_USE_AAPT2 := true
 
-LOCAL_STATIC_ANDROID_LIBRARIES += \
-    android-support-v4
-
 LOCAL_PROGUARD_ENABLED := disabled
 
 LOCAL_DEX_PREOPT := false
 
-include packages/apps/Car/libs/car-stream-ui-lib/car-stream-ui-lib.mk
-include packages/apps/Car/libs/car-apps-common/car-apps-common.mk
+LOCAL_STATIC_ANDROID_LIBRARIES += \
+    android-support-car \
+    android-support-constraint-layout \
+    android-support-design-widget \
+    car-apps-common \
+    car-media-common
+
+LOCAL_STATIC_JAVA_LIBRARIES += \
+    android-support-constraint-layout-solver
 
 include $(BUILD_PACKAGE)
 
