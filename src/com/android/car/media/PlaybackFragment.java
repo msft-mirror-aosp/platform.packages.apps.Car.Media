@@ -16,14 +16,10 @@
 
 package com.android.car.media;
 
+import android.annotation.NonNull;
 import android.content.Context;
 import android.media.session.MediaController;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.constraint.ConstraintLayout;
-import android.support.constraint.ConstraintSet;
-import android.support.v4.app.Fragment;
-import android.support.v7.widget.RecyclerView;
 import android.transition.Transition;
 import android.transition.TransitionInflater;
 import android.transition.TransitionListenerAdapter;
@@ -35,6 +31,16 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.car.widget.ListItem;
+import androidx.car.widget.ListItemAdapter;
+import androidx.car.widget.ListItemProvider;
+import androidx.car.widget.PagedListView;
+import androidx.car.widget.TextListItem;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.MediaSource;
 import com.android.car.media.common.PlaybackControls;
@@ -43,12 +49,6 @@ import com.android.car.media.common.PlaybackModel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import androidx.car.widget.ListItem;
-import androidx.car.widget.ListItemAdapter;
-import androidx.car.widget.ListItemProvider;
-import androidx.car.widget.PagedListView;
-import androidx.car.widget.TextListItem;
 
 /**
  * A {@link Fragment} that implements both the playback and the content forward browsing experience.

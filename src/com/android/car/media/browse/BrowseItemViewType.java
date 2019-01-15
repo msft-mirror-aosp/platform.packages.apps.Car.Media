@@ -16,7 +16,7 @@
 
 package com.android.car.media.browse;
 
-import android.support.annotation.LayoutRes;
+import androidx.annotation.LayoutRes;
 
 /**
  * Possible view types that would be used by the {@link BrowseAdapter}.
@@ -38,7 +38,7 @@ public enum BrowseItemViewType {
 
     /**
      * {@link BrowseItemViewType} that take the whole width of the
-     * {@link android.support.v7.widget.RecyclerView}
+     * {@link androidx.recyclerview.widget.RecyclerView}
      */
     BrowseItemViewType(@LayoutRes int layoutId) {
         mLayoutId = layoutId;

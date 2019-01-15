@@ -23,13 +23,13 @@ import android.media.browse.MediaBrowser;
 import android.media.session.MediaSession;
 import android.util.Log;
 
+import androidx.car.drawer.DrawerItemViewHolder;
+
 import com.android.car.media.MediaPlaybackModel;
 import com.android.car.media.R;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import androidx.car.drawer.DrawerItemViewHolder;
 
 /**
  * {@link MediaItemsFetcher} implementation that fetches items from a specific {@link MediaBrowser}

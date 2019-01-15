@@ -21,17 +21,17 @@ import android.media.browse.MediaBrowser;
 import android.media.session.MediaController;
 import android.media.session.MediaSession;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.View;
+
+import androidx.annotation.Nullable;
+import androidx.car.drawer.CarDrawerAdapter;
+import androidx.car.drawer.CarDrawerController;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.android.car.media.MediaManager;
 import com.android.car.media.MediaPlaybackModel;
 import com.android.car.media.R;
-
-import androidx.car.drawer.CarDrawerAdapter;
-import androidx.car.drawer.CarDrawerController;
 
 /**
  * Manages drawer navigation and item selection.
@@ -186,7 +186,7 @@ public class MediaDrawerController implements MediaDrawerAdapter.MediaFetchCallb
     }
 
     /**
-     * A {@link android.support.v4.widget.DrawerLayout.DrawerListener} specifically to be used when
+     * A {@link androidx.drawerlayout.widget.DrawerLayout.DrawerListener} specifically to be used when
      * the play queue has been shown in the drawer. When the drawer is closed following this
      * display, this listener will reset the drawer to display the root view.
      */

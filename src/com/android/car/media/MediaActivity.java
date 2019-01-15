@@ -15,7 +15,6 @@
  */
 package com.android.car.media;
 
-import android.annotation.NonNull;
 import android.car.Car;
 import android.content.ComponentName;
 import android.content.Context;
@@ -24,14 +23,23 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.media.session.MediaController;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.widget.DrawerLayout;
 import android.transition.Fade;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import androidx.annotation.NonNull;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.car.drawer.CarDrawerActivity;
+import androidx.car.drawer.CarDrawerAdapter;
 
 import com.android.car.media.common.ActiveMediaSourceManager;
 import com.android.car.media.common.CrossfadeImageView;
@@ -44,14 +52,6 @@ import com.android.car.media.drawer.MediaDrawerController;
 import com.android.car.media.widgets.AppBarView;
 import com.android.car.media.widgets.MetadataView;
 import com.android.car.media.widgets.ViewUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import androidx.car.drawer.CarDrawerActivity;
-import androidx.car.drawer.CarDrawerAdapter;
 
 /**
  * This activity controls the UI of media. It also updates the connection status for the media app
@@ -184,16 +184,16 @@ public class MediaActivity extends CarDrawerActivity implements BrowseFragment.C
     };
     private DrawerLayout.DrawerListener mDrawerListener = new DrawerLayout.DrawerListener() {
         @Override
-        public void onDrawerSlide(@android.support.annotation.NonNull View view, float v) {
+        public void onDrawerSlide(@androidx.annotation.NonNull View view, float v) {
         }
 
         @Override
-        public void onDrawerOpened(@android.support.annotation.NonNull View view) {
+        public void onDrawerOpened(@androidx.annotation.NonNull View view) {
             closeAppSelector();
         }
 
         @Override
-        public void onDrawerClosed(@android.support.annotation.NonNull View view) {
+        public void onDrawerClosed(@androidx.annotation.NonNull View view) {
         }
 
         @Override

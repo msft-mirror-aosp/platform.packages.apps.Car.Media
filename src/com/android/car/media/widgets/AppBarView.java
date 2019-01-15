@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.support.design.widget.TabLayout;
 import android.transition.Fade;
 import android.transition.Transition;
 import android.transition.TransitionManager;
@@ -22,6 +21,8 @@ import android.widget.TextView;
 
 import com.android.car.media.R;
 import com.android.car.media.common.MediaItemMetadata;
+
+import com.google.android.material.tabs.TabLayout;
 
 import java.util.List;
 import java.util.Objects;

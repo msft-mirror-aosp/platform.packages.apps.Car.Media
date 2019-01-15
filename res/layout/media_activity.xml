@@ -14,7 +14,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<android.support.constraint.ConstraintLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/application"
@@ -32,8 +32,8 @@
         android:id="@+id/media_scrim"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/browse_gradient_scrim"
-        android:alpha="@dimen/media_scrim_darkened_alpha"/>
+        android:background="@color/album_art_scrim"
+        android:alpha="@dimen/album_art_scrim_alpha"/>
 
     <FrameLayout
         android:id="@+id/fragment_container"
@@ -88,4 +88,4 @@
         android:layout_width="match_parent"
         app:layout_constraintTop_toTopOf="parent"/>
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

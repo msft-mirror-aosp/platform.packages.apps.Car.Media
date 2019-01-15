@@ -21,13 +21,13 @@ import android.media.MediaDescription;
 import android.text.TextUtils;
 import android.view.View;
 
+import androidx.car.drawer.CarDrawerAdapter;
+import androidx.car.drawer.DrawerItemViewHolder;
+
 import com.android.car.apps.common.BitmapDownloader;
 import com.android.car.apps.common.BitmapWorkerOptions;
 import com.android.car.apps.common.UriUtils;
 import com.android.car.media.R;
-
-import androidx.car.drawer.CarDrawerAdapter;
-import androidx.car.drawer.DrawerItemViewHolder;
 
 /**
  * Component that handles fetching of items for {@link MediaDrawerAdapter}.

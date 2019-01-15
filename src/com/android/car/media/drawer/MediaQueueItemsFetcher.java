@@ -22,7 +22,9 @@ import android.media.session.MediaController;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
 import android.os.Handler;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
+import androidx.car.drawer.DrawerItemViewHolder;
 
 import com.android.car.media.MediaPlaybackModel;
 import com.android.car.media.R;
@@ -30,8 +32,6 @@ import com.android.car.media.R;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import androidx.car.drawer.DrawerItemViewHolder;
 
 /**
  * {@link MediaItemsFetcher} implementation that fetches items from the {@link MediaController}'s
