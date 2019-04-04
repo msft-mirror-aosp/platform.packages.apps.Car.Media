@@ -32,7 +32,6 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import androidx.car.widget.PagedListView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -58,7 +57,7 @@ public class BrowseFragment extends Fragment {
     private static final String SEARCH_QUERY_KEY = "search_query";
     private static final String BROWSE_STACK_KEY = "browse_stack";
 
-    private PagedListView mBrowseList;
+    private RecyclerView mBrowseList;
     private ProgressBar mProgressBar;
     private ImageView mErrorIcon;
     private TextView mErrorMessage;
@@ -106,10 +105,12 @@ public class BrowseFragment extends Fragment {
      * Moves the user one level up in the browse tree, if possible.
      */
     public void navigateBack() {
-        mBrowseStack.pop();
-        mMediaBrowserViewModel.search(mSearchQuery);
-        mMediaBrowserViewModel.setCurrentBrowseId(getCurrentMediaItemId());
-        getParent().onBackStackChanged();
+        if (!mBrowseStack.empty()) {
+            mBrowseStack.pop();
+            mMediaBrowserViewModel.search(mSearchQuery);
+            mMediaBrowserViewModel.setCurrentBrowseId(getCurrentMediaItemId());
+            getParent().onBackStackChanged();
+        }
     }
 
     @NonNull
@@ -198,18 +199,15 @@ public class BrowseFragment extends Fragment {
                 R.integer.new_album_art_fade_in_duration);
         int numColumns = view.getContext().getResources().getInteger(R.integer.num_browse_columns);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), numColumns);
-        RecyclerView recyclerView = mBrowseList.getRecyclerView();
-        recyclerView.setVerticalFadingEdgeEnabled(true);
-        recyclerView.setFadingEdgeLength(getResources()
-                .getDimensionPixelSize(R.dimen.car_padding_5));
-        recyclerView.setLayoutManager(gridLayoutManager);
-        recyclerView.addItemDecoration(new GridSpacingItemDecoration(
-                getResources().getDimensionPixelSize(R.dimen.car_padding_4),
-                getResources().getDimensionPixelSize(R.dimen.car_keyline_1),
-                getResources().getDimensionPixelSize(R.dimen.car_keyline_1)
+
+        mBrowseList.setLayoutManager(gridLayoutManager);
+        mBrowseList.addItemDecoration(new GridSpacingItemDecoration(
+                getResources().getDimensionPixelSize(R.dimen.grid_item_spacing),
+                getResources().getDimensionPixelSize(R.dimen.grid_item_margin_x),
+                getResources().getDimensionPixelSize(R.dimen.grid_item_margin_x)
         ));
 
-        mBrowseAdapter = new BrowseAdapter(recyclerView.getContext());
+        mBrowseAdapter = new BrowseAdapter(mBrowseList.getContext());
         mBrowseList.setAdapter(mBrowseAdapter);
         mBrowseAdapter.registerObserver(mBrowseAdapterObserver);
 
@@ -217,8 +215,6 @@ public class BrowseFragment extends Fragment {
             mMediaBrowserViewModel.search(mSearchQuery);
             mMediaBrowserViewModel.setCurrentBrowseId(getCurrentMediaItemId());
         }
-        mMediaBrowserViewModel.contentStyleEnabled().observe(this, enabled ->
-                mBrowseAdapter.setContentStyleEnabled(enabled));
         mMediaBrowserViewModel.rootBrowsableHint().observe(this, hint ->
                 mBrowseAdapter.setRootBrowsableViewType(hint));
         mMediaBrowserViewModel.rootPlayableHint().observe(this, hint ->

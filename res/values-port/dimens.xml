@@ -16,19 +16,17 @@
 -->
 <resources>
     <!-- media_activity.xml -->
-    <dimen name="media_activity_controls_margin_start">0dp</dimen>
-
-    <!-- playback_controls.xml -->
-    <dimen name="playback_controls_margin_x">0dp</dimen>
+    <dimen name="media_activity_margin_x">0dp</dimen>
 
     <!-- browse_playback_background.xml -->
+    <!-- Scale factor for the background image -->
+    <dimen name="playback_background_image_scale" format="float">1.5</dimen>
     <dimen name="browse_playback_album_art_margin_start">5dp</dimen>
     <dimen name="browse_playback_album_art_margin_end">10dp</dimen>
-
-    <!-- browse_playback_controls.xml.xml -->
-    <item name="playback_controls_horizontal_weight" type="dimen" format="float">2.0</item>
 
     <!-- appbar_view.xml -->
     <dimen name="appbar_view_tabs_margin_left">0dp</dimen>
 
+    <!-- metadata_normal.xml -->
+    <dimen name="art_metadata_metadata_margin_start">48dp</dimen>
 </resources>

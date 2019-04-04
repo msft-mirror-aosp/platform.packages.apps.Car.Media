@@ -34,7 +34,7 @@
         android:layout_centerInParent="true"
         android:src="@drawable/error_illustration"
         android:visibility="gone"
-        android:tint="@color/browse_state_error_icon_tint"/>
+        android:tint="@color/icon_tint"/>
 
     <TextView
         android:id="@+id/error_message"

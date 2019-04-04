@@ -21,4 +21,27 @@
         <item name="android:textColor">@color/no_content_text_color</item>
     </style>
 
+    <style name="PlaybackTitleStyle" parent="TextAppearance.Display2"></style>
+
+    <style name="PlaybackSubtitleStyle" parent="TextAppearance.Body1">
+        <item name="android:textColor">@color/secondary_text_color</item>
+        <item name="android:singleLine">true</item>
+    </style>
+
+    <style name="MetadataContainerStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginHorizontal">@dimen/fragment_metadata_margin_x</item>
+    </style>
+
+    <style name="BrowseSubheaderStyle" parent="TextAppearance.Body3"/>
+    <style name="BrowseListTitleStyle" parent="TextAppearance.Body1"/>
+    <style name="BrowseListSubtitleStyle" parent="TextAppearance.Body3"/>
+    <style name="BrowseGridTitleStyle" parent="TextAppearance.Body2"/>
+    <style name="BrowseGridSubtitleStyle" parent="TextAppearance.Body3"/>
+
+    <style name="SeekBarStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
 </resources>

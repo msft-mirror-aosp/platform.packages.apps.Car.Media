@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Copyright 2016, The Android Open Source Project
+  Copyright 2019, The Android Open Source Project
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,7 +14,16 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<resources>
-    <!-- The max width of content in apps for adaptive responsive -->
-    <dimen name="apps_max_content_width">768dp</dimen>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <style name="MetadataContainerStyle">
+        <item name="android:layout_width">1028dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginHorizontal">@dimen/fragment_metadata_margin_x</item>
+    </style>
+
+    <style name="SeekBarStyle">
+        <item name="android:layout_width">1028dp</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
 </resources>

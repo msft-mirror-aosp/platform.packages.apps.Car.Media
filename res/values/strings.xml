@@ -34,4 +34,6 @@
     <string name="search_hint">Search</string>
     <!-- Error Fragment error message [CHAR LIMIT=100] -->
     <string name="default_error_message">Unknown application error</string>
+    <!-- Title to display when in playback view. [CHAR LIMIT=50] -->
+    <string name="fragment_playback_title">Now Playing</string>
 </resources>

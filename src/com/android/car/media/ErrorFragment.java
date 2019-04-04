@@ -7,12 +7,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-import com.android.car.apps.common.CarUxRestrictionsUtil;
+import com.android.car.apps.common.UxrTextView;
 
 /**
  * A {@link Fragment} that displays the playback state error.
@@ -24,7 +23,10 @@ public class ErrorFragment extends Fragment {
     private static final String ERROR_RESOLUTION_ACTION_LABEL = "ERROR_RESOLUTION_ACTION_LABEL";
     private static final String ERROR_RESOLUTION_ACTION_INTENT = "ERROR_RESOLUTION_ACTION_INTENT";
 
-    private TextView mErrorMessageView;
+    // mErrorMessageView is defined explicitly as a UxrTextView instead of a TextView to
+    // provide clarity as it may be misleading to assume that mErrorMessageView extends all TextView
+    // methods. In addition, it increases discoverability of runtime issues that may occur.
+    private UxrTextView mErrorMessageView;
     private Button mErrorButton;
 
     private String mErrorMessageStr;
@@ -63,9 +65,6 @@ public class ErrorFragment extends Fragment {
             return view;
         }
 
-        CarUxRestrictionsUtil carUxRestrictionsUtil = CarUxRestrictionsUtil.getInstance(
-                getActivity().getApplication());
-        mErrorMessageStr = carUxRestrictionsUtil.restrictString(mErrorMessageStr);
         mErrorMessageView.setText(mErrorMessageStr);
 
         // Only an error message is required. Fragments without a provided message and label

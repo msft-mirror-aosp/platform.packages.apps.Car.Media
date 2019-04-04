@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Copyright 2018, The Android Open Source Project
+  Copyright 2019, The Android Open Source Project
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -28,30 +28,33 @@
         android:background="@color/album_art_background"
         android:scaleType="centerCrop"
         android:transitionName="@string/album_art"
+        app:layout_constraintVertical_chainStyle="packed"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintBottom_toTopOf="@+id/title"/>
 
     <TextView
         android:id="@+id/title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:includeFontPadding="false"
-        android:layout_marginStart="@dimen/art_metadata_metadata_margin_start"
+        android:layout_marginTop="@dimen/art_metadata_metadata_margin_start"
         android:singleLine="true"
         style="@style/PlaybackTitleStyle"
-        app:layout_constraintStart_toEndOf="@id/album_art"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/album_art"
-        app:layout_constraintBottom_toTopOf="@+id/album_title"
-        app:layout_constraintVertical_chainStyle="packed"/>
+        app:layout_constraintTop_toBottomOf="@id/album_art"
+        app:layout_constraintBottom_toTopOf="@+id/album_title"/>
     <TextView
         android:id="@+id/album_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:layout_marginTop="@dimen/metadata_normal_album_title_margin_top"
         style="@style/PlaybackSubtitleStyle"
-        app:layout_constraintStart_toStartOf="@id/title"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/title"
         app:layout_constraintBottom_toTopOf="@+id/artist"/>
@@ -61,12 +64,11 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/metadata_normal_artist_margin_top"
         style="@style/PlaybackSubtitleStyle"
-        app:layout_constraintStart_toStartOf="@id/title"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/progress_text_container"
         app:layout_constraintTop_toBottomOf="@+id/album_title"
-        app:layout_constraintBottom_toBottomOf="@id/album_art"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHorizontal_chainStyle="packed"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constrainedWidth="true"/>
 
     <include

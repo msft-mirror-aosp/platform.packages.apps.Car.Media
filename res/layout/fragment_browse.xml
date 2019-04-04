@@ -22,13 +22,14 @@
 
     <include layout="@layout/browse_state"/>
 
-    <androidx.car.widget.PagedListView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/browse_list"
-        android:theme="@style/PagedListTheme"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clickable="true"
         android:focusable="true"
+        android:paddingBottom="@dimen/browse_fragment_bottom_padding"
+        android:clipToPadding="false"
         android:visibility="gone" />
 
 </RelativeLayout>

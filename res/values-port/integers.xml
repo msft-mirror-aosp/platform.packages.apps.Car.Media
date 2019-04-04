@@ -17,4 +17,5 @@
 <resources>
     <!-- Number of rows in the app bar view -->
     <integer name="num_app_bar_view_rows">2</integer>
+    <integer name="num_browse_columns">3</integer>
 </resources>

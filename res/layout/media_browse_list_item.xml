@@ -19,90 +19,100 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/container"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:paddingTop="@dimen/media_browse_list_item_padding_y"
-    android:paddingBottom="@dimen/media_browse_list_item_padding_y"
-    android:layout_marginStart="@dimen/media_browse_list_item_margin_x"
-    android:layout_marginEnd="@dimen/media_browse_list_item_margin_x"
+    android:layout_height="@dimen/media_browse_list_item_height"
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground">
     <ImageView
         android:id="@+id/thumbnail"
-        android:layout_width="@dimen/media_browse_list_item_icon_size"
-        android:layout_height="@dimen/media_browse_list_item_icon_size"
-        android:layout_marginEnd="@dimen/media_browse_list_item_icon_margin_end"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="@dimen/media_browse_list_item_icon_margin_bottom"
         android:layout_gravity="center_vertical"
-        android:scaleType="centerCrop"
+        android:scaleType="fitStart"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/text_start_guideline"
         app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <!-- This guideline is necessary because there are icons preceding the text which typically have
+      visibility GONE, which prevents margins applied to the leftmost view from applying to the
+      TextViews constrained to that chain -->
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/text_start_guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="@dimen/media_browse_list_item_text_margin_x"/>
 
     <ImageView
         android:id="@+id/download_icon_with_title"
         android:layout_width="@dimen/media_browse_indicator_size"
         android:layout_height="@dimen/media_browse_indicator_size"
-        android:layout_marginTop="@dimen/media_browse_indicator_margin_y"
         android:src="@drawable/ic_file_download_done_black"
-        android:tint="@color/car_body2_light"
-        app:layout_constraintLeft_toRightOf="@id/thumbnail"
-        app:layout_constraintRight_toLeftOf="@id/explicit_icon_with_title"
-        app:layout_constraintTop_toTopOf="parent"/>
+        android:tint="@color/icon_tint"
+        app:layout_constraintStart_toEndOf="@+id/text_start_guideline"
+        app:layout_constraintEnd_toStartOf="@+id/explicit_icon_with_title"
+        app:layout_constraintTop_toTopOf="@+id/title"
+        app:layout_constraintBottom_toBottomOf="@+id/title"/>
 
     <ImageView
         android:id="@+id/explicit_icon_with_title"
         android:layout_width="@dimen/media_browse_indicator_size"
         android:layout_height="@dimen/media_browse_indicator_size"
-        android:layout_marginTop="@dimen/media_browse_indicator_margin_y"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toRightOf="@id/download_icon_with_title"
-        app:layout_constraintRight_toLeftOf="@id/title"
         android:src="@drawable/ic_explicit_black"
-        android:tint="@color/car_body2_light"/>
+        android:tint="@color/icon_tint"
+        app:layout_constraintStart_toEndOf="@+id/download_icon_with_title"
+        app:layout_constraintEnd_toStartOf="@+id/title"
+        app:layout_constraintTop_toTopOf="@+id/title"
+        app:layout_constraintBottom_toBottomOf="@+id/title"/>
 
     <TextView
         android:id="@+id/title"
+        style="@style/BrowseListTitleStyle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/media_browse_list_item_title_margin_bottom"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toRightOf="@id/download_icon_with_title"
-        app:layout_constraintRight_toLeftOf="@id/right_arrow"
+        android:layout_marginTop="@dimen/media_browse_list_item_text_margin_y"
         android:includeFontPadding="false"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:textAppearance="?android:attr/textAppearanceListItem"/>
+        android:singleLine="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/subtitle"
+        app:layout_constraintStart_toEndOf="@+id/explicit_icon_with_title"
+        app:layout_constraintEnd_toStartOf="@+id/right_arrow"/>
 
     <ImageView
         android:id="@+id/download_icon_with_subtitle"
         android:layout_width="@dimen/media_browse_indicator_size"
         android:layout_height="@dimen/media_browse_indicator_size"
         android:src="@drawable/ic_file_download_done_black"
-        android:tint="@color/car_body2_light"
-        app:layout_constraintTop_toBottomOf="@id/title"
-        app:layout_constraintLeft_toRightOf="@id/thumbnail"
-        app:layout_constraintRight_toLeftOf="@id/explicit_icon_with_subtitle"/>
+        android:tint="@color/icon_tint"
+        app:layout_constraintStart_toStartOf="@+id/download_icon_with_title"
+        app:layout_constraintEnd_toStartOf="@+id/explicit_icon_with_subtitle"
+        app:layout_constraintTop_toTopOf="@+id/subtitle"
+        app:layout_constraintBottom_toBottomOf="@+id/subtitle"/>
 
     <ImageView
         android:id="@+id/explicit_icon_with_subtitle"
         android:layout_width="@dimen/media_browse_indicator_size"
         android:layout_height="@dimen/media_browse_indicator_size"
-        app:layout_constraintTop_toBottomOf="@id/title"
-        app:layout_constraintLeft_toRightOf="@+id/download_icon_with_subtitle"
-        app:layout_constraintRight_toLeftOf="@id/subtitle"
         android:src="@drawable/ic_explicit_black"
-        android:tint="@color/car_body2_light"/>
+        android:tint="@color/icon_tint"
+        app:layout_constraintStart_toEndOf="@+id/download_icon_with_subtitle"
+        app:layout_constraintEnd_toStartOf="@+id/subtitle"
+        app:layout_constraintTop_toTopOf="@+id/subtitle"
+        app:layout_constraintBottom_toBottomOf="@+id/subtitle"/>
 
     <TextView
         android:id="@+id/subtitle"
+        style="@style/BrowseListSubtitleStyle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/media_browse_list_item_text_margin_y"
         android:includeFontPadding="false"
-        android:ellipsize="end"
-        android:maxLines="1"
-        app:layout_constraintTop_toBottomOf="@id/title"
-        app:layout_constraintLeft_toRightOf="@id/explicit_icon_with_subtitle"
-        app:layout_constraintRight_toLeftOf="@id/right_arrow"
-        android:textAppearance="?android:attr/textAppearanceListItemSecondary"/>
+        android:singleLine="true"
+        app:layout_constraintTop_toBottomOf="@+id/title"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/explicit_icon_with_subtitle"
+        app:layout_constraintEnd_toStartOf="@+id/right_arrow"/>
 
     <ImageView
         android:id="@+id/right_arrow"
@@ -111,9 +121,9 @@
         android:layout_height="@dimen/media_browse_list_item_arrow_size"
         android:layout_gravity="center_vertical"
         android:scaleType="centerCrop"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toRightOf="@id/title"/>
+        app:layout_constraintStart_toEndOf="@+id/title"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
