@@ -325,6 +325,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             mAppBarView.setTitle(null);
             updateTabs(null);
             getInnerViewModel().setMode(Mode.BROWSING);
+            getInnerViewModel().setErrorState(false);
             String packageName = mediaSource.getPackageName();
             updateSourcePreferences(packageName);
 

@@ -16,23 +16,25 @@ public class ViewUtils {
      * @param duration animation duration in milliseconds.
      */
     public static void hideViewAnimated(@NonNull View view, int duration) {
-        if (view.getVisibility() == View.GONE) {
-            return;
-        }
+        // Cancel existing animation to avoid race condition
+        // if show and hide are called at the same time
+        view.animate().cancel();
+
         if (!view.isLaidOut()) {
             // If the view hasn't been displayed yet, just adjust visibility without animation
             view.setVisibility(View.GONE);
             return;
         }
+
         view.animate()
-                .alpha(0f)
                 .setDuration(duration)
                 .setListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         view.setVisibility(View.GONE);
                     }
-                });
+                })
+                .alpha(0f);
     }
 
     /**
@@ -42,23 +44,24 @@ public class ViewUtils {
      * @param duration animation duration in milliseconds.
      */
     public static void showViewAnimated(@NonNull View view, int duration) {
-        if (view.getVisibility() == View.VISIBLE) {
-            return;
-        }
+        // Cancel existing animation to avoid race condition
+        // if show and hide are called at the same time
+        view.animate().cancel();
+
         if (!view.isLaidOut()) {
             // If the view hasn't been displayed yet, just adjust visibility without animation
             view.setVisibility(View.VISIBLE);
             return;
         }
+
         view.animate()
-                .alpha(1f)
                 .setDuration(duration)
                 .setListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationStart(Animator animation) {
-                        view.setAlpha(0f);
                         view.setVisibility(View.VISIBLE);
                     }
-                });
+                })
+                .alpha(1f);
     }
 }
