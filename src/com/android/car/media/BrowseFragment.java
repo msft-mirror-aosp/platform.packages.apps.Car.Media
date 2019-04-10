@@ -33,10 +33,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.car.arch.common.FutureData;
 import com.android.car.media.browse.BrowseAdapter;
 import com.android.car.media.common.GridSpacingItemDecoration;
 import com.android.car.media.common.MediaItemMetadata;
@@ -54,7 +56,7 @@ import java.util.Stack;
 public class BrowseFragment extends Fragment {
     private static final String TAG = "BrowseFragment";
     private static final String TOP_MEDIA_ITEM_KEY = "top_media_item";
-    private static final String SEARCH_QUERY_KEY = "search_query";
+    private static final String SEARCH_KEY = "search_config";
     private static final String BROWSE_STACK_KEY = "browse_stack";
 
     private RecyclerView mBrowseList;
@@ -66,6 +68,7 @@ public class BrowseFragment extends Fragment {
     private String mSearchQuery;
     private int mFadeDuration;
     private int mProgressBarDelay;
+    private boolean mShowSearchResults;
     private Handler mHandler = new Handler();
     private Stack<MediaItemMetadata> mBrowseStack = new Stack<>();
     private MediaBrowserViewModel.WithMutableBrowseId mMediaBrowserViewModel;
@@ -140,15 +143,14 @@ public class BrowseFragment extends Fragment {
     }
 
     /**
-     * Creates a new instance of this fragment.
+     * Creates a new instance of this fragment, meant to display search results.
      *
-     * @param searchQuery Search query to display results for.
      * @return a fully initialized {@link BrowseFragment}
      */
-    public static BrowseFragment newSearchInstance(String searchQuery) {
+    public static BrowseFragment newSearchInstance() {
         BrowseFragment fragment = new BrowseFragment();
         Bundle args = new Bundle();
-        args.putString(SEARCH_QUERY_KEY, searchQuery);
+        args.putBoolean(SEARCH_KEY, true);
         fragment.setArguments(args);
         return fragment;
     }
@@ -164,7 +166,7 @@ public class BrowseFragment extends Fragment {
         Bundle arguments = getArguments();
         if (arguments != null) {
             mTopMediaItem = arguments.getParcelable(TOP_MEDIA_ITEM_KEY);
-            mSearchQuery = arguments.getString(SEARCH_QUERY_KEY);
+            mShowSearchResults = arguments.getBoolean(SEARCH_KEY, false);
         }
         if (savedInstanceState != null) {
             List<MediaItemMetadata> savedStack =
@@ -219,7 +221,10 @@ public class BrowseFragment extends Fragment {
                 mBrowseAdapter.setRootBrowsableViewType(hint));
         mMediaBrowserViewModel.rootPlayableHint().observe(this, hint ->
                 mBrowseAdapter.setRootPlayableViewType(hint));
-        mMediaBrowserViewModel.getBrowsedMediaItems().observe(getViewLifecycleOwner(), futureData ->
+        LiveData<FutureData<List<MediaItemMetadata>>> mediaItems = mShowSearchResults
+                ? mMediaBrowserViewModel.getSearchedMediaItems()
+                : mMediaBrowserViewModel.getBrowsedMediaItems();
+        mediaItems.observe(getViewLifecycleOwner(), futureData ->
         {
             boolean isLoading = futureData.isLoading();
             List<MediaItemMetadata> items = futureData.getData();

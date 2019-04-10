@@ -207,7 +207,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
         mPlaybackFragment = new PlaybackFragment();
         mPlaybackFragment.setListener(mPlaybackFragmentListener);
-        mSearchFragment = BrowseFragment.newSearchInstance(null);
+        mSearchFragment = BrowseFragment.newSearchInstance();
         mAppSelectionFragment = new AppSelectionFragment();
         int fadeDuration = getResources().getInteger(R.integer.app_selector_fade_duration);
         mAppSelectionFragment.setEnterTransition(new Fade().setDuration(fadeDuration));
