@@ -70,9 +70,9 @@
     <item name="browse_tab_alpha_unselected" format="float" type="dimen">0.5</item>
 
     <!-- appbar_view.xml -->
-    <dimen name="appbar_view_icon_size">@*android:dimen/car_primary_icon_size</dimen>
     <dimen name="appbar_view_nav_button_width">@*android:dimen/car_margin</dimen>
-    <dimen name="appbar_view_tabs_margin_left">@*android:dimen/car_margin</dimen>
+    <dimen name="appbar_view_tabs_margin_start">@*android:dimen/car_margin</dimen>
+    <dimen name="appbar_view_title_margin_start">@dimen/appbar_view_nav_button_width</dimen>
 
     <!-- browse_state.xml -->
     <dimen name="browse_state_progress_height">@*android:dimen/car_double_line_list_item_height
@@ -119,9 +119,9 @@
     <dimen name="media_browse_indicator_size">25dp</dimen>
 
     <!-- metadata_normal.xml -->
-    <dimen name="metadata_normal_album_title_margin_top">@dimen/padding_3</dimen>
-    <dimen name="metadata_normal_artist_margin_top">@dimen/padding_3</dimen>
-    <dimen name="art_metadata_metadata_margin_start">@dimen/padding_4</dimen>
+    <dimen name="metadata_normal_album_title_margin_top">@*android:dimen/car_padding_3</dimen>
+    <dimen name="metadata_normal_artist_margin_top">@*android:dimen/car_padding_3</dimen>
+    <dimen name="art_metadata_metadata_margin_start">48dp</dimen>
 
     <!-- browse_playback_background.xml -->
     <dimen name="browse_playback_background_radius">@*android:dimen/car_radius_2</dimen>
@@ -145,7 +145,12 @@
     <dimen name="fragment_metadata_queue_margin_top">@*android:dimen/car_padding_4</dimen>
     <dimen name="fragment_metadata_margin_x">@*android:dimen/car_margin</dimen>
 
-    <!-- BrowseFragment.xml -->
+    <!-- fragment_browse.xml -->
+    <dimen name="browse_fragment_top_padding">@dimen/appbar_first_row_height</dimen>
     <dimen name="browse_fragment_bottom_padding">@dimen/minimized_control_bar_height</dimen>
+
+    <!-- fragment_search.xml -->
+    <dimen name="search_fragment_top_padding">@dimen/appbar_first_row_height</dimen>
+    <dimen name="search_fragment_bottom_padding">@dimen/minimized_control_bar_height</dimen>
 
 </resources>

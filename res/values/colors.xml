@@ -35,7 +35,7 @@
     <color name="progress_bar_thumb_color">@*android:color/car_accent</color>
 
     <!-- appbar_view.xml -->
-    <color name="appbar_view_icon_tint">@*android:color/car_body1_light</color>
+    <color name="appbar_view_icon_tint">@color/primary_app_icon_color</color>
 
     <!-- fragment_metadata.xml -->
     <color name="fragment_metadata_queue_divider_color">@*android:color/car_list_divider_light

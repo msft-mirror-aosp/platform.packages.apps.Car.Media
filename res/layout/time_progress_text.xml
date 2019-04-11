@@ -21,7 +21,7 @@
     android:layout_height="wrap_content">
 
     <TextView
-        android:id="@+id/separator1"
+        android:id="@+id/outer_separator"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/dash_separator"
@@ -36,7 +36,7 @@
     />
 
     <TextView
-        android:id="@+id/separator2"
+        android:id="@+id/inner_separator"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/slash_separator"

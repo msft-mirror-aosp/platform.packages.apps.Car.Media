@@ -398,6 +398,7 @@ public class AppBarView extends ConstraintLayout {
     public void setState(State state) {
         mState = state;
         final boolean hasTabs = mTabsContainer.getChildCount() > 0;
+        final boolean showTitle = !hasTabs || mMaxRows == 2;
 
         Transition transition = new Fade().setDuration(mFadeDuration);
         TransitionManager.beginDelayedTransition(this, transition);
@@ -414,7 +415,7 @@ public class AppBarView extends ConstraintLayout {
                 mNavIcon.setImageDrawable(mArrowBack);
                 mNavIconContainer.setVisibility(View.GONE);
                 setShowTabs(hasTabs);
-                mTitle.setVisibility(hasTabs ? View.GONE : View.VISIBLE);
+                mTitle.setVisibility(showTitle ? View.VISIBLE : View.GONE);
                 hideSearchBar();
                 mSearchButton.setVisibility(mSearchSupported ? View.VISIBLE : View.GONE);
                 showSettings(true);

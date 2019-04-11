@@ -41,7 +41,7 @@
         android:layout_width="@dimen/appbar_view_nav_button_width"
         android:layout_height="@dimen/appbar_first_row_height"
         android:padding="@dimen/app_switch_widget_icon_padding"
-        android:background="@drawable/app_item_background"
+        android:background="@drawable/appbar_view_icon_background"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent">
         <ImageView
@@ -83,7 +83,7 @@
         android:padding="@dimen/app_switch_widget_icon_padding"
         android:orientation="horizontal"
         android:gravity="center"
-        android:background="@drawable/app_item_background"
+        android:background="@drawable/appbar_view_icon_background"
         app:switchingEnabled="false"
         app:layout_constraintTop_toTopOf="@id/nav_icon_container"
         app:layout_constraintBottom_toBottomOf="@id/nav_icon_container"

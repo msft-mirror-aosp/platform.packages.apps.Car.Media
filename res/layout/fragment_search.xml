@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Copyright 2018, The Android Open Source Project
+  Copyright 2019, The Android Open Source Project
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@
         android:layout_height="match_parent"
         android:clickable="true"
         android:focusable="true"
-        android:paddingTop="@dimen/browse_fragment_top_padding"
-        android:paddingBottom="@dimen/browse_fragment_bottom_padding"
+        android:paddingTop="@dimen/search_fragment_top_padding"
+        android:paddingBottom="@dimen/search_fragment_bottom_padding"
         android:clipToPadding="false"
         android:visibility="gone" />
 

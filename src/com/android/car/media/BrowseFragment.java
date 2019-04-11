@@ -190,7 +190,8 @@ public class BrowseFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, final ViewGroup container,
             Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_browse, container, false);
+        int viewId = mShowSearchResults ? R.layout.fragment_search : R.layout.fragment_browse;
+        View view = inflater.inflate(viewId, container, false);
         mProgressBar = view.findViewById(R.id.loading_spinner);
         mProgressBarDelay = view.getContext().getResources()
                 .getInteger(R.integer.progress_indicator_delay);

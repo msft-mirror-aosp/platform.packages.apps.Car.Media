@@ -253,15 +253,16 @@ public class PlaybackFragment extends Fragment {
     private void initMetadataController(View view) {
         ImageView albumArt = view.findViewById(R.id.album_art);
         TextView title = view.findViewById(R.id.title);
-        TextView albumTitle = view.findViewById(R.id.album_title);
         TextView artist = view.findViewById(R.id.artist);
-        SeekBar seekbar = view.findViewById(R.id.seek_bar);
-        View timeGroup =  view.findViewById(R.id.progress_text_container);
+        TextView albumTitle = view.findViewById(R.id.album_title);
+        TextView outerSeparator = view.findViewById(R.id.outer_separator);
         TextView curTime = view.findViewById(R.id.current_time);
+        TextView innerSeparator = view.findViewById(R.id.inner_separator);
         TextView maxTime = view.findViewById(R.id.max_time);
+        SeekBar seekbar = view.findViewById(R.id.seek_bar);
         mMetadataController = new MetadataController(getViewLifecycleOwner(),
-                getPlaybackViewModel(), mUpdatesPaused, title, albumTitle, artist, timeGroup,
-                curTime, maxTime, seekbar, albumArt,
+                getPlaybackViewModel(), mUpdatesPaused, title, artist, albumTitle, outerSeparator,
+                curTime, innerSeparator, maxTime, seekbar, albumArt,
                 getResources().getDimensionPixelSize(R.dimen.playback_album_art_size));
     }
 

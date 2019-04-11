@@ -30,10 +30,10 @@
         android:layout_width="@dimen/appbar_view_nav_button_width"
         android:layout_height="wrap_content"
         android:padding="@dimen/app_switch_widget_icon_padding"
-        android:background="@drawable/app_item_background"
+        android:background="@drawable/appbar_view_icon_background"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/row_separator"
-        app:layout_constraintLeft_toLeftOf="parent">
+        app:layout_constraintStart_toStartOf="parent">
         <ImageView
             android:id="@+id/nav_icon"
             android:layout_width="@dimen/appbar_view_icon_size"
@@ -47,10 +47,10 @@
         android:id="@+id/tabs"
         android:layout_width="wrap_content"
         android:layout_height="@dimen/appbar_first_row_height"
-        android:layout_marginLeft="@dimen/appbar_view_tabs_margin_left"
+        android:layout_marginStart="@dimen/appbar_view_tabs_margin_start"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/row_separator"
-        app:layout_constraintLeft_toLeftOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent"/>
 
     <EditText
         android:id="@+id/search_bar"
@@ -59,56 +59,60 @@
         android:layout_marginStart="@dimen/appbar_view_nav_button_width"
         android:hint="@string/search_hint"
         android:inputType="text"
-        android:maxLines="1"
+        android:singleLine="true"
         android:imeOptions="actionDone"
         android:visibility="gone"
         android:cursorVisible="false"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/row_separator"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/search"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/search"/>
 
     <ImageView
         android:id="@+id/search"
-        android:layout_width="@dimen/appbar_view_icon_size"
-        android:layout_height="@dimen/appbar_view_icon_size"
+        android:layout_width="@dimen/appbar_view_icon_touch_target_size"
+        android:layout_height="@dimen/appbar_view_icon_touch_target_size"
+        android:padding="@dimen/appbar_view_icon_padding"
         android:tint="@color/appbar_view_icon_tint"
         android:src="@drawable/ic_search"
+        android:background="@drawable/appbar_view_icon_background"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/row_separator"
-        app:layout_constraintRight_toLeftOf="@+id/settings"/>
+        app:layout_constraintEnd_toStartOf="@+id/settings"/>
 
     <ImageView
         android:id="@+id/settings"
-        android:layout_width="@dimen/appbar_view_icon_size"
-        android:layout_height="@dimen/appbar_view_icon_size"
+        android:layout_width="@dimen/appbar_view_icon_touch_target_size"
+        android:layout_height="@dimen/appbar_view_icon_touch_target_size"
+        android:padding="@dimen/appbar_view_icon_padding"
         android:tint="@color/appbar_view_icon_tint"
         android:src="@drawable/ic_settings"
+        android:background="@drawable/appbar_view_icon_background"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/row_separator"
-        app:layout_constraintRight_toLeftOf="@+id/app_switch_container"/>
+        app:layout_constraintEnd_toStartOf="@+id/app_switch_container"/>
 
     <com.android.car.media.common.MediaAppSelectorWidget
         android:id="@+id/app_switch_container"
         android:layout_width="@dimen/app_switch_widget_width"
-        android:layout_height="wrap_content"
-        android:padding="@dimen/app_switch_widget_icon_padding"
+        android:layout_height="@dimen/appbar_view_icon_touch_target_size"
         android:orientation="horizontal"
         android:gravity="center"
-        android:background="@drawable/app_item_background"
+        android:background="@drawable/appbar_view_icon_background"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/row_separator"
-        app:layout_constraintRight_toRightOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <TextView
         android:id="@+id/title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/appbar_view_title_margin_start"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:maxLines="1"
+        android:singleLine="true"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/row_separator"
-        app:layout_constraintLeft_toRightOf="@id/nav_icon_container"
-        app:layout_constraintRight_toLeftOf="@id/app_switch_container"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/search"/>
 
 </merge>

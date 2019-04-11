@@ -25,8 +25,8 @@
     <dimen name="browse_playback_album_art_margin_end">10dp</dimen>
 
     <!-- appbar_view.xml -->
-    <dimen name="appbar_view_tabs_margin_left">0dp</dimen>
+    <dimen name="appbar_view_tabs_margin_start">0dp</dimen>
+    <dimen name="appbar_view_title_margin_start">0dp</dimen>
+    <dimen name="browse_fragment_top_padding">@dimen/appbar_2_rows_height</dimen>
 
-    <!-- metadata_normal.xml -->
-    <dimen name="art_metadata_metadata_margin_start">48dp</dimen>
 </resources>
