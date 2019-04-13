@@ -68,6 +68,16 @@ class BrowseViewData {
         mOnClickListener = onClickListener;
     }
 
+    /**
+     * Creates a {@link BrowseViewData} with no metadata
+     */
+    BrowseViewData(@NonNull BrowseItemViewType viewType, View.OnClickListener onClickListener) {
+        mText = null;
+        mMediaItem = null;
+        mViewType = viewType;
+        mOnClickListener = onClickListener;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

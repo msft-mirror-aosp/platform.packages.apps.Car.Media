@@ -24,6 +24,6 @@
 
     <style name="SeekBarStyle">
         <item name="android:layout_width">1028dp</item>
-        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_height">@dimen/playback_seekbar_height</item>
     </style>
 </resources>

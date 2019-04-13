@@ -113,6 +113,7 @@ public class BrowseFragment extends Fragment {
             mMediaBrowserViewModel.search(mSearchQuery);
             mMediaBrowserViewModel.setCurrentBrowseId(getCurrentMediaItemId());
             getParent().onBackStackChanged();
+            adjustBrowseTopPadding();
         }
     }
 
@@ -290,6 +291,7 @@ public class BrowseFragment extends Fragment {
         mBrowseStack.push(item);
         mMediaBrowserViewModel.setCurrentBrowseId(item.getId());
         getParent().onBackStackChanged();
+        adjustBrowseTopPadding();
     }
 
     /**
@@ -308,6 +310,15 @@ public class BrowseFragment extends Fragment {
     private String getCurrentMediaItemId() {
         MediaItemMetadata currentItem = getCurrentMediaItem();
         return currentItem != null ? currentItem.getId() : null;
+    }
+
+    private void adjustBrowseTopPadding() {
+        int topPadding = isAtTopStack()
+                ? getResources().getDimensionPixelOffset(R.dimen.browse_fragment_top_padding)
+                : getResources().getDimensionPixelOffset(
+                        R.dimen.browse_fragment_top_padding_stacked);
+        mBrowseList.setPadding(mBrowseList.getPaddingLeft(), topPadding,
+                mBrowseList.getPaddingRight(), mBrowseList.getPaddingBottom());
     }
 
     private void hideKeyboard() {

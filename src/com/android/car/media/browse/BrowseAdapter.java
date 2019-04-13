@@ -232,6 +232,10 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
             result.add(new BrowseViewData(title, BrowseItemViewType.HEADER, listener));
         }
 
+        void addSpacer() {
+            result.add(new BrowseViewData(BrowseItemViewType.SPACER, null));
+        }
+
         List<BrowseViewData> build() {
             return result;
         }
@@ -242,7 +246,7 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
      * flickering, the flatting will stop at the first "loading" section, avoiding unnecessary
      * insertion animations during the initial data load.
      */
-    private List<BrowseViewData> generateViewData(Collection<MediaItemMetadata> items) {
+    private List<BrowseViewData> generateViewData(List<MediaItemMetadata> items) {
         ItemsBuilder itemsBuilder = new ItemsBuilder();
         if (Log.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "Generating browse view from:");
@@ -257,8 +261,9 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
 
         if (mTitle != null) {
             itemsBuilder.addTitle(mTitle, Observer::onTitleClicked);
+        } else if (!items.isEmpty() && items.get(0).getTitleGrouping() == null) {
+            itemsBuilder.addSpacer();
         }
-
         String currentTitleGrouping = null;
         for (MediaItemMetadata item : items) {
             String titleGrouping = item.getTitleGrouping();

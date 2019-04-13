@@ -33,11 +33,13 @@
     <dimen name="controls_spacing_inner">16dp</dimen>
     <dimen name="controls_spacing_outer">81dp</dimen>
 
+    <!-- Playback seekbar height -->
+    <dimen name="playback_seekbar_height">76dp</dimen>
     <!-- Playback seekbar track height -->
-    <dimen name="playback_seekbar_track_height">8dp</dimen>
+    <dimen name="playback_seekbar_track_height">4dp</dimen>
     <!-- Size of the thumb in the playback seekbar -->
-    <dimen name="playback_seekbar_thumb_height">20dp</dimen>
-    <dimen name="playback_seekbar_thumb_width">20dp</dimen>
+    <dimen name="playback_seekbar_thumb_height">16dp</dimen>
+    <dimen name="playback_seekbar_thumb_width">16dp</dimen>
     <dimen name="playback_seekbar_thumb_offset">0px</dimen>
     <!-- Paddings of playback seekbar -->
     <dimen name="playback_seekbar_padding_x">0dp</dimen>
@@ -72,7 +74,8 @@
     <!-- appbar_view.xml -->
     <dimen name="appbar_view_nav_button_width">@*android:dimen/car_margin</dimen>
     <dimen name="appbar_view_tabs_margin_start">@*android:dimen/car_margin</dimen>
-    <dimen name="appbar_view_title_margin_start">@dimen/appbar_view_nav_button_width</dimen>
+    <dimen name="appbar_view_tabs_margin_end">@*android:dimen/car_padding_3</dimen>
+    <dimen name="appbar_view_search_margin_end">@*android:dimen/car_padding_3</dimen>
 
     <!-- browse_state.xml -->
     <dimen name="browse_state_progress_height">@*android:dimen/car_double_line_list_item_height
@@ -85,6 +88,8 @@
     <dimen name="media_activity_margin_x">@*android:dimen/car_margin</dimen>
 
     <!-- BrowseFragment.java -->
+    <!-- Spacer used between the app bar and the top of the browse list/grid -->
+    <dimen name="browse_spacer_height">@*android:dimen/car_padding_2</dimen>
     <dimen name="grid_item_spacing">@*android:dimen/car_padding_4</dimen>
     <dimen name="grid_item_margin_x">0dp</dimen>
 
@@ -98,6 +103,7 @@
 
     <!-- media_browse_list_item.xml -->
     <dimen name="media_browse_list_item_height">116dp</dimen>
+    <dimen name="media_browse_list_item_thumbnail_size">115dp</dimen>
     <dimen name="media_browse_list_item_text_margin_x">@*android:dimen/car_keyline_4</dimen>
     <dimen name="media_browse_list_item_text_margin_y">@*android:dimen/car_padding_2</dimen>
     <dimen name="media_browse_list_item_icon_margin_bottom">1dp</dimen>
@@ -148,6 +154,8 @@
     <!-- fragment_browse.xml -->
     <dimen name="browse_fragment_top_padding">@dimen/appbar_first_row_height</dimen>
     <dimen name="browse_fragment_bottom_padding">@dimen/minimized_control_bar_height</dimen>
+    <!-- Top padding to use when at browse levels deeper than the first level -->
+    <dimen name="browse_fragment_top_padding_stacked">@dimen/appbar_first_row_height</dimen>
 
     <!-- fragment_search.xml -->
     <dimen name="search_fragment_top_padding">@dimen/appbar_first_row_height</dimen>

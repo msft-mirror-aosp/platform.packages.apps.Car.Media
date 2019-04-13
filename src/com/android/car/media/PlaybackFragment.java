@@ -21,6 +21,7 @@ import static com.android.car.arch.common.LiveDataFunctions.freezable;
 
 import android.annotation.Nullable;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -174,6 +175,16 @@ public class PlaybackFragment extends Fragment {
         mExpandedControlBarScrim.setAlpha(0f);
         mExpandedControlBarScrim.setOnClickListener(scrim -> mPlaybackControls.close());
         mExpandedControlBarScrim.setClickable(false);
+
+        getPlaybackViewModel().getMediaSourceColors().observe(getViewLifecycleOwner(),
+                sourceColors -> {
+                    int defaultColor = getContext().getResources().getColor(
+                            R.color.media_source_default_color, null);
+                    int color = sourceColors != null ? sourceColors.getAccentColor(defaultColor)
+                            : defaultColor;
+                    mSeekBar.setThumbTintList(ColorStateList.valueOf(color));
+                    mSeekBar.setProgressTintList(ColorStateList.valueOf(color));
+                });
 
         MediaAppSelectorWidget appIcon = view.findViewById(R.id.app_icon_container);
         appIcon.setFragmentActivity(getActivity());
