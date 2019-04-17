@@ -109,10 +109,7 @@
 
     <TextView
         android:id="@+id/title"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:singleLine="true"
+        style="@style/AppBarTitleStyle"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/row_separator"
         app:layout_constraintStart_toEndOf="@id/nav_icon_container"
