@@ -21,6 +21,14 @@
         <item name="android:textColor">@color/no_content_text_color</item>
     </style>
 
+    <style name="AppBarTitleStyle">
+        <item name="android:textAppearance">@style/TextAppearance.Body1</item>
+        <item name="android:background">@drawable/media_app_title_background</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:singleLine">true</item>
+    </style>
+
     <style name="PlaybackTitleStyle" parent="TextAppearance.Display2"></style>
 
     <style name="PlaybackSubtitleStyle" parent="TextAppearance.Body1">
