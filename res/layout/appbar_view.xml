@@ -110,9 +110,10 @@
     <TextView
         android:id="@+id/title"
         style="@style/AppBarTitleStyle"
+        android:layout_marginStart="@dimen/appbar_view_title_margin_start"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/row_separator"
-        app:layout_constraintStart_toEndOf="@id/nav_icon_container"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/search"/>
 
 </merge>
