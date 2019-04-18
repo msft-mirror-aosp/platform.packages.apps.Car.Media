@@ -45,9 +45,8 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProviders;
 
-import com.android.car.apps.common.ImageUtils;
+import com.android.car.apps.common.BackgroundImageView;
 import com.android.car.media.common.AppSelectionFragment;
-import com.android.car.media.common.CrossfadeImageView;
 import com.android.car.media.common.MediaAppSelectorWidget;
 import com.android.car.media.common.MediaConstants;
 import com.android.car.media.common.MediaItemMetadata;
@@ -73,15 +72,13 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
     /** Configuration (controlled from resources) */
     private int mFadeDuration;
-    private float mBackgroundBlurRadius;
-    private float mBackgroundBlurScale;
 
     /** Models */
     private PlaybackViewModel.PlaybackController mPlaybackController;
 
     /** Layout views */
     private AppBarView mAppBarView;
-    private CrossfadeImageView mAlbumBackground;
+    private BackgroundImageView mAlbumBackground;
     private PlaybackFragment mPlaybackFragment;
     private BrowseFragment mSearchFragment;
     private AppSelectionFragment mAppSelectionFragment;
@@ -212,7 +209,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         int fadeDuration = getResources().getInteger(R.integer.app_selector_fade_duration);
         mAppSelectionFragment.setEnterTransition(new Fade().setDuration(fadeDuration));
         mAppSelectionFragment.setExitTransition(new Fade().setDuration(fadeDuration));
-        mAlbumBackground = findViewById(R.id.media_background);
+        mAlbumBackground = findViewById(R.id.playback_background);
 
         MinimizedPlaybackControlBar browsePlaybackControls =
                 findViewById(R.id.minimized_playback_controls);
@@ -221,8 +218,6 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         mBrowseControlsContainer = findViewById(R.id.minimized_playback_controls);
         mBrowseControlsContainer.setOnClickListener(
                 view -> getInnerViewModel().setMode(Mode.PLAYBACK));
-        mBackgroundBlurRadius = getResources().getFloat(R.dimen.playback_background_blur_radius);
-        mBackgroundBlurScale = getResources().getFloat(R.dimen.playback_background_blur_scale);
 
         mFadeDuration = getResources().getInteger(
                 R.integer.new_album_art_fade_in_duration);
@@ -247,9 +242,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                 getResources().getFloat(R.dimen.playback_background_image_scale);
         mAlbumBackground.addOnLayoutChangeListener(
                 (view, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
-                    int backgroundImageSize = Math.round(
-                            Math.max(mAlbumBackground.getHeight(), mAlbumBackground.getWidth())
-                                    * backgroundScale);
+                    int backgroundImageSize = mAlbumBackground.getDesiredBackgroundSize();
                     localViewModel.setAlbumArtSize(backgroundImageSize, backgroundImageSize);
                 });
         localViewModel.getAlbumArt().observe(this, this::setBackgroundImage);
@@ -469,11 +462,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     }
 
     private void setBackgroundImage(Bitmap bitmap) {
-        if (bitmap != null) {
-            bitmap = ImageUtils.blur(this, bitmap, mBackgroundBlurScale,
-                    mBackgroundBlurRadius);
-        }
-        mAlbumBackground.setImageBitmap(bitmap, bitmap != null);
+        mAlbumBackground.setBackgroundImage(bitmap, bitmap != null);
     }
 
     @Override
