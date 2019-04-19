@@ -55,8 +55,6 @@
     <item name="playback_background_blur_scale" format="float" type="dimen">.5</item>
     <!-- Size of the album art thumbnail -->
     <dimen name="playback_album_art_size">226dp</dimen>
-    <!-- Bottom marging for the playback queue -->
-    <dimen name="playback_controls_margin">192dp</dimen>
 
     <!-- Tab height -->
     <dimen name="browse_tab_height">76dp</dimen>
@@ -104,10 +102,9 @@
 
     <!-- media_browse_list_item.xml -->
     <dimen name="media_browse_list_item_height">116dp</dimen>
-    <dimen name="media_browse_list_item_thumbnail_size">115dp</dimen>
+    <dimen name="media_browse_list_item_thumbnail_size">114dp</dimen>
     <dimen name="media_browse_list_item_text_margin_x">@*android:dimen/car_keyline_4</dimen>
-    <dimen name="media_browse_list_item_text_margin_y">@*android:dimen/car_padding_2</dimen>
-    <dimen name="media_browse_list_item_icon_margin_bottom">1dp</dimen>
+    <dimen name="media_browse_list_item_icon_margin_bottom">2dp</dimen>
     <dimen name="media_browse_list_item_arrow_size">@dimen/touch_target_size</dimen>
 
     <!-- media_browse_more_footer.xml-->
@@ -147,16 +144,26 @@
     <dimen name="fragment_error_message_margin_side">80dp</dimen>
 
     <!-- fragment_playback.xml -->
-    <dimen name="queue_fading_edge_length">@*android:dimen/car_padding_4</dimen>
+    <!-- The length of playback queue fading edge, equals 0.1 * window_height. -->
+    <dimen name="queue_fading_edge_length">81dp</dimen>
     <dimen name="fragment_metadata_queue_divider_margin">@*android:dimen/car_keyline_1</dimen>
-    <dimen name="fragment_metadata_queue_margin_top">@*android:dimen/car_padding_4</dimen>
+    <dimen name="fragment_playback_queue_overlap_top">@*android:dimen/car_padding_4</dimen>
+    <dimen name="fragment_playback_queue_overlap_bottom">@*android:dimen/car_padding_4</dimen>
     <dimen name="fragment_metadata_margin_x">@*android:dimen/car_margin</dimen>
+    <dimen name="playback_title_margin_end">@*android:dimen/car_padding_3</dimen>
+    <dimen name="fragment_playback_queue_margin_x">@*android:dimen/car_margin</dimen>
+
+    <!-- queue_list_item.xml -->
+    <dimen name="queue_list_item_height">116dp</dimen>
+    <dimen name="queue_list_item_margin_x">@*android:dimen/car_keyline_1</dimen>
+    <dimen name="queue_list_item_title_time_margin">@*android:dimen/car_padding_4</dimen>
 
     <!-- fragment_browse.xml -->
     <dimen name="browse_fragment_top_padding">@dimen/appbar_first_row_height</dimen>
     <dimen name="browse_fragment_bottom_padding">@dimen/minimized_control_bar_height</dimen>
     <!-- Top padding to use when at browse levels deeper than the first level -->
     <dimen name="browse_fragment_top_padding_stacked">@dimen/appbar_first_row_height</dimen>
+    <item name="playback_queue_background_alpha" format="float" type="dimen">0.3</item>
 
     <!-- fragment_search.xml -->
     <dimen name="search_fragment_top_padding">@dimen/appbar_first_row_height</dimen>

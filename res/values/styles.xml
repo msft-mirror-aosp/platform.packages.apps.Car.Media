@@ -52,4 +52,17 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">@dimen/playback_seekbar_height</item>
     </style>
+
+    <style name="QueueListItemTitleStyle" parent="TextAppearance.Body1">
+        <item name="android:singleLine">true</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:gravity">center_vertical</item>
+    </style>
+
+    <style name="QueueListItemTimeStyle" parent="TextAppearance.Body3">
+        <item name="android:singleLine">true</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:textStyle">bold</item>
+    </style>
 </resources>

@@ -46,6 +46,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.android.car.apps.common.BackgroundImageView;
+import com.android.car.apps.common.util.ViewHelper;
 import com.android.car.media.common.AppSelectionFragment;
 import com.android.car.media.common.MediaAppSelectorWidget;
 import com.android.car.media.common.MediaConstants;
@@ -81,8 +82,9 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     private BackgroundImageView mAlbumBackground;
     private PlaybackFragment mPlaybackFragment;
     private BrowseFragment mSearchFragment;
+    private BrowseFragment mBrowseFragment;
     private AppSelectionFragment mAppSelectionFragment;
-    private ViewGroup mBrowseControlsContainer;
+    private ViewGroup mMiniPlaybackControls;
     private EmptyFragment mEmptyFragment;
     private ViewGroup mBrowseContainer;
     private ViewGroup mPlaybackContainer;
@@ -92,6 +94,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
     /** Current state */
     private Intent mCurrentSourcePreferences;
+    private boolean mCanShowMiniPlaybackControls;
 
     private AppBarView.AppBarListener mAppBarListener = new AppBarView.AppBarListener() {
         @Override
@@ -102,9 +105,8 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
         @Override
         public void onBack() {
-            Fragment currentFragment = getCurrentFragment();
-            if (currentFragment instanceof BrowseFragment) {
-                BrowseFragment fragment = (BrowseFragment) currentFragment;
+            BrowseFragment fragment = getCurrentBrowseFragment();
+            if (fragment != null) {
                 fragment.navigateBack();
             }
         }
@@ -215,8 +217,8 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                 findViewById(R.id.minimized_playback_controls);
         browsePlaybackControls.setModel(playbackViewModel, this);
 
-        mBrowseControlsContainer = findViewById(R.id.minimized_playback_controls);
-        mBrowseControlsContainer.setOnClickListener(
+        mMiniPlaybackControls = findViewById(R.id.minimized_playback_controls);
+        mMiniPlaybackControls.setOnClickListener(
                 view -> getInnerViewModel().setMode(Mode.PLAYBACK));
 
         mFadeDuration = getResources().getInteger(
@@ -254,6 +256,9 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     }
 
     private void handlePlaybackState(PlaybackViewModel.PlaybackStateWrapper state) {
+        // TODO(arnaudberry) rethink interactions between customized layouts and dynamic visibility.
+        mCanShowMiniPlaybackControls = (state != null) && state.shouldDisplay();
+        ViewHelper.setVisible(mMiniPlaybackControls, mCanShowMiniPlaybackControls);
         if (state == null) {
             return;
         }
@@ -317,6 +322,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             mAppBarView.setMediaAppName(mediaSource.getName());
             mAppBarView.setTitle(null);
             updateTabs(null);
+            mSearchFragment.resetSearchState();
             getInnerViewModel().setMode(Mode.BROWSING);
             getInnerViewModel().setErrorState(false);
             String packageName = mediaSource.getPackageName();
@@ -371,7 +377,8 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     }
 
     private void showTopItem(@Nullable MediaItemMetadata topItem) {
-        setCurrentFragment(BrowseFragment.newInstance(topItem));
+        mBrowseFragment = BrowseFragment.newInstance(topItem);
+        setCurrentFragment(mBrowseFragment);
         mAppBarView.setActiveItem(topItem);
     }
 
@@ -388,8 +395,10 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     }
 
     @Nullable
-    private Fragment getCurrentFragment() {
-        return getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+    private BrowseFragment getCurrentBrowseFragment() {
+        return getInnerViewModel().mMode.getValue() == Mode.SEARCHING
+                ? mSearchFragment
+                : mBrowseFragment;
     }
 
     private void handleModeAndErrorState(Mode mode, Boolean isErrorMode) {
@@ -423,7 +432,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                 ViewUtils.showViewAnimated(mBrowseContainer, mFadeDuration);
                 ViewUtils.hideViewAnimated(mSearchContainer, mFadeDuration);
                 ViewUtils.showViewAnimated(mAppBarView, mFadeDuration);
-                updateBrowsingState();
+                updateAppBar(mode);
                 break;
             case SEARCHING:
                 ViewUtils.hideViewAnimated(mErrorContainer, mFadeDuration);
@@ -431,32 +440,30 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                 ViewUtils.hideViewAnimated(mBrowseContainer, mFadeDuration);
                 ViewUtils.showViewAnimated(mSearchContainer, mFadeDuration);
                 ViewUtils.showViewAnimated(mAppBarView, mFadeDuration);
-                mAppBarView.setState(AppBarView.State.SEARCHING);
+                updateAppBar(mode);
                 break;
         }
     }
 
-    private void updateBrowsingState() {
-        Fragment currentFragment = getCurrentFragment();
-        if (currentFragment instanceof BrowseFragment) {
-            BrowseFragment fragment = (BrowseFragment) currentFragment;
-            if (!fragment.isAtTopStack()) {
-                mAppBarView.setTitle(fragment.getCurrentMediaItem().getTitle());
-                mAppBarView.setState(AppBarView.State.STACKED);
-                return;
-            }
-        }
-        mAppBarView.setTitle(null);
-        mAppBarView.setState(AppBarView.State.BROWSING);
+    private void updateAppBar(Mode mode) {
+        BrowseFragment fragment = getCurrentBrowseFragment();
+        boolean isStacked = fragment != null && !fragment.isAtTopStack();
+        AppBarView.State unstackedState = mode == Mode.SEARCHING
+                ? AppBarView.State.SEARCHING
+                : AppBarView.State.BROWSING;
+        mAppBarView.setTitle(isStacked ? fragment.getCurrentMediaItem().getTitle() : null);
+        mAppBarView.setState(isStacked ? AppBarView.State.STACKED : unstackedState);
     }
 
     private void updateMetadata(Mode mode) {
         if (mode == Mode.PLAYBACK) {
-            ViewUtils.hideViewAnimated(mBrowseControlsContainer, mFadeDuration);
+            ViewUtils.hideViewAnimated(mMiniPlaybackControls, mFadeDuration);
             ViewUtils.showViewAnimated(mAlbumBackground, mFadeDuration);
         } else {
             mPlaybackFragment.closeOverflowMenu();
-            ViewUtils.showViewAnimated(mBrowseControlsContainer, mFadeDuration);
+            if (mCanShowMiniPlaybackControls) {
+                ViewUtils.showViewAnimated(mMiniPlaybackControls, mFadeDuration);
+            }
             ViewUtils.hideViewAnimated(mAlbumBackground, mFadeDuration);
         }
     }
@@ -467,7 +474,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
     @Override
     public void onBackStackChanged() {
-        updateBrowsingState();
+        updateAppBar(getInnerViewModel().mMode.getValue());
     }
 
     @Override
