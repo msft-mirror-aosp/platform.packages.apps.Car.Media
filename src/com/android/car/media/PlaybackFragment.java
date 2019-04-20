@@ -34,7 +34,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -59,7 +61,7 @@ import java.util.Objects;
 public class PlaybackFragment extends Fragment {
     private static final String TAG = "PlaybackFragment";
 
-    private View mExpandedControlBarScrim;
+    private View mPlaybackScrim;
     private PlaybackControlsActionBar mPlaybackControls;
     private QueueItemsAdapter mQueueAdapter;
     private RecyclerView mQueue;
@@ -68,7 +70,10 @@ public class PlaybackFragment extends Fragment {
     private View mQueueButton;
     private ViewGroup mNavIconContainer;
 
+    private DefaultItemAnimator mItemAnimator;
+
     private MetadataController mMetadataController;
+    private MetadataController.Model mModel;
 
     private PlaybackFragmentListener mListener;
 
@@ -81,6 +86,7 @@ public class PlaybackFragment extends Fragment {
     private boolean mQueueIsVisible;
 
     private int mFadeDuration;
+    private float mPlaybackQueueBackgroundAlpha;
 
     /**
      * PlaybackFragment listener
@@ -99,32 +105,82 @@ public class PlaybackFragment extends Fragment {
 
         private final View mView;
         private final TextView mTitle;
-        private final View mActiveIcon;
+        private final TextView mCurrentTime;
+        private final TextView mMaxTime;
+        private final TextView mTimeSeparator;
 
         QueueViewHolder(View itemView) {
             super(itemView);
             mView = itemView;
             mTitle = itemView.findViewById(R.id.title);
-            mActiveIcon = itemView.findViewById(R.id.now_playing);
+            mCurrentTime = itemView.findViewById(R.id.current_time);
+            mMaxTime = itemView.findViewById(R.id.max_time);
+            mTimeSeparator = itemView.findViewById(R.id.separator);
         }
 
-        void bind(MediaItemMetadata item) {
+        boolean bind(MediaItemMetadata item) {
             mView.setOnClickListener(v -> onQueueItemClicked(item));
 
             mTitle.setText(item.getTitle());
-            boolean active = mActiveQueueItemId != null && mActiveQueueItemId == item.getQueueId();
-            ViewHelper.setVisible(mActiveIcon, active);
+            boolean active = mActiveQueueItemId != null && Objects.equals(mActiveQueueItemId,
+                    item.getQueueId());
+            boolean shouldShowTime = active && mQueueAdapter.getTimeVisible();
+            ViewHelper.setVisible(mCurrentTime, shouldShowTime);
+            ViewHelper.setVisible(mMaxTime, shouldShowTime);
+            ViewHelper.setVisible(mTimeSeparator, shouldShowTime);
+            if (active) {
+                mCurrentTime.setText(mQueueAdapter.getCurrentTime());
+                mMaxTime.setText(mQueueAdapter.getMaxTime());
+            }
+            return active;
         }
     }
 
 
     private class QueueItemsAdapter extends RecyclerView.Adapter<QueueViewHolder> {
 
-        private final List<MediaItemMetadata> mQueueItems;
+        private List<MediaItemMetadata> mQueueItems;
+        private String mCurrentTimeText;
+        private String mMaxTimeText;
+        private Integer mActiveItemPos;
+        private boolean mTimeVisible;
 
-        QueueItemsAdapter(@Nullable List<MediaItemMetadata> items) {
+        void setItems(@Nullable List<MediaItemMetadata> items) {
             mQueueItems = new ArrayList<>(items != null ? items : Collections.emptyList());
-            setHasStableIds(true);
+            notifyDataSetChanged();
+        }
+
+        void setCurrentTime(String currentTime) {
+            mCurrentTimeText = currentTime;
+            if (mActiveItemPos != null) {
+                notifyItemChanged(mActiveItemPos.intValue());
+            }
+        }
+
+        void setMaxTime(String maxTime) {
+            mMaxTimeText = maxTime;
+            if (mActiveItemPos != null) {
+                notifyItemChanged(mActiveItemPos.intValue());
+            }
+        }
+
+        void setTimeVisible(boolean visible) {
+            mTimeVisible = visible;
+            if (mActiveItemPos != null) {
+                notifyItemChanged(mActiveItemPos.intValue());
+            }
+        }
+
+        String getCurrentTime() {
+            return mCurrentTimeText;
+        }
+
+        String getMaxTime() {
+            return mMaxTimeText;
+        }
+
+        boolean getTimeVisible() {
+            return mTimeVisible;
         }
 
         @Override
@@ -137,7 +193,10 @@ public class PlaybackFragment extends Fragment {
         public void onBindViewHolder(QueueViewHolder holder, int position) {
             int size = mQueueItems.size();
             if (0 <= position && position < size) {
-                holder.bind(mQueueItems.get(position));
+                boolean active = holder.bind(mQueueItems.get(position));
+                if (active) {
+                    mActiveItemPos = position;
+                }
             } else {
                 Log.e(TAG, "onBindViewHolder invalid position " + position + " of " + size);
             }
@@ -171,10 +230,10 @@ public class PlaybackFragment extends Fragment {
         mQueueButton.setOnClickListener(button -> onQueueClicked());
         mNavIconContainer = view.findViewById(R.id.nav_icon_container);
         mNavIconContainer.setOnClickListener(nav -> onCollapse());
-        mExpandedControlBarScrim = view.findViewById(R.id.playback_controls_expanded_scrim);
-        mExpandedControlBarScrim.setAlpha(0f);
-        mExpandedControlBarScrim.setOnClickListener(scrim -> mPlaybackControls.close());
-        mExpandedControlBarScrim.setClickable(false);
+        mPlaybackScrim = view.findViewById(R.id.playback_scrim);
+        mPlaybackScrim.setAlpha(0f);
+        mPlaybackScrim.setOnClickListener(scrim -> mPlaybackControls.close());
+        mPlaybackScrim.setClickable(false);
 
         getPlaybackViewModel().getMediaSourceColors().observe(getViewLifecycleOwner(),
                 sourceColors -> {
@@ -192,8 +251,8 @@ public class PlaybackFragment extends Fragment {
         getPlaybackViewModel().getPlaybackController().observe(getViewLifecycleOwner(),
                 controller -> mController = controller);
         initPlaybackControls(view.findViewById(R.id.playback_controls));
-        initQueue();
         initMetadataController(view);
+        initQueue();
         return view;
     }
 
@@ -215,8 +274,8 @@ public class PlaybackFragment extends Fragment {
             // ControlBar's slide animation, causing the ControlBar to jitter at the end.
             // This should eventually be replaced by a proper animation model
             // (as well as ControlBar)
-            mExpandedControlBarScrim.setClickable(expanding);
-            mExpandedControlBarScrim.animate()
+            mPlaybackScrim.setClickable(expanding);
+            mPlaybackScrim.animate()
                     .alpha(expanding ? 1.0f : 0f)
                     .setDuration(getContext().getResources().getInteger(
                             expanding ? R.integer.control_bar_expand_anim_duration
@@ -227,10 +286,12 @@ public class PlaybackFragment extends Fragment {
     private void initQueue() {
         mFadeDuration = getResources().getInteger(
                 R.integer.fragment_playback_queue_fade_duration_ms);
+        mPlaybackQueueBackgroundAlpha = getResources().getFloat(
+                R.dimen.playback_queue_background_alpha);
 
         mQueue.setVerticalFadingEdgeEnabled(
                 getResources().getBoolean(R.bool.queue_fading_edge_length_enabled));
-        mQueueAdapter = new QueueItemsAdapter(null);
+        mQueueAdapter = new QueueItemsAdapter();
 
         getPlaybackViewModel().getPlaybackStateWrapper().observe(getViewLifecycleOwner(),
                 state -> {
@@ -243,6 +304,11 @@ public class PlaybackFragment extends Fragment {
         mQueue.setAdapter(mQueueAdapter);
         mQueue.setLayoutManager(new LinearLayoutManager(getContext()));
 
+        // Disable item changed animation.
+        mItemAnimator = new DefaultItemAnimator();
+        mItemAnimator.setSupportsChangeAnimations(false);
+        mQueue.setItemAnimator(mItemAnimator);
+
         freezable(mUpdatesPaused, getPlaybackViewModel().getQueue()).observe(this,
                 this::setQueue);
 
@@ -253,11 +319,16 @@ public class PlaybackFragment extends Fragment {
                 toggleQueueVisibility();
             }
         });
+
+        mModel.getCurrentTimeText().observe(getViewLifecycleOwner(),
+                time -> mQueueAdapter.setCurrentTime(time.toString()));
+        mModel.getMaxTimeText().observe(getViewLifecycleOwner(),
+                time -> mQueueAdapter.setMaxTime(time.toString()));
+        mModel.hasTime().observe(getViewLifecycleOwner(), mQueueAdapter::setTimeVisible);
     }
 
     private void setQueue(List<MediaItemMetadata> queueItems) {
-        mQueueAdapter = new QueueItemsAdapter(queueItems);
-        mQueue.swapAdapter(mQueueAdapter, false);
+        mQueueAdapter.setItems(queueItems);
         mQueueAdapter.refresh();
     }
 
@@ -271,14 +342,16 @@ public class PlaybackFragment extends Fragment {
         TextView innerSeparator = view.findViewById(R.id.inner_separator);
         TextView maxTime = view.findViewById(R.id.max_time);
         SeekBar seekbar = view.findViewById(R.id.seek_bar);
+
+        mModel = new MetadataController.Model(getPlaybackViewModel(), mUpdatesPaused);
         mMetadataController = new MetadataController(getViewLifecycleOwner(),
-                getPlaybackViewModel(), mUpdatesPaused, title, artist, albumTitle, outerSeparator,
+                mModel, title, artist, albumTitle, outerSeparator,
                 curTime, innerSeparator, maxTime, seekbar, albumArt,
                 getResources().getDimensionPixelSize(R.dimen.playback_album_art_size));
     }
 
     /**
-     * Hides or shows the playback queue
+     * Hides or shows the playback queue.
      */
     public void toggleQueueVisibility() {
         mQueueIsVisible = !mQueueIsVisible;
@@ -292,6 +365,15 @@ public class PlaybackFragment extends Fragment {
             ViewUtils.showViewAnimated(mMetadataContainer, mFadeDuration);
             ViewUtils.showViewAnimated(mSeekBar, mFadeDuration);
         }
+        mPlaybackScrim.animate().alpha(
+                mQueueIsVisible ? mPlaybackQueueBackgroundAlpha : 0.0f).setDuration(mFadeDuration);
+    }
+
+    /**
+     * Whether the playback queue is visible.
+     */
+    public boolean isQueueVisible() {
+        return mQueueIsVisible;
     }
 
     /** Sets whether the source has a queue. */

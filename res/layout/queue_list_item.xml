@@ -14,35 +14,40 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<!-- TODO(arnaudberry): use the right constants for the height / padding / margin! -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/container"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginHorizontal="@dimen/media_activity_margin_x"
-    android:background="?android:attr/selectableItemBackground"
-    >
+    android:layout_height="@dimen/queue_list_item_height"
+    android:layout_marginHorizontal="@dimen/queue_list_item_margin_x"
+    android:gravity="center_vertical"
+    android:background="?android:attr/selectableItemBackground">
 
     <TextView
         android:id="@+id/title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:layout_marginVertical="@dimen/media_browse_list_item_text_margin_y"
-        android:includeFontPadding="false"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:textAppearance="?android:attr/textAppearanceListItem"
-    />
+        style="@style/QueueListItemTitleStyle"/>
 
-    <ImageView
-        android:id="@+id/now_playing"
-        android:src="@drawable/ic_equalizer"
-        android:layout_width="@dimen/media_browse_list_item_arrow_size"
-        android:layout_height="@dimen/media_browse_list_item_arrow_size"
-        android:layout_gravity="center_vertical"
-        android:scaleType="centerCrop"
-    />
+    <TextView
+        android:id="@+id/current_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/queue_list_item_title_time_margin"
+        style="@style/QueueListItemTimeStyle"/>
+
+    <TextView
+        android:id="@+id/separator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/slash_separator"
+        style="@style/QueueListItemTimeStyle"/>
+
+    <TextView
+        android:id="@+id/max_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/QueueListItemTimeStyle"/>
 
 </LinearLayout>

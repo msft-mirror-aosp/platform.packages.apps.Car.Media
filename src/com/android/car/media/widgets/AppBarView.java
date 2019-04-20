@@ -60,9 +60,6 @@ public class AppBarView extends ConstraintLayout {
     private int mFadeDuration;
     private String mMediaAppTitle;
     private boolean mSearchSupported;
-    private boolean mTabsVisible = true;
-    private int mHeight;
-    private int mFirstRowHeight;
     private int mMaxRows;
 
     public interface AppBarProvider {
@@ -157,19 +154,6 @@ public class AppBarView extends ConstraintLayout {
 
         mContext = context;
         mMaxRows = mContext.getResources().getInteger(R.integer.num_app_bar_view_rows);
-        mFirstRowHeight = mContext.getResources().getDimensionPixelSize(
-                R.dimen.appbar_first_row_height);
-        mHeight = mFirstRowHeight + mContext.getResources().getDimensionPixelSize(
-                R.dimen.appbar_second_row_height);
-        if (mMaxRows == 2) {
-            ConstraintSet set = new ConstraintSet();
-            set.clone(this);
-            set.connect(R.id.tabs, ConstraintSet.LEFT, ConstraintSet.PARENT_ID, ConstraintSet.LEFT);
-            set.connect(R.id.tabs, ConstraintSet.TOP, R.id.row_separator, ConstraintSet.BOTTOM);
-            set.connect(R.id.tabs, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID,
-                    ConstraintSet.BOTTOM);
-            set.applyTo(this);
-        }
 
         mTabsContainer = findViewById(R.id.tabs);
         mTabsContainer.addOnCarTabSelectedListener(
@@ -377,19 +361,6 @@ public class AppBarView extends ConstraintLayout {
     private void setShowTabs(boolean visible) {
         // Refresh state to adjust for new tab visibility
         mTabsContainer.setVisibility(visible ? View.VISIBLE : View.GONE);
-
-        // If the app bar has 2 rows, expand to 2 rows if tabs is visible, and collapse to 1
-        // row if tabs is invisible.
-        if (mMaxRows == 2 && mTabsVisible != visible) {
-            ConstraintLayout.LayoutParams layoutParams =
-                    (ConstraintLayout.LayoutParams) getLayoutParams();
-            if (layoutParams != null) {
-                layoutParams.height = visible ? mHeight : mFirstRowHeight;
-                setLayoutParams(layoutParams);
-            }
-        }
-
-        mTabsVisible = visible;
     }
 
     /**
@@ -397,7 +368,7 @@ public class AppBarView extends ConstraintLayout {
      */
     public void setState(State state) {
         mState = state;
-        final boolean hasTabs = mTabsContainer.getChildCount() > 0;
+        final boolean hasTabs = mTabsContainer.getCarTabCount() > 0;
         final boolean showTitle = !hasTabs || mMaxRows == 2;
 
         Transition transition = new Fade().setDuration(mFadeDuration);

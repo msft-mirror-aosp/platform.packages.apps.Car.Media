@@ -45,15 +45,7 @@
 
     <com.android.car.apps.common.widget.CarTabLayout
         android:id="@+id/tabs"
-        android:layout_width="wrap_content"
-        android:layout_height="@dimen/appbar_first_row_height"
-        android:layout_marginStart="@dimen/appbar_view_tabs_margin_start"
-        android:layout_marginEnd="@dimen/appbar_view_tabs_margin_end"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/row_separator"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/search"
-        app:layout_constraintHorizontal_bias="0.0"/>
+        style="@style/AppBarTabStyle"/>
 
     <EditText
         android:id="@+id/search_bar"
@@ -88,6 +80,7 @@
         android:id="@+id/settings"
         android:layout_width="@dimen/appbar_view_icon_touch_target_size"
         android:layout_height="@dimen/appbar_view_icon_touch_target_size"
+        android:layout_marginEnd="@dimen/appbar_view_settings_margin_end"
         android:padding="@dimen/appbar_view_icon_padding"
         android:tint="@color/appbar_view_icon_tint"
         android:src="@drawable/ic_settings"

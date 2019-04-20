@@ -27,11 +27,9 @@
         android:layout_width="@dimen/media_browse_list_item_thumbnail_size"
         android:layout_height="@dimen/media_browse_list_item_thumbnail_size"
         android:layout_marginBottom="@dimen/media_browse_list_item_icon_margin_bottom"
-        android:layout_gravity="center_vertical"
         android:scaleType="centerCrop"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/text_start_guideline"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
     <!-- This guideline is necessary because there are icons preceding the text which typically have
@@ -71,9 +69,9 @@
         style="@style/BrowseListTitleStyle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/media_browse_list_item_text_margin_y"
         android:includeFontPadding="false"
         android:singleLine="true"
+        app:layout_constraintVertical_chainStyle="packed"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/subtitle"
         app:layout_constraintStart_toEndOf="@+id/explicit_icon_with_title"
@@ -106,7 +104,6 @@
         style="@style/BrowseListSubtitleStyle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/media_browse_list_item_text_margin_y"
         android:includeFontPadding="false"
         android:singleLine="true"
         app:layout_constraintTop_toBottomOf="@+id/title"

@@ -25,8 +25,6 @@
     <dimen name="browse_playback_album_art_margin_end">10dp</dimen>
 
     <!-- appbar_view.xml -->
-    <dimen name="appbar_view_tabs_margin_start">@*android:dimen/car_padding_4</dimen>
-    <dimen name="appbar_view_tabs_margin_end">@*android:dimen/car_padding_4</dimen>
     <dimen name="browse_fragment_top_padding">@dimen/appbar_2_rows_height</dimen>
     <dimen name="browse_fragment_top_padding_stacked">@dimen/appbar_first_row_height</dimen>
 
