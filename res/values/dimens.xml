@@ -71,9 +71,10 @@
 
     <!-- appbar_view.xml -->
     <dimen name="appbar_view_nav_button_width">@*android:dimen/car_margin</dimen>
-    <dimen name="appbar_view_tabs_margin_start">@*android:dimen/car_margin</dimen>
+    <dimen name="appbar_view_tabs_margin_start">@*android:dimen/car_padding_4</dimen>
     <dimen name="appbar_view_tabs_margin_end">@*android:dimen/car_padding_3</dimen>
     <dimen name="appbar_view_search_margin_end">@*android:dimen/car_padding_3</dimen>
+    <dimen name="appbar_view_settings_margin_end">@*android:dimen/car_padding_2</dimen>
     <dimen name="appbar_view_title_margin_start">@*android:dimen/car_margin</dimen>
 
     <!-- browse_state.xml -->
