@@ -28,8 +28,6 @@ public enum BrowseItemViewType {
     GRID_ITEM(com.android.car.media.R.layout.media_browse_grid_item, 1),
     /** A list item including title and subtitle */
     LIST_ITEM(com.android.car.media.R.layout.media_browse_list_item),
-    /** A footer that can be used to navigate to an expanded version of a section */
-    MORE_FOOTER(com.android.car.media.R.layout.media_browse_more_footer),
     /** A spacer view that creates additional padding at the edges of the list, and for headers */
     SPACER(com.android.car.media.R.layout.media_browse_spacer);
 

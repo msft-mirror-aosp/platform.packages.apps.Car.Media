@@ -49,9 +49,9 @@
     <TextView
         android:id="@+id/error_message"
         android:layout_width="wrap_content"
+        style="@style/ErrorTextStyle"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/browse_state_error_margin_top"
-        android:textAppearance="?android:attr/textAppearanceMedium"
         app:layout_constraintTop_toBottomOf="@+id/error_icon"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
