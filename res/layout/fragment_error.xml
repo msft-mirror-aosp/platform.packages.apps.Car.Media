@@ -22,21 +22,20 @@
 
     <com.android.car.apps.common.UxrTextView
         android:id="@+id/error_message"
+        style="@style/ErrorTextStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:layout_marginHorizontal="@dimen/fragment_error_message_margin_side"
-        android:layout_marginTop="@dimen/fragment_error_margin_top"
-        android:textAppearance="?android:attr/textAppearanceMedium"/>
+        android:layout_marginTop="@dimen/fragment_error_margin_top"/>
 
     <Button
         android:id="@+id/error_button"
-        style="?android:textAppearanceSmall"
+        style="@style/ErrorButtonStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/fragment_error_button_margin_top"
         android:layout_centerHorizontal="true"
-        android:textStyle="bold"
         android:layout_below="@+id/error_message"/>
 
 </RelativeLayout>

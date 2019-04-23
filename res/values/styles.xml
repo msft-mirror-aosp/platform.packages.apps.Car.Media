@@ -61,6 +61,11 @@
     <style name="BrowseGridTitleStyle" parent="TextAppearance.Body2"/>
     <style name="BrowseGridSubtitleStyle" parent="TextAppearance.Body3"/>
 
+    <style name="ErrorTextStyle" parent="TextAppearance.Body3"/>
+    <style name="ErrorButtonStyle" parent="TextAppearance.Body3">
+        <item name="android:textStyle">bold</item>
+    </style>
+
     <style name="SeekBarStyle">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">@dimen/playback_seekbar_height</item>

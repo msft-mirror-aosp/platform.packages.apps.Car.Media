@@ -28,4 +28,6 @@
     <dimen name="browse_fragment_top_padding">@dimen/appbar_2_rows_height</dimen>
     <dimen name="browse_fragment_top_padding_stacked">@dimen/appbar_first_row_height</dimen>
 
+    <!-- x-axis margin of playback seekbar -->
+    <dimen name="playback_seekbar_margin_x">@*android:dimen/car_padding_5</dimen>
 </resources>
