@@ -95,6 +95,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     /** Current state */
     private Intent mCurrentSourcePreferences;
     private boolean mCanShowMiniPlaybackControls;
+    private Integer mCurrentPlaybackState;
 
     private AppBarView.AppBarListener mAppBarListener = new AppBarView.AppBarListener() {
         @Override
@@ -262,12 +263,14 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         if (state == null) {
             return;
         }
-
-        if (Log.isLoggable(TAG, Log.INFO)) {
-            Log.i(TAG, "handlePlaybackState(); state change: " + state.getState());
+        if (mCurrentPlaybackState == null || mCurrentPlaybackState != state.getState()) {
+            mCurrentPlaybackState = state.getState();
+            if (Log.isLoggable(TAG, Log.INFO)) {
+                Log.i(TAG, "handlePlaybackState(); state change: " + mCurrentPlaybackState);
+            }
         }
 
-        if (state.getState() == PlaybackStateCompat.STATE_ERROR) {
+        if (mCurrentPlaybackState == PlaybackStateCompat.STATE_ERROR) {
             String message;
             if (state.getErrorMessage() == null) {
                 message = getString(R.string.default_error_message);
@@ -547,7 +550,10 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         }
 
         void setMode(Mode mode) {
-            mMode.setValue(mode);
+            Mode currentMode = mMode.getValue();
+            if (currentMode == null || mode != currentMode) {
+                mMode.setValue(mode);
+            }
         }
 
         LiveData<Pair<Mode, Boolean>> getModeAndErrorState() {
@@ -555,7 +561,10 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         }
 
         void setErrorState(boolean state) {
-            mIsErrorState.setValue(state);
+            Boolean errorState = mIsErrorState.getValue();
+            if (errorState == null || state != errorState) {
+                mIsErrorState.setValue(state);
+            }
         }
     }
 }
