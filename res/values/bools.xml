@@ -16,4 +16,5 @@
 -->
 <resources>
     <bool name="queue_fading_edge_length_enabled">true</bool>
+    <bool name="use_media_source_color_for_progress_bar">true</bool>
 </resources>

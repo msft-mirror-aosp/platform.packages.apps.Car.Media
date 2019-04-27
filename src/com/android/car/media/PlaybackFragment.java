@@ -235,15 +235,23 @@ public class PlaybackFragment extends Fragment {
         mPlaybackScrim.setOnClickListener(scrim -> mPlaybackControls.close());
         mPlaybackScrim.setClickable(false);
 
-        getPlaybackViewModel().getMediaSourceColors().observe(getViewLifecycleOwner(),
-                sourceColors -> {
-                    int defaultColor = getContext().getResources().getColor(
-                            R.color.media_source_default_color, null);
-                    int color = sourceColors != null ? sourceColors.getAccentColor(defaultColor)
-                            : defaultColor;
-                    mSeekBar.setThumbTintList(ColorStateList.valueOf(color));
-                    mSeekBar.setProgressTintList(ColorStateList.valueOf(color));
-                });
+        boolean useMediaSourceColor =
+                getContext().getResources().getBoolean(
+                        R.bool.use_media_source_color_for_progress_bar);
+        int defaultColor = getContext().getResources().getColor(
+                R.color.progress_bar_highlight, null);
+        if (useMediaSourceColor) {
+            getPlaybackViewModel().getMediaSourceColors().observe(getViewLifecycleOwner(),
+                    sourceColors -> {
+                        int color = sourceColors != null ? sourceColors.getAccentColor(defaultColor)
+                                : defaultColor;
+                        mSeekBar.setThumbTintList(ColorStateList.valueOf(color));
+                        mSeekBar.setProgressTintList(ColorStateList.valueOf(color));
+                    });
+        } else {
+            mSeekBar.setThumbTintList(ColorStateList.valueOf(defaultColor));
+            mSeekBar.setProgressTintList(ColorStateList.valueOf(defaultColor));
+        }
 
         MediaAppSelectorWidget appIcon = view.findViewById(R.id.app_icon_container);
         appIcon.setFragmentActivity(getActivity());

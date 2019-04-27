@@ -25,14 +25,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/dash_separator"
-        style="@style/PlaybackSubtitleStyle"
+        style="@style/MetadataPlaybackSubtitleStyle"
     />
 
     <TextView
         android:id="@+id/current_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        style="@style/PlaybackSubtitleStyle"
+        style="@style/MetadataPlaybackSubtitleStyle"
     />
 
     <TextView
@@ -40,13 +40,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/slash_separator"
-        style="@style/PlaybackSubtitleStyle"
+        style="@style/MetadataPlaybackSubtitleStyle"
     />
 
     <TextView
         android:id="@+id/max_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        style="@style/PlaybackSubtitleStyle"
+        style="@style/MetadataPlaybackSubtitleStyle"
     />
 </LinearLayout>
