@@ -42,11 +42,15 @@
         <item name="layout_constrainedWidth">true</item>
     </style>
 
-    <style name="PlaybackTitleStyle" parent="TextAppearance.Display2"></style>
+    <style name="MetadataPlaybackTitleStyle" parent="TextAppearance.Display2">
+        <item name="android:singleLine">true</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
 
-    <style name="PlaybackSubtitleStyle" parent="TextAppearance.Body1">
+    <style name="MetadataPlaybackSubtitleStyle" parent="TextAppearance.Body1">
         <item name="android:textColor">@color/secondary_text_color</item>
         <item name="android:singleLine">true</item>
+        <item name="android:includeFontPadding">false</item>
     </style>
 
     <style name="MetadataContainerStyle">

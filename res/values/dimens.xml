@@ -120,8 +120,8 @@
     <dimen name="media_browse_indicator_size">25dp</dimen>
 
     <!-- metadata_normal.xml -->
-    <dimen name="metadata_normal_album_title_margin_top">@*android:dimen/car_padding_3</dimen>
-    <dimen name="metadata_normal_artist_margin_top">@*android:dimen/car_padding_3</dimen>
+    <dimen name="metadata_normal_album_title_margin_top">@*android:dimen/car_padding_2</dimen>
+    <dimen name="metadata_normal_artist_margin_top">@*android:dimen/car_padding_2</dimen>
     <dimen name="art_metadata_metadata_margin_start">48dp</dimen>
 
     <!-- browse_playback_background.xml -->
