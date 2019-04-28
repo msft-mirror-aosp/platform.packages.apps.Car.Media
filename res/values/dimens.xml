@@ -73,9 +73,9 @@
     <dimen name="appbar_view_nav_button_width">@*android:dimen/car_margin</dimen>
     <dimen name="appbar_view_tabs_margin_start">@*android:dimen/car_padding_4</dimen>
     <dimen name="appbar_view_tabs_margin_end">@*android:dimen/car_padding_3</dimen>
-    <dimen name="appbar_view_search_margin_end">@*android:dimen/car_padding_3</dimen>
-    <dimen name="appbar_view_settings_margin_end">@*android:dimen/car_padding_2</dimen>
-    <dimen name="appbar_view_title_margin_start">@*android:dimen/car_margin</dimen>
+    <dimen name="appbar_view_control_buttons_spacing">@*android:dimen/car_padding_3</dimen>
+    <dimen name="appbar_view_control_buttons_margin_end">@*android:dimen/car_padding_2</dimen>
+    <dimen name="appbar_view_title_margin_start">@*android:dimen/car_padding_2</dimen>
 
     <!-- browse_state.xml -->
     <dimen name="browse_state_progress_height">@*android:dimen/car_double_line_list_item_height
@@ -160,7 +160,7 @@
     <dimen name="browse_fragment_bottom_padding">@dimen/minimized_control_bar_height</dimen>
     <!-- Top padding to use when at browse levels deeper than the first level -->
     <dimen name="browse_fragment_top_padding_stacked">@dimen/appbar_first_row_height</dimen>
-    <item name="playback_queue_background_alpha" format="float" type="dimen">0.3</item>
+    <item name="playback_queue_background_alpha" format="float" type="dimen">0.6</item>
 
     <!-- fragment_search.xml -->
     <dimen name="search_fragment_top_padding">@dimen/appbar_first_row_height</dimen>

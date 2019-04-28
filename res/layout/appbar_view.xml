@@ -67,20 +67,21 @@
         android:id="@+id/search"
         android:layout_width="@dimen/appbar_view_icon_touch_target_size"
         android:layout_height="@dimen/appbar_view_icon_touch_target_size"
-        android:layout_marginEnd="@dimen/appbar_view_search_margin_end"
+        android:layout_marginEnd="@dimen/appbar_view_control_buttons_spacing"
         android:padding="@dimen/appbar_view_icon_padding"
         android:tint="@color/appbar_view_icon_tint"
         android:src="@drawable/ic_search"
         android:background="@drawable/appbar_view_icon_background"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/row_separator"
-        app:layout_constraintEnd_toStartOf="@+id/settings"/>
+        app:layout_constraintEnd_toStartOf="@+id/settings"
+        app:layout_goneMarginEnd="@dimen/appbar_view_control_buttons_margin_end"/>
 
     <ImageView
         android:id="@+id/settings"
         android:layout_width="@dimen/appbar_view_icon_touch_target_size"
         android:layout_height="@dimen/appbar_view_icon_touch_target_size"
-        android:layout_marginEnd="@dimen/appbar_view_settings_margin_end"
+        android:layout_marginEnd="@dimen/appbar_view_control_buttons_margin_end"
         android:padding="@dimen/appbar_view_icon_padding"
         android:tint="@color/appbar_view_icon_tint"
         android:src="@drawable/ic_settings"
@@ -106,7 +107,7 @@
         android:layout_marginStart="@dimen/appbar_view_title_margin_start"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/row_separator"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/nav_icon_container"
         app:layout_constraintEnd_toStartOf="@id/search"/>
 
 </merge>
