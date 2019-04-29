@@ -20,7 +20,6 @@
     <string name="nothing_to_play" msgid="7744511905504851400">"Den här mappen är tom."</string>
     <string name="cannot_connect_to_app" msgid="181758706501910039">"Det verkar inte som om <xliff:g id="ID_1">%s</xliff:g> fungerar just nu."</string>
     <string name="unknown_media_provider_name" msgid="4238216994694326667">"Okänd"</string>
-    <string name="loading" msgid="5051030245373274568">"Hämtar val …"</string>
     <string name="unknown_error" msgid="6146463797752964372">"Något gick fel"</string>
     <string name="media_browse_more" msgid="587925161035447417">"Mer …"</string>
     <string name="media_app_title" msgid="94717597743776797">"Media"</string>
