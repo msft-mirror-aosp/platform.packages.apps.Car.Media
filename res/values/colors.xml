@@ -36,6 +36,7 @@
 
     <!-- appbar_view.xml -->
     <color name="appbar_view_icon_tint">@color/primary_app_icon_color</color>
+    <color name="appbar_view_settings_tint">@color/uxr_image_view_color_selector</color>
 
     <!-- fragment_metadata.xml -->
     <color name="fragment_metadata_queue_divider_color">@*android:color/car_list_divider_light
