@@ -41,13 +41,13 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.arch.common.FutureData;
 import com.android.car.media.browse.BrowseAdapter;
 import com.android.car.media.common.GridSpacingItemDecoration;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.browse.MediaBrowserViewModel;
 import com.android.car.media.common.source.MediaSourceViewModel;
-import com.android.car.media.widgets.ViewUtils;
 
 import java.util.ArrayList;
 import java.util.List;

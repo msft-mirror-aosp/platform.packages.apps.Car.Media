@@ -34,19 +34,17 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.car.apps.common.util.ViewHelper;
+import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.media.common.MediaAppSelectorWidget;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.MetadataController;
 import com.android.car.media.common.PlaybackControlsActionBar;
 import com.android.car.media.common.playback.PlaybackViewModel;
-import com.android.car.media.widgets.ViewUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -125,9 +123,9 @@ public class PlaybackFragment extends Fragment {
             boolean active = mActiveQueueItemId != null && Objects.equals(mActiveQueueItemId,
                     item.getQueueId());
             boolean shouldShowTime = active && mQueueAdapter.getTimeVisible();
-            ViewHelper.setVisible(mCurrentTime, shouldShowTime);
-            ViewHelper.setVisible(mMaxTime, shouldShowTime);
-            ViewHelper.setVisible(mTimeSeparator, shouldShowTime);
+            ViewUtils.setVisible(mCurrentTime, shouldShowTime);
+            ViewUtils.setVisible(mMaxTime, shouldShowTime);
+            ViewUtils.setVisible(mTimeSeparator, shouldShowTime);
             if (active) {
                 mCurrentTime.setText(mQueueAdapter.getCurrentTime());
                 mMaxTime.setText(mQueueAdapter.getMaxTime());

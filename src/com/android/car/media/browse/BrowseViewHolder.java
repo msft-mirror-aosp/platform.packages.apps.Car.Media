@@ -25,7 +25,7 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.car.apps.common.util.ViewHelper;
+import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.media.common.MediaItemMetadata;
 
 /**
@@ -76,7 +76,7 @@ class BrowseViewHolder extends RecyclerView.ViewHolder {
         }
         if (mSubtitle != null) {
             mSubtitle.setText(hasMediaItem ? data.mMediaItem.getSubtitle() : null);
-            ViewHelper.setVisible(mSubtitle, showSubtitle);
+            ViewUtils.setVisible(mSubtitle, showSubtitle);
         }
         if (mAlbumArt != null) {
             MediaItemMetadata.updateImageView(context, data.mMediaItem, mAlbumArt, 0);
@@ -84,15 +84,15 @@ class BrowseViewHolder extends RecyclerView.ViewHolder {
         if (mContainer != null && data.mOnClickListener != null) {
             mContainer.setOnClickListener(data.mOnClickListener);
         }
-        ViewHelper.setVisible(mRightArrow, hasMediaItem && data.mMediaItem.isBrowsable());
+        ViewUtils.setVisible(mRightArrow, hasMediaItem && data.mMediaItem.isBrowsable());
 
         // Adjust the positioning of the explicit and downloaded icons. If there is a subtitle, then
         // the icons should show on the subtitle row, otherwise they should show on the title row.
         boolean downloaded = hasMediaItem && data.mMediaItem.isDownloaded();
         boolean explicit = hasMediaItem && data.mMediaItem.isExplicit();
-        ViewHelper.setVisible(mTitleDownloadIcon, !showSubtitle && downloaded);
-        ViewHelper.setVisible(mTitleExplicitIcon, !showSubtitle && explicit);
-        ViewHelper.setVisible(mSubTitleDownloadIcon, showSubtitle && downloaded);
-        ViewHelper.setVisible(mSubTitleExplicitIcon, showSubtitle && explicit);
+        ViewUtils.setVisible(mTitleDownloadIcon, !showSubtitle && downloaded);
+        ViewUtils.setVisible(mTitleExplicitIcon, !showSubtitle && explicit);
+        ViewUtils.setVisible(mSubTitleDownloadIcon, showSubtitle && downloaded);
+        ViewUtils.setVisible(mSubTitleExplicitIcon, showSubtitle && explicit);
     }
 }
