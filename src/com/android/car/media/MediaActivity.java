@@ -46,7 +46,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.android.car.apps.common.BackgroundImageView;
-import com.android.car.apps.common.util.ViewHelper;
+import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.media.common.AppSelectionFragment;
 import com.android.car.media.common.MediaAppSelectorWidget;
 import com.android.car.media.common.MediaConstants;
@@ -58,7 +58,6 @@ import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.common.source.MediaSourceViewModel;
 import com.android.car.media.widgets.AppBarView;
-import com.android.car.media.widgets.ViewUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -262,7 +261,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         // TODO(b/131252925) clean this up after Google IO.
         Pair<Mode, Boolean> modeState = getInnerViewModel().getModeAndErrorState().getValue();
         if (modeState == null || modeState.first != Mode.PLAYBACK) {
-            ViewHelper.setVisible(mMiniPlaybackControls, mCanShowMiniPlaybackControls);
+            ViewUtils.setVisible(mMiniPlaybackControls, mCanShowMiniPlaybackControls);
         }
         if (state == null) {
             return;

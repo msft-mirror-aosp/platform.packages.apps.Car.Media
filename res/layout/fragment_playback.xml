@@ -67,6 +67,7 @@
         android:id="@+id/queue_button"
         android:layout_width="@dimen/appbar_view_icon_touch_target_size"
         android:layout_height="@dimen/appbar_view_icon_touch_target_size"
+        android:layout_marginEnd="@dimen/playback_queue_button_margin_end"
         android:padding="@dimen/appbar_view_icon_padding"
         android:tint="@color/appbar_view_icon_tint"
         android:src="@drawable/ic_tracklist"
