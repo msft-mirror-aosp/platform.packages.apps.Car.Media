@@ -16,9 +16,6 @@
 
 package com.android.car.media;
 
-import static com.android.car.arch.common.LiveDataFunctions.dataOf;
-import static com.android.car.arch.common.LiveDataFunctions.freezable;
-
 import android.annotation.Nullable;
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -34,7 +31,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -71,14 +67,11 @@ public class PlaybackFragment extends Fragment {
     private DefaultItemAnimator mItemAnimator;
 
     private MetadataController mMetadataController;
-    private MetadataController.Model mModel;
 
     private PlaybackFragmentListener mListener;
 
     private PlaybackViewModel.PlaybackController mController;
     private Long mActiveQueueItemId;
-
-    private MutableLiveData<Boolean> mUpdatesPaused = dataOf(false);
 
     private boolean mHasQueue;
     private boolean mQueueIsVisible;
@@ -315,8 +308,7 @@ public class PlaybackFragment extends Fragment {
         mItemAnimator.setSupportsChangeAnimations(false);
         mQueue.setItemAnimator(mItemAnimator);
 
-        freezable(mUpdatesPaused, getPlaybackViewModel().getQueue()).observe(this,
-                this::setQueue);
+        getPlaybackViewModel().getQueue().observe(this, this::setQueue);
 
         getPlaybackViewModel().hasQueue().observe(getViewLifecycleOwner(), hasQueue -> {
             boolean enableQueue = (hasQueue != null) && hasQueue;
@@ -325,12 +317,13 @@ public class PlaybackFragment extends Fragment {
                 toggleQueueVisibility();
             }
         });
-
-        mModel.getCurrentTimeText().observe(getViewLifecycleOwner(),
-                time -> mQueueAdapter.setCurrentTime(time.toString()));
-        mModel.getMaxTimeText().observe(getViewLifecycleOwner(),
-                time -> mQueueAdapter.setMaxTime(time.toString()));
-        mModel.hasTime().observe(getViewLifecycleOwner(), mQueueAdapter::setTimeVisible);
+        getPlaybackViewModel().getProgress().observe(getViewLifecycleOwner(),
+                playbackProgress ->
+                {
+                    mQueueAdapter.setCurrentTime(playbackProgress.getCurrentTimeText().toString());
+                    mQueueAdapter.setMaxTime(playbackProgress.getMaxTimeText().toString());
+                    mQueueAdapter.setTimeVisible(playbackProgress.hasTime());
+                });
     }
 
     private void setQueue(List<MediaItemMetadata> queueItems) {
@@ -349,9 +342,8 @@ public class PlaybackFragment extends Fragment {
         TextView maxTime = view.findViewById(R.id.max_time);
         SeekBar seekbar = view.findViewById(R.id.seek_bar);
 
-        mModel = new MetadataController.Model(getPlaybackViewModel(), mUpdatesPaused);
         mMetadataController = new MetadataController(getViewLifecycleOwner(),
-                mModel, title, artist, albumTitle, outerSeparator,
+                getPlaybackViewModel(), title, artist, albumTitle, outerSeparator,
                 curTime, innerSeparator, maxTime, seekbar, albumArt,
                 getResources().getDimensionPixelSize(R.dimen.playback_album_art_size));
     }
