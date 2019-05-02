@@ -55,6 +55,8 @@
     <item name="playback_background_blur_scale" format="float" type="dimen">.5</item>
     <!-- Size of the album art thumbnail -->
     <dimen name="playback_album_art_size">226dp</dimen>
+    <!-- End margin of playback queue button -->
+    <dimen name="playback_queue_button_margin_end">@*android:dimen/car_padding_2</dimen>
 
     <!-- Tab height -->
     <dimen name="browse_tab_height">76dp</dimen>
