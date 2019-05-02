@@ -77,14 +77,14 @@
         app:layout_constraintEnd_toStartOf="@+id/settings"
         app:layout_goneMarginEnd="@dimen/appbar_view_control_buttons_margin_end"/>
 
-    <com.android.car.apps.common.UxrImageView
+    <com.android.car.apps.common.UxrButton
         android:id="@+id/settings"
         android:layout_width="@dimen/appbar_view_icon_touch_target_size"
         android:layout_height="@dimen/appbar_view_icon_touch_target_size"
         android:layout_marginEnd="@dimen/appbar_view_control_buttons_margin_end"
         android:padding="@dimen/appbar_view_icon_padding"
-        android:tint="@color/appbar_view_settings_tint"
-        android:src="@drawable/ic_settings"
+        android:drawableTint="@color/appbar_view_settings_tint"
+        android:drawableBottom="@drawable/ic_settings"
         android:background="@drawable/appbar_view_icon_background"
         app:carUxRestrictions="UX_RESTRICTIONS_NO_SETUP"
         app:layout_constraintTop_toTopOf="parent"

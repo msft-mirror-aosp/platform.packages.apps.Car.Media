@@ -36,7 +36,7 @@
 
     <!-- appbar_view.xml -->
     <color name="appbar_view_icon_tint">@color/primary_app_icon_color</color>
-    <color name="appbar_view_settings_tint">@color/uxr_image_view_color_selector</color>
+    <color name="appbar_view_settings_tint">@color/uxr_button_image_color_selector</color>
 
     <!-- fragment_metadata.xml -->
     <color name="fragment_metadata_queue_divider_color">@*android:color/car_list_divider_light
@@ -46,4 +46,7 @@
     <!-- tab_view.xml -->
     <color name="tab_view_icon_tint">@*android:color/car_tint_light</color>
     <color name="tab_view_text_color">@*android:color/car_grey_400</color>
+
+    <!-- fragment_error.xml -->
+    <color name="error_button_text_color">@color/uxr_button_text_color_selector</color>
 </resources>

@@ -6,9 +6,6 @@ import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.transition.Fade;
-import android.transition.Transition;
-import android.transition.TransitionManager;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,9 +18,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.constraintlayout.widget.ConstraintSet;
 
-import com.android.car.apps.common.UxrImageView;
+import com.android.car.apps.common.UxrButton;
 import com.android.car.apps.common.widget.CarTabLayout;
 import com.android.car.media.R;
 import com.android.car.media.common.MediaAppSelectorWidget;
@@ -46,7 +42,7 @@ public class AppBarView extends ConstraintLayout {
     private ViewGroup mNavIconContainer;
     private TextView mTitle;
     /** Visible if mHasSettings && mShowSettings. */
-    private UxrImageView mSettingsButton;
+    private UxrButton mSettingsButton;
     private boolean mHasSettings;
     private boolean mShowSettings;
     private View mSearchButton;
