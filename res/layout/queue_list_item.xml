@@ -19,7 +19,7 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="@dimen/queue_list_item_height"
-    android:layout_marginHorizontal="@dimen/queue_list_item_margin_x"
+    android:paddingHorizontal="@dimen/queue_list_item_padding_x"
     android:gravity="center_vertical"
     android:background="?android:attr/selectableItemBackground">
 
