@@ -39,7 +39,7 @@ public class MediaItemTab extends CarTabLayout.CarTab {
 
     @Override
     protected void bindIcon(ImageView imageView) {
-        MediaItemMetadata.updateImageView(imageView.getContext(), mItem, imageView, 0);
+        MediaItemMetadata.updateImageView(imageView.getContext(), mItem, imageView, 0, false);
     }
 
     /**

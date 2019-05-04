@@ -60,6 +60,7 @@ import com.android.car.media.common.source.MediaSourceViewModel;
 import com.android.car.media.widgets.AppBarView;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -95,6 +96,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     private Intent mCurrentSourcePreferences;
     private boolean mCanShowMiniPlaybackControls;
     private Integer mCurrentPlaybackState;
+    private List<MediaItemMetadata> mTopItems;
 
     private AppBarView.AppBarListener mAppBarListener = new AppBarView.AppBarListener() {
         @Override
@@ -371,8 +373,17 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             mAppBarView.setActiveItem(null);
             mAppBarView.setItems(null);
             setCurrentFragment(mEmptyFragment);
+            mBrowseFragment = null;
             return;
         }
+
+        if (Objects.equals(mTopItems, items)) {
+            // When coming back to the app, the live data sends an update even if the list hasn't
+            // changed. Updating the tabs then recreates the browse fragment, which produces jank
+            // (b/131830876), and also resets the navigation to the top of the first tab...
+            return;
+        }
+        mTopItems = items;
 
         List<MediaItemMetadata> browsableTopLevel = items.stream()
                 .filter(MediaItemMetadata::isBrowsable)

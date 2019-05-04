@@ -16,6 +16,7 @@
 -->
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/error_fragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -29,13 +30,15 @@
         android:layout_marginHorizontal="@dimen/fragment_error_message_margin_side"
         android:layout_marginTop="@dimen/fragment_error_margin_top"/>
 
-    <Button
+    <com.android.car.apps.common.UxrButton
         android:id="@+id/error_button"
         style="@style/ErrorButtonStyle"
+        android:textColor="@color/error_button_text_color"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/fragment_error_button_margin_top"
         android:layout_centerHorizontal="true"
-        android:layout_below="@+id/error_message"/>
+        android:layout_below="@+id/error_message"
+        app:carUxRestrictions="UX_RESTRICTIONS_NO_SETUP"/>
 
 </RelativeLayout>
