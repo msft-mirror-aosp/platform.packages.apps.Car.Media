@@ -23,7 +23,10 @@ LOCAL_SRC_FILES := $(call all-java-files-under, src)
 LOCAL_RESOURCE_DIR := $(LOCAL_PATH)/res
 
 LOCAL_PACKAGE_NAME := CarMediaApp
+
 LOCAL_PRIVATE_PLATFORM_APIS := true
+
+LOCAL_REQUIRED_MODULES := privapp_whitelist_com.android.car.media
 
 LOCAL_CERTIFICATE := platform
 
