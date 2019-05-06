@@ -181,7 +181,11 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         MediaSourceViewModel mediaSourceViewModel = getMediaSourceViewModel();
         PlaybackViewModel playbackViewModel = getPlaybackViewModel();
         ViewModel localViewModel = getInnerViewModel();
-        if (savedInstanceState == null) {
+        // We can't rely on savedInstanceState to determine whether the model has been initialized
+        // as on a config change savedInstanceState != null and the model is initialized, but if
+        // the app was killed by the system then savedInstanceState != null and the model is NOT
+        // initialized...
+        if (localViewModel.needsInitialization()) {
             localViewModel.init(playbackViewModel);
             localViewModel.setMode(Mode.BROWSING);
         }
@@ -527,6 +531,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     }
 
     public static class ViewModel extends AndroidViewModel {
+        private boolean mNeedsInitialization = true;
         private LiveData<Bitmap> mAlbumArt;
         private MutableLiveData<Size> mAlbumArtSize = new MutableLiveData<>();
         private PlaybackViewModel mPlaybackViewModel;
@@ -556,6 +561,11 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             });
 
             mIsErrorState.setValue(false);
+            mNeedsInitialization = false;
+        }
+
+        boolean needsInitialization() {
+            return mNeedsInitialization;
         }
 
         void setAlbumArtSize(int width, int height) {
