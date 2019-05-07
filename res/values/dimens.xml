@@ -98,6 +98,8 @@
     <!-- media_browse_grid_item.xml -->
     <dimen name="media_browse_grid_item_margin_bottom">@*android:dimen/car_padding_4</dimen>
     <dimen name="media_browse_grid_item_text_margin_top">@*android:dimen/car_padding_3</dimen>
+    <dimen name="media_browse_grid_item_padding">12dp</dimen>
+    <dimen name="media_browse_grid_item_background_radius">4dp</dimen>
 
     <!-- media_browse_header_item.xml -->
     <dimen name="media_browse_header_item_height">76dp</dimen>
@@ -105,9 +107,9 @@
 
     <!-- media_browse_list_item.xml -->
     <dimen name="media_browse_list_item_height">116dp</dimen>
-    <dimen name="media_browse_list_item_thumbnail_size">114dp</dimen>
+    <dimen name="media_browse_list_item_thumbnail_size">112dp</dimen>
     <dimen name="media_browse_list_item_text_margin_x">@*android:dimen/car_keyline_4</dimen>
-    <dimen name="media_browse_list_item_icon_margin_bottom">2dp</dimen>
+    <dimen name="media_browse_list_item_icon_margin_bottom">4dp</dimen>
     <dimen name="media_browse_list_item_arrow_size">@dimen/touch_target_size</dimen>
 
     <!-- media_browse_panel_item.xml -->

@@ -25,5 +25,5 @@
     <string name="media_app_title" msgid="94717597743776797">"Meдиа"</string>
     <string name="search_hint" msgid="8273719939080187914">"Іздеу"</string>
     <string name="default_error_message" msgid="5555889194833511375">"Қолданбаның белгісіз қатесі"</string>
-    <string name="fragment_playback_title" msgid="5014481549024607614">"Now Playing"</string>
+    <string name="fragment_playback_title" msgid="5014481549024607614">"Қазір ойнатылуда"</string>
 </resources>
