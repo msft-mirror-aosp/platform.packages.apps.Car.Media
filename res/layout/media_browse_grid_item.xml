@@ -20,9 +20,10 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:padding="@dimen/media_browse_grid_item_padding"
     android:focusable="true"
     android:clickable="true"
-    android:foreground="?android:attr/selectableItemBackground"
+    android:foreground="@drawable/grid_item_background"
     android:layout_marginBottom="@dimen/media_browse_grid_item_margin_bottom">
 
     <com.android.car.media.common.FixedRatioImageView
