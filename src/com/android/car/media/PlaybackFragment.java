@@ -419,5 +419,6 @@ public class PlaybackFragment extends Fragment {
         if (mListener != null) {
             mListener.onQueueClicked();
         }
+        mQueueButton.setSelected(!mQueueButton.isSelected());
     }
 }
