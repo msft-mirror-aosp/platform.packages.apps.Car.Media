@@ -170,4 +170,7 @@
     <dimen name="search_fragment_top_padding">@dimen/appbar_first_row_height</dimen>
     <dimen name="search_fragment_bottom_padding">@dimen/minimized_control_bar_height</dimen>
 
+    <!-- ic_queue_button.xml -->
+    <dimen name="queue_button_background_size">54dp</dimen>
+
 </resources>
