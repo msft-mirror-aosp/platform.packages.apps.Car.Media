@@ -79,7 +79,7 @@
     <com.android.car.media.common.MediaAppSelectorWidget
         android:id="@+id/app_icon_container"
         android:layout_width="@dimen/app_switch_widget_width"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/appbar_view_icon_touch_target_size"
         android:padding="@dimen/app_switch_widget_icon_padding"
         android:orientation="horizontal"
         android:gravity="center"
