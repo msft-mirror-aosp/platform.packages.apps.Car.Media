@@ -36,6 +36,16 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_end="@dimen/control_bar_height"/>
 
+    <include
+        layout="@layout/scrim_overlay"
+        android:id="@+id/background_scrim"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"/>
+
     <FrameLayout
         android:id="@+id/nav_icon_container"
         android:layout_width="@dimen/appbar_view_nav_button_width"
@@ -145,7 +155,7 @@
 
     <include
         layout="@layout/scrim_overlay"
-        android:id="@+id/playback_scrim"
+        android:id="@+id/control_bar_scrim"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintTop_toTopOf="parent"
