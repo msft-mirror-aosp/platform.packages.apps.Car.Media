@@ -55,7 +55,8 @@ import java.util.Objects;
 public class PlaybackFragment extends Fragment {
     private static final String TAG = "PlaybackFragment";
 
-    private View mPlaybackScrim;
+    private View mBackgroundScrim;
+    private View mControlBarScrim;
     private PlaybackControlsActionBar mPlaybackControls;
     private QueueItemsAdapter mQueueAdapter;
     private RecyclerView mQueue;
@@ -221,10 +222,12 @@ public class PlaybackFragment extends Fragment {
         mQueueButton.setOnClickListener(button -> onQueueClicked());
         mNavIconContainer = view.findViewById(R.id.nav_icon_container);
         mNavIconContainer.setOnClickListener(nav -> onCollapse());
-        mPlaybackScrim = view.findViewById(R.id.playback_scrim);
-        mPlaybackScrim.setAlpha(0f);
-        mPlaybackScrim.setOnClickListener(scrim -> mPlaybackControls.close());
-        mPlaybackScrim.setClickable(false);
+        mBackgroundScrim = view.findViewById(R.id.background_scrim);
+        ViewUtils.setVisible(mBackgroundScrim, false);
+        mControlBarScrim = view.findViewById(R.id.control_bar_scrim);
+        ViewUtils.setVisible(mControlBarScrim, false);
+        mControlBarScrim.setOnClickListener(scrim -> mPlaybackControls.close());
+        mControlBarScrim.setClickable(false);
 
         boolean useMediaSourceColor =
                 getContext().getResources().getBoolean(
@@ -273,12 +276,14 @@ public class PlaybackFragment extends Fragment {
             // ControlBar's slide animation, causing the ControlBar to jitter at the end.
             // This should eventually be replaced by a proper animation model
             // (as well as ControlBar)
-            mPlaybackScrim.setClickable(expanding);
-            mPlaybackScrim.animate()
-                    .alpha(expanding ? 1.0f : 0f)
-                    .setDuration(getContext().getResources().getInteger(
-                            expanding ? R.integer.control_bar_expand_anim_duration
-                                    : R.integer.control_bar_collapse_anim_duration));
+            mControlBarScrim.setClickable(expanding);
+            if (expanding) {
+                ViewUtils.showViewAnimated(mControlBarScrim,
+                        R.integer.control_bar_expand_anim_duration);
+            } else {
+                ViewUtils.hideViewAnimated(mControlBarScrim,
+                        R.integer.control_bar_collapse_anim_duration);
+            }
         });
     }
 
@@ -358,13 +363,13 @@ public class PlaybackFragment extends Fragment {
             ViewUtils.hideViewAnimated(mMetadataContainer, mFadeDuration);
             ViewUtils.hideViewAnimated(mSeekBar, mFadeDuration);
             ViewUtils.showViewAnimated(mQueue, mFadeDuration);
+            ViewUtils.showViewAnimated(mBackgroundScrim, mFadeDuration);
         } else {
             ViewUtils.hideViewAnimated(mQueue, mFadeDuration);
             ViewUtils.showViewAnimated(mMetadataContainer, mFadeDuration);
             ViewUtils.showViewAnimated(mSeekBar, mFadeDuration);
+            ViewUtils.hideViewAnimated(mBackgroundScrim, mFadeDuration);
         }
-        mPlaybackScrim.animate().alpha(
-                mQueueIsVisible ? mPlaybackQueueBackgroundAlpha : 0.0f).setDuration(mFadeDuration);
     }
 
     /**
