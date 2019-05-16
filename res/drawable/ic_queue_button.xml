@@ -15,7 +15,7 @@
   limitations under the License.
 -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@drawable/ic_queue_button_background"
+    <item android:drawable="@drawable/selectable_button_background"
           android:height="@dimen/queue_button_background_size"
           android:width="@dimen/queue_button_background_size"/>
     <item android:drawable="@drawable/ic_tracklist"
