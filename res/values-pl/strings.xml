@@ -20,7 +20,6 @@
     <string name="nothing_to_play" msgid="7744511905504851400">"Ten folder jest pusty."</string>
     <string name="cannot_connect_to_app" msgid="181758706501910039">"Wygląda na to, że <xliff:g id="ID_1">%s</xliff:g> w tej chwili nie działa."</string>
     <string name="unknown_media_provider_name" msgid="4238216994694326667">"Nieznana"</string>
-    <string name="loading" msgid="5051030245373274568">"Pobieram wybrane elementy…"</string>
     <string name="unknown_error" msgid="6146463797752964372">"Coś poszło nie tak"</string>
     <string name="media_browse_more" msgid="587925161035447417">"Więcej…"</string>
     <string name="media_app_title" msgid="94717597743776797">"Multimedia"</string>
