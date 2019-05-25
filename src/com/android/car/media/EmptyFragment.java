@@ -1,8 +1,5 @@
 package com.android.car.media;
 
-import static com.android.car.arch.common.LiveDataFunctions.pair;
-import static com.android.car.arch.common.LiveDataFunctions.split;
-
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -10,7 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -27,17 +23,17 @@ import com.android.car.media.common.source.MediaSource;
 public class EmptyFragment extends Fragment {
     private static final String TAG = "EmptyFragment";
 
-    private ProgressBar mProgressBar;
     private ImageView mErrorIcon;
-    private TextView mErrorMessage;
+    private TextView mMessage;
 
-    private int mProgressBarDelay;
+    private int mLoadingIndicatorDelay;
     private Handler mHandler = new Handler();
     private int mFadeDuration;
     private Runnable mProgressIndicatorRunnable = new Runnable() {
         @Override
         public void run() {
-            ViewUtils.showViewAnimated(mProgressBar, mFadeDuration);
+            mMessage.setText(requireContext().getString(R.string.browser_loading));
+            ViewUtils.showViewAnimated(mMessage, mFadeDuration);
         }
     };
 
@@ -45,13 +41,12 @@ public class EmptyFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, final ViewGroup container,
             Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_empty, container, false);
-        mProgressBar = view.findViewById(R.id.loading_spinner);
-        mProgressBarDelay = requireContext().getResources()
+        mLoadingIndicatorDelay = requireContext().getResources()
                 .getInteger(R.integer.progress_indicator_delay);
         mFadeDuration = requireContext().getResources().getInteger(
                 R.integer.new_album_art_fade_in_duration);
         mErrorIcon = view.findViewById(R.id.error_icon);
-        mErrorMessage = view.findViewById(R.id.error_message);
+        mMessage = view.findViewById(R.id.error_message);
 
         return view;
     }
@@ -82,15 +77,14 @@ public class EmptyFragment extends Fragment {
             case LOADING:
                 // Display the indicator after a certain time, to avoid flashing the indicator
                 // constantly, even when performance is acceptable.
-                mHandler.postDelayed(mProgressIndicatorRunnable, mProgressBarDelay);
+                mHandler.postDelayed(mProgressIndicatorRunnable, mLoadingIndicatorDelay);
                 mErrorIcon.setVisibility(View.GONE);
-                mErrorMessage.setVisibility(View.GONE);
+                mMessage.setVisibility(View.GONE);
                 break;
             case ERROR:
-                mProgressBar.setVisibility(View.GONE);
                 mErrorIcon.setVisibility(View.VISIBLE);
-                mErrorMessage.setVisibility(View.VISIBLE);
-                mErrorMessage.setText(requireContext().getString(
+                mMessage.setVisibility(View.VISIBLE);
+                mMessage.setText(requireContext().getString(
                         R.string.cannot_connect_to_app,
                         mediaSource != null
                                 ? mediaSource.getName()
@@ -98,10 +92,9 @@ public class EmptyFragment extends Fragment {
                                         R.string.unknown_media_provider_name)));
                 break;
             case EMPTY:
-                mProgressBar.setVisibility(View.GONE);
                 mErrorIcon.setVisibility(View.GONE);
-                mErrorMessage.setVisibility(View.VISIBLE);
-                mErrorMessage.setText(requireContext().getString(R.string.nothing_to_play));
+                mMessage.setVisibility(View.VISIBLE);
+                mMessage.setText(requireContext().getString(R.string.nothing_to_play));
                 break;
             case LOADED:
                 Log.d(TAG, "Updated with LOADED state, ignoring.");

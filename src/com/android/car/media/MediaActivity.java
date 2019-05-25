@@ -21,19 +21,23 @@ import static com.android.car.arch.common.LiveDataFunctions.distinct;
 import static com.android.car.arch.common.LiveDataFunctions.nullLiveData;
 import static com.android.car.arch.common.LiveDataFunctions.pair;
 
+import android.app.AlertDialog;
 import android.app.Application;
 import android.app.PendingIntent;
 import android.car.Car;
+import android.car.drivingstate.CarUxRestrictions;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.text.TextUtils;
 import android.transition.Fade;
 import android.util.Log;
 import android.util.Size;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -46,6 +50,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.android.car.apps.common.BackgroundImageView;
+import com.android.car.apps.common.CarUxRestrictionsUtil;
 import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.media.common.AppSelectionFragment;
 import com.android.car.media.common.MediaAppSelectorWidget;
@@ -95,8 +100,16 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     /** Current state */
     private Intent mCurrentSourcePreferences;
     private boolean mCanShowMiniPlaybackControls;
+    private boolean mIsBrowseTreeReady;
     private Integer mCurrentPlaybackState;
     private List<MediaItemMetadata> mTopItems;
+
+    private CarUxRestrictionsUtil mCarUxRestrictionsUtil;
+    private CarUxRestrictions mActiveCarUxRestrictions;
+    @CarUxRestrictions.CarUxRestrictionsInfo
+    private int mRestrictions;
+    private final CarUxRestrictionsUtil.OnUxRestrictionsChangedListener mListener =
+            (carUxRestrictions) -> mActiveCarUxRestrictions = carUxRestrictions;
 
     private AppBarView.AppBarListener mAppBarListener = new AppBarView.AppBarListener() {
         @Override
@@ -201,10 +214,16 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         mEmptyFragment = new EmptyFragment();
         MediaBrowserViewModel mediaBrowserViewModel = getRootBrowserViewModel();
         mediaBrowserViewModel.getBrowseState().observe(this,
-                browseState -> mEmptyFragment.setState(browseState,
-                        mediaSourceViewModel.getPrimaryMediaSource().getValue()));
+                browseState -> {
+                    mEmptyFragment.setState(browseState,
+                            mediaSourceViewModel.getPrimaryMediaSource().getValue());
+                });
         mediaBrowserViewModel.getBrowsedMediaItems().observe(this, futureData -> {
             if (!futureData.isLoading()) {
+                if (futureData.getData() != null) {
+                    mIsBrowseTreeReady = true;
+                    handlePlaybackState(playbackViewModel.getPlaybackStateWrapper().getValue());
+                }
                 updateTabs(futureData.getData());
             }
         });
@@ -258,6 +277,20 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
         localViewModel.getModeAndErrorState().observe(this, pair ->
                 handleModeAndErrorState(pair.first, pair.second));
+
+        mCarUxRestrictionsUtil = CarUxRestrictionsUtil.getInstance(this);
+        mRestrictions = CarUxRestrictions.UX_RESTRICTIONS_NO_SETUP;
+        mCarUxRestrictionsUtil.register(mListener);
+    }
+
+    @Override
+    protected void onDestroy() {
+        mCarUxRestrictionsUtil.unregister(mListener);
+        super.onDestroy();
+    }
+
+    private boolean isUxRestricted() {
+        return CarUxRestrictionsUtil.isRestricted(mRestrictions, mActiveCarUxRestrictions);
     }
 
     private void handlePlaybackState(PlaybackViewModel.PlaybackStateWrapper state) {
@@ -279,29 +312,59 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             }
         }
 
-        if (mCurrentPlaybackState == PlaybackStateCompat.STATE_ERROR) {
-            String message;
-            if (state.getErrorMessage() == null) {
-                message = getString(R.string.default_error_message);
-            } else {
-                message = state.getErrorMessage().toString();
-            }
+        Bundle extras = state.getExtras();
+        PendingIntent intent = extras == null ? null : extras.getParcelable(
+                MediaConstants.ERROR_RESOLUTION_ACTION_INTENT);
 
-            PendingIntent intent = null;
-            String label = null;
+        String label = extras == null ? null : extras.getString(
+                MediaConstants.ERROR_RESOLUTION_ACTION_LABEL);
 
-            Bundle extras = state.getExtras();
-            if (extras != null) {
-                intent = extras.getParcelable(MediaConstants.ERROR_RESOLUTION_ACTION_INTENT);
-                label = extras.getString(MediaConstants.ERROR_RESOLUTION_ACTION_LABEL);
-            }
-
-            mErrorFragment = ErrorFragment.newInstance(message, label, intent);
-            setErrorFragment(mErrorFragment);
-            getInnerViewModel().setErrorState(true);
-        } else {
-            getInnerViewModel().setErrorState(false);
+        String displayedMessage = null;
+        if (state.getErrorMessage() != null) {
+            displayedMessage = state.getErrorMessage().toString();
+        } else if (state.getErrorCode() != PlaybackStateCompat.ERROR_CODE_UNKNOWN_ERROR) {
+            // TODO: convert the error codes to prebuilt error messages
+            displayedMessage = getString(R.string.default_error_message);
+        } else if (state.getState() == PlaybackStateCompat.STATE_ERROR) {
+            displayedMessage = getString(R.string.default_error_message);
         }
+
+        boolean showErrorFragment = false;
+        if (!TextUtils.isEmpty(displayedMessage)) {
+            if (mIsBrowseTreeReady) {
+                if (intent != null && !isUxRestricted()) {
+                    showDialog(intent, displayedMessage, label, getString(android.R.string.cancel));
+                } else {
+                    showToast(displayedMessage);
+                }
+            } else {
+                mErrorFragment = ErrorFragment.newInstance(displayedMessage, label, intent);
+                setErrorFragment(mErrorFragment);
+                showErrorFragment = true;
+            }
+        }
+        getInnerViewModel().setErrorState(showErrorFragment);
+    }
+
+    private void showDialog(PendingIntent intent, String message, String positiveBtnText,
+            String negativeButtonText) {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setMessage(message)
+                .setNegativeButton(negativeButtonText, null)
+                .setPositiveButton(positiveBtnText, (dialogInterface, i) -> {
+                    try {
+                        intent.send();
+                    } catch (PendingIntent.CanceledException e) {
+                        if (Log.isLoggable(TAG, Log.ERROR)) {
+                            Log.e(TAG, "Pending intent canceled");
+                        }
+                    }
+                })
+                .show();
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -327,6 +390,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
      * @param mediaSource the new media source we are going to try to browse
      */
     private void onMediaSourceChanged(@Nullable MediaSource mediaSource) {
+        mIsBrowseTreeReady = false;
         if (mediaSource != null) {
             if (Log.isLoggable(TAG, Log.INFO)) {
                 Log.i(TAG, "Browsing: " + mediaSource.getName());
@@ -378,6 +442,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             mAppBarView.setItems(null);
             setCurrentFragment(mEmptyFragment);
             mBrowseFragment = null;
+            mTopItems = items;
             return;
         }
 

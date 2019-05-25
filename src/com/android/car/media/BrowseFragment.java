@@ -31,7 +31,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
@@ -66,14 +65,13 @@ public class BrowseFragment extends Fragment {
     private static final String BROWSE_STACK_KEY = "browse_stack";
 
     private RecyclerView mBrowseList;
-    private ProgressBar mProgressBar;
     private ImageView mErrorIcon;
-    private TextView mErrorMessage;
+    private TextView mMessage;
     private BrowseAdapter mBrowseAdapter;
     private MediaItemMetadata mTopMediaItem;
     private String mSearchQuery;
     private int mFadeDuration;
-    private int mProgressBarDelay;
+    private int mLoadingIndicatorDelay;
     private boolean mIsSearchFragment;
     // todo(b/130760002): Create new browse fragments at deeper levels.
     private MutableLiveData<Boolean> mShowSearchResults = new MutableLiveData<>();
@@ -182,7 +180,7 @@ public class BrowseFragment extends Fragment {
         mBrowseAdapter.submitItems(null, null);
         stopLoadingIndicator();
         ViewUtils.hideViewAnimated(mErrorIcon, mFadeDuration);
-        ViewUtils.hideViewAnimated(mErrorMessage, mFadeDuration);
+        ViewUtils.hideViewAnimated(mMessage, mFadeDuration);
     }
 
     @Override
@@ -218,12 +216,11 @@ public class BrowseFragment extends Fragment {
             Bundle savedInstanceState) {
         int viewId = mIsSearchFragment ? R.layout.fragment_search : R.layout.fragment_browse;
         View view = inflater.inflate(viewId, container, false);
-        mProgressBar = view.findViewById(R.id.loading_spinner);
-        mProgressBarDelay = view.getContext().getResources()
+        mLoadingIndicatorDelay = view.getContext().getResources()
                 .getInteger(R.integer.progress_indicator_delay);
         mBrowseList = view.findViewById(R.id.browse_list);
         mErrorIcon = view.findViewById(R.id.error_icon);
-        mErrorMessage = view.findViewById(R.id.error_message);
+        mMessage = view.findViewById(R.id.error_message);
         mFadeDuration = view.getContext().getResources().getInteger(
                 R.integer.new_album_art_fade_in_duration);
         int numColumns = view.getContext().getResources().getInteger(R.integer.num_browse_columns);
@@ -267,19 +264,19 @@ public class BrowseFragment extends Fragment {
             List<MediaItemMetadata> items = futureData.getData();
             mBrowseAdapter.submitItems(getCurrentMediaItem(), items);
             if (items == null) {
-                mErrorMessage.setText(R.string.unknown_error);
+                mMessage.setText(R.string.unknown_error);
                 ViewUtils.hideViewAnimated(mBrowseList, mFadeDuration);
-                ViewUtils.showViewAnimated(mErrorMessage, mFadeDuration);
+                ViewUtils.showViewAnimated(mMessage, mFadeDuration);
                 ViewUtils.showViewAnimated(mErrorIcon, mFadeDuration);
             } else if (items.isEmpty()) {
-                mErrorMessage.setText(R.string.nothing_to_play);
+                mMessage.setText(R.string.nothing_to_play);
                 ViewUtils.hideViewAnimated(mBrowseList, mFadeDuration);
                 ViewUtils.hideViewAnimated(mErrorIcon, mFadeDuration);
-                ViewUtils.showViewAnimated(mErrorMessage, mFadeDuration);
+                ViewUtils.showViewAnimated(mMessage, mFadeDuration);
             } else {
                 ViewUtils.showViewAnimated(mBrowseList, mFadeDuration);
                 ViewUtils.hideViewAnimated(mErrorIcon, mFadeDuration);
-                ViewUtils.hideViewAnimated(mErrorMessage, mFadeDuration);
+                ViewUtils.hideViewAnimated(mMessage, mFadeDuration);
             }
         });
         return view;
@@ -291,22 +288,23 @@ public class BrowseFragment extends Fragment {
         checkParent(this, Callbacks.class);
     }
 
-    private Runnable mProgressIndicatorRunnable = new Runnable() {
+    private Runnable mLoadingIndicatorRunnable = new Runnable() {
         @Override
         public void run() {
-            ViewUtils.showViewAnimated(mProgressBar, mFadeDuration);
+            mMessage.setText(R.string.browser_loading);
+            ViewUtils.showViewAnimated(mMessage, mFadeDuration);
         }
     };
 
     private void startLoadingIndicator() {
         // Display the indicator after a certain time, to avoid flashing the indicator constantly,
         // even when performance is acceptable.
-        mHandler.postDelayed(mProgressIndicatorRunnable, mProgressBarDelay);
+        mHandler.postDelayed(mLoadingIndicatorRunnable, mLoadingIndicatorDelay);
     }
 
     private void stopLoadingIndicator() {
-        mHandler.removeCallbacks(mProgressIndicatorRunnable);
-        ViewUtils.hideViewAnimated(mProgressBar, mFadeDuration);
+        mHandler.removeCallbacks(mLoadingIndicatorRunnable);
+        ViewUtils.hideViewAnimated(mMessage, mFadeDuration);
     }
 
     @Override
