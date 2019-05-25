@@ -22,17 +22,6 @@
     android:layout_height="match_parent"
     tools:showIn="@layout/fragment_browse">
 
-    <ProgressBar
-        android:id="@+id/loading_spinner"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/browse_state_progress_height"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:visibility="gone"
-        android:indeterminateDrawable="@drawable/music_buffering" />
-
     <ImageView
         android:id="@+id/error_icon"
         android:layout_width="@dimen/missing_permission_icon_size"

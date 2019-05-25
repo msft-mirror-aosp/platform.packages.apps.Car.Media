@@ -73,7 +73,7 @@
     <FrameLayout
         android:id="@+id/app_selection_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"/>
 
     <com.android.car.media.widgets.AppBarView
         android:id="@+id/app_bar"
