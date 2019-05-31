@@ -54,7 +54,8 @@
 
     <com.android.car.media.common.MinimizedPlaybackControlBar
         android:id="@+id/minimized_playback_controls"
-        style="@style/MinimizedControlBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/minimized_control_bar_margin_x"
         android:layout_marginBottom="@dimen/minimized_control_bar_margin_bottom"
         app:layout_constraintStart_toStartOf="parent"
