@@ -272,17 +272,13 @@ public class PlaybackFragment extends Fragment {
         mPlaybackControls = playbackControls;
         mPlaybackControls.setModel(getPlaybackViewModel(), getViewLifecycleOwner());
         mPlaybackControls.registerExpandCollapseCallback((expanding) -> {
-            // We use clickable instead of visibility VISIBLE/GONE because it breaks the
-            // ControlBar's slide animation, causing the ControlBar to jitter at the end.
-            // This should eventually be replaced by a proper animation model
-            // (as well as ControlBar)
             mControlBarScrim.setClickable(expanding);
             if (expanding) {
-                ViewUtils.showViewAnimated(mControlBarScrim,
-                        R.integer.control_bar_expand_anim_duration);
+                ViewUtils.showViewAnimated(mControlBarScrim, getContext().getResources().getInteger(
+                        R.integer.control_bar_expand_anim_duration));
             } else {
-                ViewUtils.hideViewAnimated(mControlBarScrim,
-                        R.integer.control_bar_collapse_anim_duration);
+                ViewUtils.hideViewAnimated(mControlBarScrim, getContext().getResources().getInteger(
+                        R.integer.control_bar_collapse_anim_duration));
             }
         });
     }
@@ -393,6 +389,7 @@ public class PlaybackFragment extends Fragment {
         if (mController != null) {
             mController.skipToQueueItem(item.getQueueId());
         }
+        onQueueClicked();
     }
 
     /**

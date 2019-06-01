@@ -17,11 +17,12 @@
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="nothing_to_play" msgid="7744511905504851400">"यह फ़ोल्डर खाली है."</string>
-    <string name="cannot_connect_to_app" msgid="181758706501910039">"लगता है <xliff:g id="ID_1">%s</xliff:g> इस समय काम नहीं कर रहा है."</string>
+    <string name="browser_loading" msgid="1639570085710372552">"सामग्री लोड हो रही है…"</string>
+    <string name="nothing_to_play" msgid="3027311268791740588">"इसमें कोई मीडिया मौजूद नहीं है."</string>
+    <string name="cannot_connect_to_app" msgid="4732888036680095414">"<xliff:g id="ID_1">%s</xliff:g> अभी काम नहीं कर रहा है."</string>
     <string name="unknown_media_provider_name" msgid="4238216994694326667">"अनजान"</string>
     <string name="unknown_error" msgid="6146463797752964372">"काेई गड़बड़ी हुई"</string>
-    <string name="media_browse_more" msgid="587925161035447417">"ज़्यादा …"</string>
+    <string name="media_browse_more" msgid="6330295386693311592">"ज़्यादा…"</string>
     <string name="media_app_title" msgid="94717597743776797">"मीडिया"</string>
     <string name="search_hint" msgid="8273719939080187914">"खोजें"</string>
     <string name="default_error_message" msgid="5555889194833511375">"ऐप्लिकेशन में अनजान गड़बड़ी"</string>
