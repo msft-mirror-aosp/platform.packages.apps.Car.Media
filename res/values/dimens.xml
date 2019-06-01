@@ -47,8 +47,8 @@
     <dimen name="playback_seekbar_margin_x">@*android:dimen/car_margin</dimen>
     <!-- Image size used to generate the background -->
     <dimen name="playback_background_raw_image_size">300px</dimen>
-    <!-- Scale factor for the background image -->
-    <dimen name="playback_background_image_scale" format="float">1</dimen>
+
+
     <!-- Blurring radius used to blur background images -->
     <item name="playback_background_blur_radius" format="float" type="dimen">25</item>
     <!-- Scale to apply to images before blurring them to create the playback background -->
@@ -87,7 +87,6 @@
     <!-- media_activity.xml -->
     <dimen name="media_activity_controls_container_padding">@*android:dimen/car_padding_4</dimen>
     <dimen name="media_activity_controls_margin_start">@*android:dimen/car_padding_4</dimen>
-    <dimen name="media_activity_margin_x">@*android:dimen/car_margin</dimen>
 
     <!-- BrowseFragment.java -->
     <!-- Spacer used between the app bar and the top of the browse list/grid -->
@@ -152,7 +151,6 @@
     <dimen name="fragment_playback_queue_overlap_bottom">@*android:dimen/car_padding_4</dimen>
     <dimen name="fragment_metadata_margin_x">@*android:dimen/car_margin</dimen>
     <dimen name="playback_title_margin_end">@*android:dimen/car_padding_3</dimen>
-    <dimen name="fragment_playback_queue_margin_x">@*android:dimen/car_margin</dimen>
 
     <!-- queue_list_item.xml -->
     <dimen name="queue_list_item_height">116dp</dimen>

@@ -141,11 +141,10 @@
         android:layout_height="@dimen/fragment_playback_queue_overlap_bottom"
         app:layout_constraintTop_toTopOf="@+id/playback_controls"/>
 
-    <androidx.recyclerview.widget.RecyclerView
+    <com.android.car.apps.common.widget.PagedRecyclerView
         android:id="@+id/queue_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginHorizontal="@dimen/fragment_playback_queue_margin_x"
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="@+id/queue_list_top_constraint"
         app:layout_constraintBottom_toBottomOf="@+id/queue_list_bottom_constraint"

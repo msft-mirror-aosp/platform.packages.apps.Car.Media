@@ -268,6 +268,8 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
         mAlbumBackground.addOnLayoutChangeListener(
                 (view, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                    // This can be removed when fixing b/133523205. Keeping it prevents blurring
+                    // until the playback view has been shown.
                     int backgroundImageSize = mAlbumBackground.getDesiredBackgroundSize();
                     localViewModel.setAlbumArtSize(backgroundImageSize, backgroundImageSize);
                 });
@@ -301,6 +303,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         Pair<Mode, Boolean> modeState = getInnerViewModel().getModeAndErrorState().getValue();
         if (modeState == null || modeState.first != Mode.PLAYBACK) {
             ViewUtils.setVisible(mMiniPlaybackControls, mCanShowMiniPlaybackControls);
+            getInnerViewModel().setMiniControlsVisible(mCanShowMiniPlaybackControls);
         }
         if (state == null) {
             return;
@@ -545,10 +548,12 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         if (mode == Mode.PLAYBACK) {
             ViewUtils.hideViewAnimated(mMiniPlaybackControls, mFadeDuration);
             ViewUtils.showViewAnimated(mAlbumBackground, mFadeDuration);
+            getInnerViewModel().setMiniControlsVisible(false);
         } else {
             mPlaybackFragment.closeOverflowMenu();
             if (mCanShowMiniPlaybackControls) {
                 ViewUtils.showViewAnimated(mMiniPlaybackControls, mFadeDuration);
+                getInnerViewModel().setMiniControlsVisible(true);
             }
             ViewUtils.hideViewAnimated(mAlbumBackground, mFadeDuration);
         }
@@ -600,6 +605,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         private LiveData<Bitmap> mAlbumArt;
         private MutableLiveData<Size> mAlbumArtSize = new MutableLiveData<>();
         private PlaybackViewModel mPlaybackViewModel;
+        private MutableLiveData<Boolean> mIsMiniControlsVisible = new MutableLiveData<>();
 
         private MutableLiveData<Boolean> mIsErrorState = new MutableLiveData<>();
         private MutableLiveData<Mode> mMode = new MutableLiveData<>();
@@ -639,6 +645,14 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
         LiveData<Bitmap> getAlbumArt() {
             return mAlbumArt;
+        }
+
+        void setMiniControlsVisible(boolean visible) {
+            mIsMiniControlsVisible.setValue(visible);
+        }
+
+        LiveData<Boolean> getMiniControlsVisible() {
+            return mIsMiniControlsVisible;
         }
 
         void setMode(Mode mode) {
