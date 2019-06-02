@@ -17,11 +17,12 @@
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="nothing_to_play" msgid="7744511905504851400">"هذا المجلد فارغ."</string>
-    <string name="cannot_connect_to_app" msgid="181758706501910039">"يبدو أن <xliff:g id="ID_1">%s</xliff:g> لا يعمل الآن."</string>
+    <string name="browser_loading" msgid="1639570085710372552">"جارٍ تحميل المحتوى…"</string>
+    <string name="nothing_to_play" msgid="3027311268791740588">"لا تتوفر أي وسائط هنا."</string>
+    <string name="cannot_connect_to_app" msgid="4732888036680095414">"لا يعمل <xliff:g id="ID_1">%s</xliff:g> بشكل صحيح الآن."</string>
     <string name="unknown_media_provider_name" msgid="4238216994694326667">"غير معروف"</string>
     <string name="unknown_error" msgid="6146463797752964372">"حدث خطأ"</string>
-    <string name="media_browse_more" msgid="587925161035447417">"المزيد …"</string>
+    <string name="media_browse_more" msgid="6330295386693311592">"المزيد…"</string>
     <string name="media_app_title" msgid="94717597743776797">"الوسائط"</string>
     <string name="search_hint" msgid="8273719939080187914">"البحث"</string>
     <string name="default_error_message" msgid="5555889194833511375">"خطأ غير معروف في الطلب"</string>
