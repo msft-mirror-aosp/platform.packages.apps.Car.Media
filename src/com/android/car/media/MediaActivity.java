@@ -162,17 +162,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     };
 
     private PlaybackFragment.PlaybackFragmentListener mPlaybackFragmentListener =
-            new PlaybackFragment.PlaybackFragmentListener() {
-                @Override
-                public void onCollapse() {
-                    getInnerViewModel().setMode(Mode.BROWSING);
-                }
-
-                @Override
-                public void onQueueClicked() {
-                    mPlaybackFragment.toggleQueueVisibility();
-                }
-            };
+            () -> getInnerViewModel().setMode(Mode.BROWSING);
 
     /**
      * Possible modes of the application UI

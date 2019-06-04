@@ -88,9 +88,6 @@ public class PlaybackFragment extends Fragment {
          * Invoked when the user clicks on the collapse button
          */
         void onCollapse();
-
-        /** Invoked when the user clicks on the queue button. */
-        void onQueueClicked();
     }
 
     public class QueueViewHolder extends RecyclerView.ViewHolder {
@@ -219,7 +216,7 @@ public class PlaybackFragment extends Fragment {
         mMetadataContainer = view.findViewById(R.id.metadata_container);
         mSeekBar = view.findViewById(R.id.seek_bar);
         mQueueButton = view.findViewById(R.id.queue_button);
-        mQueueButton.setOnClickListener(button -> onQueueClicked());
+        mQueueButton.setOnClickListener(button -> toggleQueueVisibility());
         mNavIconContainer = view.findViewById(R.id.nav_icon_container);
         mNavIconContainer.setOnClickListener(nav -> onCollapse());
         mBackgroundScrim = view.findViewById(R.id.background_scrim);
@@ -352,9 +349,10 @@ public class PlaybackFragment extends Fragment {
     /**
      * Hides or shows the playback queue.
      */
-    public void toggleQueueVisibility() {
+    private void toggleQueueVisibility() {
         mQueueIsVisible = !mQueueIsVisible;
         mQueueButton.setActivated(mQueueIsVisible);
+        mQueueButton.setSelected(mQueueIsVisible);
         if (mQueueIsVisible) {
             ViewUtils.hideViewAnimated(mMetadataContainer, mFadeDuration);
             ViewUtils.hideViewAnimated(mSeekBar, mFadeDuration);
@@ -366,13 +364,6 @@ public class PlaybackFragment extends Fragment {
             ViewUtils.showViewAnimated(mSeekBar, mFadeDuration);
             ViewUtils.hideViewAnimated(mBackgroundScrim, mFadeDuration);
         }
-    }
-
-    /**
-     * Whether the playback queue is visible.
-     */
-    public boolean isQueueVisible() {
-        return mQueueIsVisible;
     }
 
     /** Sets whether the source has a queue. */
@@ -389,7 +380,7 @@ public class PlaybackFragment extends Fragment {
         if (mController != null) {
             mController.skipToQueueItem(item.getQueueId());
         }
-        onQueueClicked();
+        toggleQueueVisibility();
     }
 
     /**
@@ -415,12 +406,5 @@ public class PlaybackFragment extends Fragment {
         if (mListener != null) {
             mListener.onCollapse();
         }
-    }
-
-    private void onQueueClicked() {
-        if (mListener != null) {
-            mListener.onQueueClicked();
-        }
-        mQueueButton.setSelected(!mQueueButton.isSelected());
     }
 }
