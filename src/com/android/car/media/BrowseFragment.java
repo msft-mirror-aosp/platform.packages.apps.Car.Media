@@ -73,7 +73,6 @@ public class BrowseFragment extends Fragment {
     private int mFadeDuration;
     private int mLoadingIndicatorDelay;
     private boolean mIsSearchFragment;
-    private boolean mPlaybackControlsVisible = false;
     // todo(b/130760002): Create new browse fragments at deeper levels.
     private MutableLiveData<Boolean> mShowSearchResults = new MutableLiveData<>();
     private Handler mHandler = new Handler();
@@ -210,14 +209,6 @@ public class BrowseFragment extends Fragment {
                 ViewModelProviders.of(this),
                 MediaSourceViewModel.get(
                         requireActivity().getApplication()).getConnectedMediaBrowser());
-
-        MediaActivity.ViewModel viewModel = ViewModelProviders.of(requireActivity()).get(
-                MediaActivity.ViewModel.class);
-        viewModel.getMiniControlsVisible().observe(this, (visible) -> {
-            mPlaybackControlsVisible = visible;
-            adjustBrowseTopPadding();
-        });
-
     }
 
     @Override
@@ -351,25 +342,18 @@ public class BrowseFragment extends Fragment {
     }
 
     private void adjustBrowseTopPadding() {
-        if(mBrowseList == null) {
-            return;
-        }
-
         int topPadding = isAtTopStack()
                 ? getResources().getDimensionPixelOffset(R.dimen.browse_fragment_top_padding)
                 : getResources().getDimensionPixelOffset(
                         R.dimen.browse_fragment_top_padding_stacked);
-        int bottomPadding = mPlaybackControlsVisible
-                ? getResources().getDimensionPixelOffset(R.dimen.browse_fragment_bottom_padding)
-                : 0;
-
         mBrowseList.setPadding(mBrowseList.getPaddingLeft(), topPadding,
-                mBrowseList.getPaddingRight(), bottomPadding);
+                mBrowseList.getPaddingRight(), mBrowseList.getPaddingBottom());
     }
 
     private void hideKeyboard() {
         InputMethodManager in =
                 (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         in.hideSoftInputFromWindow(getView().getWindowToken(), 0);
+
     }
 }
