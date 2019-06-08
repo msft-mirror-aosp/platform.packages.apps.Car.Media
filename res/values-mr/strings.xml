@@ -18,7 +18,7 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="browser_loading" msgid="1639570085710372552">"आशय लोड करत आहे…"</string>
-    <string name="nothing_to_play" msgid="3027311268791740588">"येथे कोणतीही मीडिया उपलब्ध नाही."</string>
+    <string name="nothing_to_play" msgid="3027311268791740588">"येथे कोणताही मीडिया उपलब्ध नाही."</string>
     <string name="cannot_connect_to_app" msgid="4732888036680095414">"<xliff:g id="ID_1">%s</xliff:g> आता काम करत नाही."</string>
     <string name="unknown_media_provider_name" msgid="4238216994694326667">"अज्ञात"</string>
     <string name="unknown_error" msgid="6146463797752964372">"काहीतरी चूक झाली"</string>
