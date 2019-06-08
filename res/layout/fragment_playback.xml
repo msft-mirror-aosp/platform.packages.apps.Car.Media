@@ -139,7 +139,7 @@
         android:id="@+id/queue_list_bottom_constraint"
         android:layout_width="match_parent"
         android:layout_height="@dimen/fragment_playback_queue_overlap_bottom"
-        app:layout_constraintTop_toTopOf="@+id/playback_controls"/>
+        app:layout_constraintTop_toTopOf="@+id/control_bar_first_row_guideline"/>
 
     <com.android.car.apps.common.widget.PagedRecyclerView
         android:id="@+id/queue_list"
