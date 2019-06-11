@@ -76,6 +76,8 @@ public class PlaybackFragment extends Fragment {
 
     private boolean mHasQueue;
     private boolean mQueueIsVisible;
+    private boolean mShowTimeForActiveQueueItem;
+    private boolean mShowIconForActiveQueueItem;
 
     private int mFadeDuration;
     private float mPlaybackQueueBackgroundAlpha;
@@ -97,6 +99,7 @@ public class PlaybackFragment extends Fragment {
         private final TextView mCurrentTime;
         private final TextView mMaxTime;
         private final TextView mTimeSeparator;
+        private final ImageView mActiveIcon;
 
         QueueViewHolder(View itemView) {
             super(itemView);
@@ -105,6 +108,7 @@ public class PlaybackFragment extends Fragment {
             mCurrentTime = itemView.findViewById(R.id.current_time);
             mMaxTime = itemView.findViewById(R.id.max_time);
             mTimeSeparator = itemView.findViewById(R.id.separator);
+            mActiveIcon = itemView.findViewById(R.id.now_playing_icon);
         }
 
         boolean bind(MediaItemMetadata item) {
@@ -113,10 +117,13 @@ public class PlaybackFragment extends Fragment {
             mTitle.setText(item.getTitle());
             boolean active = mActiveQueueItemId != null && Objects.equals(mActiveQueueItemId,
                     item.getQueueId());
-            boolean shouldShowTime = active && mQueueAdapter.getTimeVisible();
+            boolean shouldShowTime =
+                    mShowTimeForActiveQueueItem && active && mQueueAdapter.getTimeVisible();
+            boolean shouldShowIcon = mShowIconForActiveQueueItem && active;
             ViewUtils.setVisible(mCurrentTime, shouldShowTime);
             ViewUtils.setVisible(mMaxTime, shouldShowTime);
             ViewUtils.setVisible(mTimeSeparator, shouldShowTime);
+            ViewUtils.setVisible(mActiveIcon, shouldShowIcon);
             if (active) {
                 mCurrentTime.setText(mQueueAdapter.getCurrentTime());
                 mMaxTime.setText(mQueueAdapter.getMaxTime());
@@ -225,6 +232,11 @@ public class PlaybackFragment extends Fragment {
         ViewUtils.setVisible(mControlBarScrim, false);
         mControlBarScrim.setOnClickListener(scrim -> mPlaybackControls.close());
         mControlBarScrim.setClickable(false);
+
+        mShowTimeForActiveQueueItem = getContext().getResources().getBoolean(
+                R.bool.show_time_for_now_playing_queue_list_item);
+        mShowIconForActiveQueueItem = getContext().getResources().getBoolean(
+                R.bool.show_icon_for_now_playing_queue_list_item);
 
         boolean useMediaSourceColor =
                 getContext().getResources().getBoolean(
