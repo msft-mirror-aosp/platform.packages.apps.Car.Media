@@ -50,4 +50,12 @@
         android:layout_height="wrap_content"
         style="@style/QueueListItemTimeStyle"/>
 
+    <ImageView
+        android:id="@+id/now_playing_icon"
+        android:src="@drawable/ic_equalizer"
+        android:layout_width="@dimen/media_browse_list_item_arrow_size"
+        android:layout_height="@dimen/media_browse_list_item_arrow_size"
+        android:layout_gravity="center_vertical"
+        android:scaleType="centerCrop"/>
+
 </LinearLayout>
