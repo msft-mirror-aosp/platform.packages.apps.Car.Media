@@ -19,4 +19,5 @@
     <bool name="use_media_source_color_for_progress_bar">true</bool>
     <bool name="show_time_for_now_playing_queue_list_item">true</bool>
     <bool name="show_icon_for_now_playing_queue_list_item">false</bool>
+    <bool name="switch_to_playback_view_when_playable_item_is_clicked">true</bool>
 </resources>
