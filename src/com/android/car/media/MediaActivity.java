@@ -562,7 +562,11 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     public void onPlayableItemClicked(MediaItemMetadata item) {
         mPlaybackController.stop();
         mPlaybackController.playItem(item.getId());
-        if (getInnerViewModel().mMode.getValue() == Mode.SEARCHING) {
+        boolean switchToPlayback = getResources().getBoolean(
+                R.bool.switch_to_playback_view_when_playable_item_is_clicked);
+        if (switchToPlayback) {
+            getInnerViewModel().setMode(Mode.PLAYBACK);
+        } else if (getInnerViewModel().mMode.getValue() == Mode.SEARCHING) {
             getInnerViewModel().setMode(Mode.BROWSING);
         }
         setIntent(null);
