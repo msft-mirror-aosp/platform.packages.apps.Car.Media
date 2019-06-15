@@ -392,7 +392,11 @@ public class PlaybackFragment extends Fragment {
         if (mController != null) {
             mController.skipToQueueItem(item.getQueueId());
         }
-        toggleQueueVisibility();
+        boolean switchToPlayback = getResources().getBoolean(
+                R.bool.switch_to_playback_view_when_playable_item_is_clicked);
+        if (switchToPlayback) {
+            toggleQueueVisibility();
+        }
     }
 
     /**
