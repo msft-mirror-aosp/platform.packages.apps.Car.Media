@@ -36,18 +36,19 @@
         android:id="@+id/title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/art_metadata_metadata_margin_start"
+        android:layout_marginStart="@dimen/art_metadata_margin"
         style="@style/MetadataPlaybackTitleStyle"
         app:layout_constraintStart_toEndOf="@id/album_art"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/album_art"
-        app:layout_constraintBottom_toTopOf="@+id/artist"/>
+        app:layout_constraintBottom_toTopOf="@+id/artist"
+        app:layout_constraintVertical_chainStyle="packed"/>
 
     <TextView
         android:id="@+id/artist"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/metadata_normal_artist_margin_top"
+        android:layout_marginTop="@dimen/metadata_title_subtitle_margin"
         style="@style/MetadataPlaybackSubtitleStyle"
         app:layout_constraintStart_toStartOf="@id/title"
         app:layout_constraintEnd_toEndOf="parent"
@@ -58,12 +59,13 @@
         android:id="@+id/album_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/metadata_normal_album_title_margin_top"
+        android:layout_marginTop="@dimen/metadata_subtitles_margin"
         style="@style/MetadataPlaybackSubtitleStyle"
+        app:layout_goneMarginTop="@dimen/metadata_title_subtitle_margin"
         app:layout_constraintStart_toStartOf="@id/title"
         app:layout_constraintEnd_toStartOf="@+id/progress_text_container"
         app:layout_constraintTop_toBottomOf="@id/artist"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/album_art"
         app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constrainedWidth="true"/>
