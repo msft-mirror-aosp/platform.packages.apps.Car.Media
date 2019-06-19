@@ -313,10 +313,10 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                 MediaConstants.ERROR_RESOLUTION_ACTION_LABEL);
 
         String displayedMessage = null;
-        if (state.getErrorMessage() != null) {
+        if (!TextUtils.isEmpty(state.getErrorMessage())) {
             displayedMessage = state.getErrorMessage().toString();
         } else if (state.getErrorCode() != PlaybackStateCompat.ERROR_CODE_UNKNOWN_ERROR) {
-            // TODO: convert the error codes to prebuilt error messages
+            // TODO(b/131601881): convert the error codes to prebuilt error messages
             displayedMessage = getString(R.string.default_error_message);
         } else if (state.getState() == PlaybackStateCompat.STATE_ERROR) {
             displayedMessage = getString(R.string.default_error_message);
