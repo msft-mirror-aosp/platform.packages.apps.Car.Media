@@ -19,9 +19,26 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="@dimen/queue_list_item_height"
-    android:paddingHorizontal="@dimen/queue_list_item_padding_x"
+    android:paddingEnd="@dimen/queue_list_item_padding_x"
     android:gravity="center_vertical"
     android:background="?android:attr/selectableItemBackground">
+
+    <FrameLayout
+        android:id="@+id/thumbnail_container"
+        android:layout_width="@dimen/queue_list_item_thumbnail_container_width"
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/queue_list_item_padding_x">
+        <ImageView
+            android:id="@+id/thumbnail"
+            android:layout_width="@dimen/queue_list_item_thumbnail_size"
+            android:layout_height="@dimen/queue_list_item_thumbnail_size"
+            android:scaleType="centerCrop"/>
+    </FrameLayout>
+
+    <Space
+        android:id="@+id/spacer"
+        android:layout_width="@dimen/queue_list_item_spacer_width"
+        android:layout_height="wrap_content"/>
 
     <TextView
         android:id="@+id/title"
