@@ -19,6 +19,9 @@ package com.android.car.media;
 import android.annotation.Nullable;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.Rect;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -64,6 +67,7 @@ public class PlaybackFragment extends Fragment {
     private SeekBar mSeekBar;
     private View mQueueButton;
     private ViewGroup mNavIconContainer;
+    private List<View> mViewsToHideForCustomActions;
 
     private DefaultItemAnimator mItemAnimator;
 
@@ -78,6 +82,7 @@ public class PlaybackFragment extends Fragment {
     private boolean mQueueIsVisible;
     private boolean mShowTimeForActiveQueueItem;
     private boolean mShowIconForActiveQueueItem;
+    private boolean mShowThumbnailForQueueItem;
 
     private int mFadeDuration;
     private float mPlaybackQueueBackgroundAlpha;
@@ -95,6 +100,9 @@ public class PlaybackFragment extends Fragment {
     public class QueueViewHolder extends RecyclerView.ViewHolder {
 
         private final View mView;
+        private final ViewGroup mThumbnailContainer;
+        private final ImageView mThumbnail;
+        private final View mSpacer;
         private final TextView mTitle;
         private final TextView mCurrentTime;
         private final TextView mMaxTime;
@@ -104,6 +112,9 @@ public class PlaybackFragment extends Fragment {
         QueueViewHolder(View itemView) {
             super(itemView);
             mView = itemView;
+            mThumbnailContainer = itemView.findViewById(R.id.thumbnail_container);
+            mThumbnail = itemView.findViewById(R.id.thumbnail);
+            mSpacer = itemView.findViewById(R.id.spacer);
             mTitle = itemView.findViewById(R.id.title);
             mCurrentTime = itemView.findViewById(R.id.current_time);
             mMaxTime = itemView.findViewById(R.id.max_time);
@@ -114,20 +125,31 @@ public class PlaybackFragment extends Fragment {
         boolean bind(MediaItemMetadata item) {
             mView.setOnClickListener(v -> onQueueItemClicked(item));
 
+            ViewUtils.setVisible(mThumbnailContainer, mShowThumbnailForQueueItem);
+            if (mShowThumbnailForQueueItem) {
+                MediaItemMetadata.updateImageView(mThumbnail.getContext(), item, mThumbnail, 0,
+                        true);
+            }
+
+            ViewUtils.setVisible(mSpacer, !mShowThumbnailForQueueItem);
+
             mTitle.setText(item.getTitle());
+
             boolean active = mActiveQueueItemId != null && Objects.equals(mActiveQueueItemId,
                     item.getQueueId());
-            boolean shouldShowTime =
-                    mShowTimeForActiveQueueItem && active && mQueueAdapter.getTimeVisible();
-            boolean shouldShowIcon = mShowIconForActiveQueueItem && active;
-            ViewUtils.setVisible(mCurrentTime, shouldShowTime);
-            ViewUtils.setVisible(mMaxTime, shouldShowTime);
-            ViewUtils.setVisible(mTimeSeparator, shouldShowTime);
-            ViewUtils.setVisible(mActiveIcon, shouldShowIcon);
             if (active) {
                 mCurrentTime.setText(mQueueAdapter.getCurrentTime());
                 mMaxTime.setText(mQueueAdapter.getMaxTime());
             }
+            boolean shouldShowTime =
+                    mShowTimeForActiveQueueItem && active && mQueueAdapter.getTimeVisible();
+            ViewUtils.setVisible(mCurrentTime, shouldShowTime);
+            ViewUtils.setVisible(mMaxTime, shouldShowTime);
+            ViewUtils.setVisible(mTimeSeparator, shouldShowTime);
+
+            boolean shouldShowIcon = mShowIconForActiveQueueItem && active;
+            ViewUtils.setVisible(mActiveIcon, shouldShowIcon);
+
             return active;
         }
     }
@@ -215,6 +237,25 @@ public class PlaybackFragment extends Fragment {
         }
     }
 
+    private class QueueTopItemDecoration extends RecyclerView.ItemDecoration {
+        int mHeight;
+        int mDecorationPosition;
+
+        QueueTopItemDecoration(int height, int decorationPosition) {
+            mHeight = height;
+            mDecorationPosition = decorationPosition;
+        }
+
+        @Override
+        public void getItemOffsets(Rect outRect, View view, RecyclerView parent,
+                RecyclerView.State state) {
+            super.getItemOffsets(outRect, view, parent, state);
+            if (parent.getChildAdapterPosition(view) == mDecorationPosition) {
+                outRect.top = mHeight;
+            }
+        }
+    }
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, final ViewGroup container,
             Bundle savedInstanceState) {
@@ -233,16 +274,17 @@ public class PlaybackFragment extends Fragment {
         mControlBarScrim.setOnClickListener(scrim -> mPlaybackControls.close());
         mControlBarScrim.setClickable(false);
 
-        mShowTimeForActiveQueueItem = getContext().getResources().getBoolean(
+        Resources res = getResources();
+        mShowTimeForActiveQueueItem = res.getBoolean(
                 R.bool.show_time_for_now_playing_queue_list_item);
-        mShowIconForActiveQueueItem = getContext().getResources().getBoolean(
+        mShowIconForActiveQueueItem = res.getBoolean(
                 R.bool.show_icon_for_now_playing_queue_list_item);
+        mShowThumbnailForQueueItem = getContext().getResources().getBoolean(
+                R.bool.show_thumbnail_for_queue_list_item);
 
-        boolean useMediaSourceColor =
-                getContext().getResources().getBoolean(
-                        R.bool.use_media_source_color_for_progress_bar);
-        int defaultColor = getContext().getResources().getColor(
-                R.color.progress_bar_highlight, null);
+        boolean useMediaSourceColor = res.getBoolean(
+                R.bool.use_media_source_color_for_progress_bar);
+        int defaultColor = res.getColor(R.color.progress_bar_highlight, null);
         if (useMediaSourceColor) {
             getPlaybackViewModel().getMediaSourceColors().observe(getViewLifecycleOwner(),
                     sourceColors -> {
@@ -264,6 +306,21 @@ public class PlaybackFragment extends Fragment {
         initPlaybackControls(view.findViewById(R.id.playback_controls));
         initMetadataController(view);
         initQueue();
+
+        TypedArray hideViewIds =
+                res.obtainTypedArray(R.array.playback_views_to_hide_when_showing_custom_actions);
+        mViewsToHideForCustomActions = new ArrayList<>(hideViewIds.length());
+        for (int i = 0; i < hideViewIds.length(); i++) {
+            int viewId = hideViewIds.getResourceId(i, 0);
+            if (viewId != 0) {
+                View viewToHide = view.findViewById(viewId);
+                if (viewToHide != null) {
+                    mViewsToHideForCustomActions.add(viewToHide);
+                }
+            }
+        }
+        hideViewIds.recycle();
+
         return view;
     }
 
@@ -282,12 +339,25 @@ public class PlaybackFragment extends Fragment {
         mPlaybackControls.setModel(getPlaybackViewModel(), getViewLifecycleOwner());
         mPlaybackControls.registerExpandCollapseCallback((expanding) -> {
             mControlBarScrim.setClickable(expanding);
+
+            Resources res = getContext().getResources();
+            int millis = expanding ? res.getInteger(R.integer.control_bar_expand_anim_duration) :
+                    res.getInteger(R.integer.control_bar_collapse_anim_duration);
+
             if (expanding) {
-                ViewUtils.showViewAnimated(mControlBarScrim, getContext().getResources().getInteger(
-                        R.integer.control_bar_expand_anim_duration));
+                ViewUtils.showViewAnimated(mControlBarScrim, millis);
             } else {
-                ViewUtils.hideViewAnimated(mControlBarScrim, getContext().getResources().getInteger(
-                        R.integer.control_bar_collapse_anim_duration));
+                ViewUtils.hideViewAnimated(mControlBarScrim, millis);
+            }
+
+            if (!mQueueIsVisible) {
+                for (View view : mViewsToHideForCustomActions) {
+                    if (expanding) {
+                        ViewUtils.hideViewAnimated(view, millis);
+                    } else {
+                        ViewUtils.showViewAnimated(view, millis);
+                    }
+                }
             }
         });
     }
@@ -297,6 +367,12 @@ public class PlaybackFragment extends Fragment {
                 R.integer.fragment_playback_queue_fade_duration_ms);
         mPlaybackQueueBackgroundAlpha = getResources().getFloat(
                 R.dimen.playback_queue_background_alpha);
+
+        int decorationHeight = getResources().getDimensionPixelSize(
+                R.dimen.playback_queue_list_padding_top);
+        // Put the decoration above the first item.
+        int decorationPosition = 0;
+        mQueue.addItemDecoration(new QueueTopItemDecoration(decorationHeight, decorationPosition));
 
         mQueue.setVerticalFadingEdgeEnabled(
                 getResources().getBoolean(R.bool.queue_fading_edge_length_enabled));
