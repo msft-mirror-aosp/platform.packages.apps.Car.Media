@@ -41,4 +41,10 @@
 
     <!-- Number of rows in the app bar view -->
     <integer name="num_app_bar_view_rows">1</integer>
+
+    <!-- Views to hide when opening the custom actions when the queue isn't visible. -->
+    <integer-array name="playback_views_to_hide_when_showing_custom_actions">
+        <item>@id/seek_bar</item>
+    </integer-array>
+
 </resources>

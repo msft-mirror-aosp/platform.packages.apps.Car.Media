@@ -20,6 +20,8 @@ import android.annotation.Nullable;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Rect;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -65,6 +67,7 @@ public class PlaybackFragment extends Fragment {
     private SeekBar mSeekBar;
     private View mQueueButton;
     private ViewGroup mNavIconContainer;
+    private List<View> mViewsToHideForCustomActions;
 
     private DefaultItemAnimator mItemAnimator;
 
@@ -271,18 +274,17 @@ public class PlaybackFragment extends Fragment {
         mControlBarScrim.setOnClickListener(scrim -> mPlaybackControls.close());
         mControlBarScrim.setClickable(false);
 
-        mShowTimeForActiveQueueItem = getContext().getResources().getBoolean(
+        Resources res = getResources();
+        mShowTimeForActiveQueueItem = res.getBoolean(
                 R.bool.show_time_for_now_playing_queue_list_item);
-        mShowIconForActiveQueueItem = getContext().getResources().getBoolean(
+        mShowIconForActiveQueueItem = res.getBoolean(
                 R.bool.show_icon_for_now_playing_queue_list_item);
         mShowThumbnailForQueueItem = getContext().getResources().getBoolean(
                 R.bool.show_thumbnail_for_queue_list_item);
 
-        boolean useMediaSourceColor =
-                getContext().getResources().getBoolean(
-                        R.bool.use_media_source_color_for_progress_bar);
-        int defaultColor = getContext().getResources().getColor(
-                R.color.progress_bar_highlight, null);
+        boolean useMediaSourceColor = res.getBoolean(
+                R.bool.use_media_source_color_for_progress_bar);
+        int defaultColor = res.getColor(R.color.progress_bar_highlight, null);
         if (useMediaSourceColor) {
             getPlaybackViewModel().getMediaSourceColors().observe(getViewLifecycleOwner(),
                     sourceColors -> {
@@ -304,6 +306,21 @@ public class PlaybackFragment extends Fragment {
         initPlaybackControls(view.findViewById(R.id.playback_controls));
         initMetadataController(view);
         initQueue();
+
+        TypedArray hideViewIds =
+                res.obtainTypedArray(R.array.playback_views_to_hide_when_showing_custom_actions);
+        mViewsToHideForCustomActions = new ArrayList<>(hideViewIds.length());
+        for (int i = 0; i < hideViewIds.length(); i++) {
+            int viewId = hideViewIds.getResourceId(i, 0);
+            if (viewId != 0) {
+                View viewToHide = view.findViewById(viewId);
+                if (viewToHide != null) {
+                    mViewsToHideForCustomActions.add(viewToHide);
+                }
+            }
+        }
+        hideViewIds.recycle();
+
         return view;
     }
 
@@ -322,12 +339,25 @@ public class PlaybackFragment extends Fragment {
         mPlaybackControls.setModel(getPlaybackViewModel(), getViewLifecycleOwner());
         mPlaybackControls.registerExpandCollapseCallback((expanding) -> {
             mControlBarScrim.setClickable(expanding);
+
+            Resources res = getContext().getResources();
+            int millis = expanding ? res.getInteger(R.integer.control_bar_expand_anim_duration) :
+                    res.getInteger(R.integer.control_bar_collapse_anim_duration);
+
             if (expanding) {
-                ViewUtils.showViewAnimated(mControlBarScrim, getContext().getResources().getInteger(
-                        R.integer.control_bar_expand_anim_duration));
+                ViewUtils.showViewAnimated(mControlBarScrim, millis);
             } else {
-                ViewUtils.hideViewAnimated(mControlBarScrim, getContext().getResources().getInteger(
-                        R.integer.control_bar_collapse_anim_duration));
+                ViewUtils.hideViewAnimated(mControlBarScrim, millis);
+            }
+
+            if (!mQueueIsVisible) {
+                for (View view : mViewsToHideForCustomActions) {
+                    if (expanding) {
+                        ViewUtils.hideViewAnimated(view, millis);
+                    } else {
+                        ViewUtils.showViewAnimated(view, millis);
+                    }
+                }
             }
         });
     }
