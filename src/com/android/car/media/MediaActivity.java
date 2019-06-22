@@ -63,6 +63,7 @@ import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.common.source.MediaSourceViewModel;
 import com.android.car.media.widgets.AppBarView;
+import com.android.car.media.widgets.SearchBar;
 
 import java.util.List;
 import java.util.Objects;
@@ -200,6 +201,9 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
         MediaAppSelectorWidget appSelector = findViewById(R.id.app_switch_container);
         appSelector.setFragmentActivity(this);
+        SearchBar searchBar = findViewById(R.id.search_bar_container);
+        searchBar.setFragmentActivity(this);
+        searchBar.setAppBarListener(mAppBarListener);
 
         mEmptyFragment = new EmptyFragment();
         MediaBrowserViewModel mediaBrowserViewModel = getRootBrowserViewModel();

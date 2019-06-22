@@ -47,21 +47,18 @@
         android:id="@+id/tabs"
         style="@style/AppBarTabStyle"/>
 
-    <EditText
-        android:id="@+id/search_bar"
+    <com.android.car.media.widgets.SearchBar
+        android:id="@+id/search_bar_container"
         android:layout_height="0dp"
         android:layout_width="0dp"
         android:layout_marginStart="@dimen/appbar_view_nav_button_width"
-        android:hint="@string/search_hint"
-        android:inputType="text"
-        android:singleLine="true"
-        android:imeOptions="actionDone"
+        android:layout_marginEnd="@dimen/app_switch_widget_width"
         android:visibility="gone"
-        android:cursorVisible="false"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/row_separator"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/search"/>
+        app:layout_constraintEnd_toEndOf="parent">
+    </com.android.car.media.widgets.SearchBar>
 
     <ImageView
         android:id="@+id/search"
