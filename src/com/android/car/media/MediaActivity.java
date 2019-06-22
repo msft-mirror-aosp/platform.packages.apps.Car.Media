@@ -36,6 +36,7 @@ import android.text.TextUtils;
 import android.transition.Fade;
 import android.util.Log;
 import android.util.Size;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
@@ -97,6 +98,8 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     private ViewGroup mErrorContainer;
     private ErrorFragment mErrorFragment;
     private ViewGroup mSearchContainer;
+
+    private Toast mToast;
 
     /** Current state */
     private Intent mCurrentSourcePreferences;
@@ -361,7 +364,19 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     }
 
     private void showToast(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        if (mToast == null) {
+            mToast = Toast.makeText(this, message, Toast.LENGTH_LONG);
+        } else {
+            mToast.cancel();
+        }
+        mToast.setText(message);
+        mToast.show();
+    }
+
+    private void maybeCancelToast() {
+        if (mToast != null) {
+            mToast.cancel();
+        }
     }
 
     @Override
@@ -388,6 +403,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
      */
     private void onMediaSourceChanged(@Nullable MediaSource mediaSource) {
         mIsBrowseTreeReady = false;
+        maybeCancelToast();
         if (mediaSource != null) {
             if (Log.isLoggable(TAG, Log.INFO)) {
                 Log.i(TAG, "Browsing: " + mediaSource.getName());
