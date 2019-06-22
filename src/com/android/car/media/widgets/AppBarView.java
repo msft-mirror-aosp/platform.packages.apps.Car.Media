@@ -3,17 +3,11 @@ package com.android.car.media.widgets;
 import android.annotation.Nullable;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.text.Editable;
-import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -46,7 +40,7 @@ public class AppBarView extends ConstraintLayout {
     private boolean mHasSettings;
     private boolean mShowSettings;
     private View mSearchButton;
-    private EditText mSearchText;
+    private SearchBar mSearchBar;
     private MediaAppSelectorWidget mAppSelector;
     private Context mContext;
     private int mMaxTabs;
@@ -170,42 +164,7 @@ public class AppBarView extends ConstraintLayout {
         mSettingsButton.setOnClickListener(view -> onSettingsClicked());
         mSearchButton = findViewById(R.id.search);
         mSearchButton.setOnClickListener(view -> onSearchClicked());
-
-        mSearchText = findViewById(R.id.search_bar);
-        mSearchText.setOnFocusChangeListener(
-                (view, hasFocus) -> {
-                    if (hasFocus) {
-                        mSearchText.setCursorVisible(true);
-                        ((InputMethodManager)
-                                context.getSystemService(Context.INPUT_METHOD_SERVICE))
-                                .showSoftInput(view, 0);
-                    } else {
-                        mSearchText.setCursorVisible(false);
-                        ((InputMethodManager)
-                                context.getSystemService(Context.INPUT_METHOD_SERVICE))
-                                .hideSoftInputFromWindow(view.getWindowToken(), 0);
-                    }
-                });
-        mSearchText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                onSearch(editable.toString());
-            }
-        });
-        mSearchText.setOnEditorActionListener((v, actionId, event) -> {
-            if (actionId == EditorInfo.IME_ACTION_DONE) {
-                mSearchText.setCursorVisible(false);
-            }
-            return false;
-        });
+        mSearchBar = findViewById(R.id.search_bar_container);
 
         mTitle = findViewById(R.id.title);
         mArrowBack = getResources().getDrawable(R.drawable.ic_arrow_back, null);
@@ -234,7 +193,7 @@ public class AppBarView extends ConstraintLayout {
                 mListener.onBack();
                 break;
             case SEARCHING:
-                hideSearchBar();
+                mSearchBar.showSearchBar(false);
             case PLAYING:
                 mListener.onCollapse();
                 break;
@@ -253,13 +212,6 @@ public class AppBarView extends ConstraintLayout {
             return;
         }
         mListener.onSearchSelection();
-    }
-
-    private void onSearch(String query) {
-        if (mListener == null || TextUtils.isEmpty(query)) {
-            return;
-        }
-        mListener.onSearch(query);
     }
 
     /**
@@ -373,43 +325,42 @@ public class AppBarView extends ConstraintLayout {
                 mNavIconContainer.setVisibility(View.GONE);
                 setShowTabs(false);
                 mTitle.setVisibility(View.GONE);
-                hideSearchBar();
+                mSearchBar.showSearchBar(false);
                 showSettings(true);
+                mAppSelector.setVisibility(View.VISIBLE);
                 break;
             case BROWSING:
                 mNavIcon.setImageDrawable(mArrowBack);
                 mNavIconContainer.setVisibility(View.GONE);
                 setShowTabs(hasTabs);
                 mTitle.setVisibility(showTitle ? View.VISIBLE : View.GONE);
-                hideSearchBar();
+                mSearchBar.showSearchBar(false);
                 mSearchButton.setVisibility(mSearchSupported ? View.VISIBLE : View.GONE);
                 showSettings(true);
+                mAppSelector.setVisibility(View.VISIBLE);
                 break;
             case STACKED:
                 mNavIcon.setImageDrawable(mArrowBack);
                 mNavIconContainer.setVisibility(View.VISIBLE);
                 setShowTabs(false);
                 mTitle.setVisibility(View.VISIBLE);
-                hideSearchBar();
+                mSearchBar.showSearchBar(false);
                 mSearchButton.setVisibility(mSearchSupported ? View.VISIBLE : View.GONE);
                 showSettings(true);
+                mAppSelector.setVisibility(View.VISIBLE);
                 break;
             case PLAYING:
                 break;
             case SEARCHING:
-                mNavIcon.setImageDrawable(mCollapse);
+                mNavIcon.setImageDrawable(mArrowBack);
                 mNavIconContainer.setVisibility(View.VISIBLE);
                 setShowTabs(false);
                 mTitle.setVisibility(View.GONE);
-                mSearchText.setVisibility(View.VISIBLE);
-                mSearchText.requestFocus();
-                showSettings(true);
+                mSearchBar.showSearchBar(true);
+                mSearchButton.setVisibility(View.GONE);
+                showSettings(false);
+                mAppSelector.setVisibility(View.GONE);
                 break;
         }
-    }
-
-    private void hideSearchBar() {
-        mSearchText.setVisibility(View.GONE);
-        mSearchText.getText().clear();
     }
 }

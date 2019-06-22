@@ -78,6 +78,8 @@
     <dimen name="appbar_view_control_buttons_spacing">@*android:dimen/car_padding_3</dimen>
     <dimen name="appbar_view_control_buttons_margin_end">@*android:dimen/car_padding_2</dimen>
     <dimen name="appbar_view_title_margin_start">@*android:dimen/car_padding_2</dimen>
+    <!-- negative margin to overlap icons on search bar -->
+    <dimen name="appbar_view_search_margin">-96dp</dimen>
 
     <!-- browse_state.xml -->
     <dimen name="browse_state_progress_height">@*android:dimen/car_double_line_list_item_height
