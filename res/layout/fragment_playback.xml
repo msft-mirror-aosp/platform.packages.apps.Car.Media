@@ -36,6 +36,11 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_end="@dimen/control_bar_height"/>
 
+    <com.android.car.apps.common.BackgroundImageView
+        android:id="@+id/playback_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
     <include
         layout="@layout/scrim_overlay"
         android:id="@+id/background_scrim"
