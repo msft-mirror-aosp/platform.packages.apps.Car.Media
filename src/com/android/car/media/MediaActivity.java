@@ -15,10 +15,6 @@
  */
 package com.android.car.media;
 
-import static androidx.lifecycle.Transformations.switchMap;
-
-import static com.android.car.arch.common.LiveDataFunctions.distinct;
-import static com.android.car.arch.common.LiveDataFunctions.nullLiveData;
 import static com.android.car.arch.common.LiveDataFunctions.pair;
 
 import android.app.AlertDialog;
@@ -29,13 +25,11 @@ import android.car.drivingstate.CarUxRestrictions;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
 import android.transition.Fade;
 import android.util.Log;
-import android.util.Size;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -50,7 +44,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProviders;
 
-import com.android.car.apps.common.BackgroundImageView;
 import com.android.car.apps.common.CarUxRestrictionsUtil;
 import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.media.common.AppSelectionFragment;
@@ -59,7 +52,6 @@ import com.android.car.media.common.MediaConstants;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.MinimizedPlaybackControlBar;
 import com.android.car.media.common.browse.MediaBrowserViewModel;
-import com.android.car.media.common.playback.AlbumArtLiveData;
 import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.common.source.MediaSourceViewModel;
@@ -86,7 +78,6 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
     /** Layout views */
     private AppBarView mAppBarView;
-    private BackgroundImageView mAlbumBackground;
     private PlaybackFragment mPlaybackFragment;
     private BrowseFragment mSearchFragment;
     private BrowseFragment mBrowseFragment;
@@ -234,7 +225,6 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         int fadeDuration = getResources().getInteger(R.integer.app_selector_fade_duration);
         mAppSelectionFragment.setEnterTransition(new Fade().setDuration(fadeDuration));
         mAppSelectionFragment.setExitTransition(new Fade().setDuration(fadeDuration));
-        mAlbumBackground = findViewById(R.id.playback_background);
 
         MinimizedPlaybackControlBar browsePlaybackControls =
                 findViewById(R.id.minimized_playback_controls);
@@ -262,15 +252,6 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                     if (playbackController != null) playbackController.prepare();
                     mPlaybackController = playbackController;
                 });
-
-        mAlbumBackground.addOnLayoutChangeListener(
-                (view, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
-                    // This can be removed when fixing b/133523205. Keeping it prevents blurring
-                    // until the playback view has been shown.
-                    int backgroundImageSize = mAlbumBackground.getDesiredBackgroundSize();
-                    localViewModel.setAlbumArtSize(backgroundImageSize, backgroundImageSize);
-                });
-        localViewModel.getAlbumArt().observe(this, this::setBackgroundImage);
 
         playbackViewModel.getPlaybackStateWrapper().observe(this, this::handlePlaybackState);
 
@@ -557,7 +538,6 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     private void updateMetadata(Mode mode) {
         if (mode == Mode.PLAYBACK) {
             ViewUtils.hideViewAnimated(mMiniPlaybackControls, mFadeDuration);
-            ViewUtils.showViewAnimated(mAlbumBackground, mFadeDuration);
             getInnerViewModel().setMiniControlsVisible(false);
         } else {
             mPlaybackFragment.closeOverflowMenu();
@@ -565,12 +545,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                 ViewUtils.showViewAnimated(mMiniPlaybackControls, mFadeDuration);
                 getInnerViewModel().setMiniControlsVisible(true);
             }
-            ViewUtils.hideViewAnimated(mAlbumBackground, mFadeDuration);
         }
-    }
-
-    private void setBackgroundImage(Bitmap bitmap) {
-        mAlbumBackground.setBackgroundImage(bitmap, bitmap != null);
     }
 
     @Override
@@ -616,8 +591,6 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
     public static class ViewModel extends AndroidViewModel {
         private boolean mNeedsInitialization = true;
-        private LiveData<Bitmap> mAlbumArt;
-        private MutableLiveData<Size> mAlbumArtSize = new MutableLiveData<>();
         private PlaybackViewModel mPlaybackViewModel;
         private MutableLiveData<Boolean> mIsMiniControlsVisible = new MutableLiveData<>();
 
@@ -635,30 +608,12 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             }
             mPlaybackViewModel = playbackViewModel;
 
-            mAlbumArt = switchMap(distinct(mAlbumArtSize), size -> {
-                if (size == null || size.getHeight() == 0 || size.getWidth() == 0) {
-                    return nullLiveData();
-                } else {
-                    return AlbumArtLiveData.getAlbumArt(getApplication(),
-                            size.getWidth(), size.getHeight(), false,
-                            playbackViewModel.getMetadata());
-                }
-            });
-
             mIsErrorState.setValue(false);
             mNeedsInitialization = false;
         }
 
         boolean needsInitialization() {
             return mNeedsInitialization;
-        }
-
-        void setAlbumArtSize(int width, int height) {
-            mAlbumArtSize.setValue(new Size(width, height));
-        }
-
-        LiveData<Bitmap> getAlbumArt() {
-            return mAlbumArt;
         }
 
         void setMiniControlsVisible(boolean visible) {
