@@ -24,7 +24,7 @@
     <string name="unknown_error" msgid="6146463797752964372">"ஏதோ தவறாகிவிட்டது"</string>
     <string name="media_browse_more" msgid="6330295386693311592">"மேலும்…"</string>
     <string name="media_app_title" msgid="94717597743776797">"மீடியா"</string>
-    <string name="search_hint" msgid="8273719939080187914">"தேடுக"</string>
+    <string name="search_hint" msgid="5401750426238148416">"பாடல், கலைஞர் தேடல்"</string>
     <string name="default_error_message" msgid="5555889194833511375">"தெரியாத ஆப்ஸ் பிழை"</string>
     <string name="fragment_playback_title" msgid="5014481549024607614">"பாடல் விவரம்"</string>
 </resources>
