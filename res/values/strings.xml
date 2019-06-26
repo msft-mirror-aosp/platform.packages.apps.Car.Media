@@ -31,7 +31,7 @@
     <!-- Media template title -->
     <string name="media_app_title">Media</string>
     <!-- Search input hint text. [CHAR LIMIT=20] -->
-    <string name="search_hint">Search</string>
+    <string name="search_hint">Search songs, artists, and more...</string>
     <!-- Error Fragment error message [CHAR LIMIT=100] -->
     <string name="default_error_message">Unknown application error</string>
     <!-- Title to display when in playback view. [CHAR LIMIT=50] -->

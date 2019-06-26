@@ -24,7 +24,7 @@
     <string name="unknown_error" msgid="6146463797752964372">"S\'ha produït un error"</string>
     <string name="media_browse_more" msgid="6330295386693311592">"Més…"</string>
     <string name="media_app_title" msgid="94717597743776797">"Multimèdia"</string>
-    <string name="search_hint" msgid="8273719939080187914">"Cerca"</string>
+    <string name="search_hint" msgid="5401750426238148416">"Cerca cançons, artistes i més…"</string>
     <string name="default_error_message" msgid="5555889194833511375">"Error d\'aplicació desconegut"</string>
     <string name="fragment_playback_title" msgid="5014481549024607614">"Està sonant"</string>
 </resources>

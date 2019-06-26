@@ -112,19 +112,22 @@ public class BrowseFragment extends Fragment {
     }
 
     /**
-     * Moves the user one level up in the browse tree, if possible.
+     * Moves the user one level up in the browse tree. Returns whether that was possible.
      */
-    public void navigateBack() {
+    boolean navigateBack() {
+        boolean result = false;
         if (!mBrowseStack.empty()) {
             mBrowseStack.pop();
             mMediaBrowserViewModel.search(mSearchQuery);
             mMediaBrowserViewModel.setCurrentBrowseId(getCurrentMediaItemId());
             getParent().onBackStackChanged();
             adjustBrowseTopPadding();
+            result = true;
         }
         if (mBrowseStack.isEmpty()) {
             mShowSearchResults.setValue(mIsSearchFragment);
         }
+        return result;
     }
 
     @NonNull
@@ -266,6 +269,7 @@ public class BrowseFragment extends Fragment {
             }
             boolean isLoading = futureData.isLoading();
             if (isLoading) {
+                ViewUtils.hideViewAnimated(mBrowseList, mFadeDuration);
                 startLoadingIndicator();
                 return;
             }

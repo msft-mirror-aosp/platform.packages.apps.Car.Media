@@ -19,6 +19,7 @@ package com.android.car.media;
 import android.annotation.Nullable;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -38,6 +39,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.car.apps.common.BackgroundImageView;
 import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.media.common.MediaAppSelectorWidget;
 import com.android.car.media.common.MediaItemMetadata;
@@ -49,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * A {@link Fragment} that implements both the playback and the content forward browsing experience.
@@ -58,6 +61,8 @@ import java.util.Objects;
 public class PlaybackFragment extends Fragment {
     private static final String TAG = "PlaybackFragment";
 
+    private CompletableFuture<Bitmap> mFutureAlbumBackground;
+    private BackgroundImageView mAlbumBackground;
     private View mBackgroundScrim;
     private View mControlBarScrim;
     private PlaybackControlsActionBar mPlaybackControls;
@@ -260,6 +265,7 @@ public class PlaybackFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, final ViewGroup container,
             Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_playback, container, false);
+        mAlbumBackground = view.findViewById(R.id.playback_background);
         mQueue = view.findViewById(R.id.queue_list);
         mMetadataContainer = view.findViewById(R.id.metadata_container);
         mSeekBar = view.findViewById(R.id.seek_bar);
@@ -321,6 +327,30 @@ public class PlaybackFragment extends Fragment {
         }
         hideViewIds.recycle();
 
+        int albumBgSizePx = getResources().getInteger(
+                com.android.car.apps.common.R.integer.background_bitmap_target_size_px);
+
+        getPlaybackViewModel().getMetadata().observe(getViewLifecycleOwner(),
+                metadata -> {
+                    if (mFutureAlbumBackground != null && !mFutureAlbumBackground.isDone()) {
+                        mFutureAlbumBackground.cancel(true);
+                    }
+                    if (metadata == null) {
+                        setBackgroundImage(null);
+                        mFutureAlbumBackground = null;
+                    } else {
+                        mFutureAlbumBackground = metadata.getAlbumArt(
+                                getContext(), albumBgSizePx, albumBgSizePx, false);
+                        mFutureAlbumBackground.whenComplete((result, throwable) -> {
+                            if (throwable != null) {
+                                setBackgroundImage(null);
+                            } else {
+                                setBackgroundImage(result);
+                            }
+                        });
+                    }
+                });
+
         return view;
     }
 
@@ -332,6 +362,10 @@ public class PlaybackFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
+    }
+
+    private void setBackgroundImage(Bitmap bitmap) {
+        mAlbumBackground.setBackgroundImage(bitmap, bitmap != null);
     }
 
     private void initPlaybackControls(PlaybackControlsActionBar playbackControls) {
