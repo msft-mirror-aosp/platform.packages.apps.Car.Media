@@ -345,12 +345,8 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     }
 
     private void showToast(String message) {
-        if (mToast == null) {
-            mToast = Toast.makeText(this, message, Toast.LENGTH_LONG);
-        } else {
-            mToast.cancel();
-        }
-        mToast.setText(message);
+        maybeCancelToast();
+        mToast = Toast.makeText(this, message, Toast.LENGTH_LONG);
         mToast.show();
     }
 
