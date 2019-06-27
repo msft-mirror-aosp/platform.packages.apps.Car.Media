@@ -15,8 +15,6 @@
  */
 package com.android.car.media;
 
-import static com.android.car.arch.common.LiveDataFunctions.pair;
-
 import android.app.AlertDialog;
 import android.app.Application;
 import android.app.PendingIntent;
@@ -30,13 +28,11 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
 import android.transition.Fade;
 import android.util.Log;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.AndroidViewModel;
@@ -93,6 +89,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     private Toast mToast;
 
     /** Current state */
+    private Mode mMode;
     private Intent mCurrentSourcePreferences;
     private boolean mCanShowMiniPlaybackControls;
     private boolean mIsBrowseTreeReady;
@@ -110,20 +107,18 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         @Override
         public void onTabSelected(MediaItemMetadata item) {
             showTopItem(item);
-            getInnerViewModel().setMode(Mode.BROWSING);
+            changeMode(Mode.BROWSING);
         }
 
         @Override
         public void onBack() {
             BrowseFragment fragment = getCurrentBrowseFragment();
             if (fragment != null) {
-                fragment.navigateBack();
+                boolean success = fragment.navigateBack();
+                if (!success && (fragment == mSearchFragment)) {
+                    changeMode(Mode.BROWSING);
+                }
             }
-        }
-
-        @Override
-        public void onCollapse() {
-            getInnerViewModel().setMode(Mode.BROWSING);
         }
 
         @Override
@@ -144,7 +139,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
         @Override
         public void onSearchSelection() {
-            getInnerViewModel().setMode(Mode.SEARCHING);
+            changeMode(Mode.SEARCHING);
         }
 
         @Override
@@ -157,7 +152,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     };
 
     private PlaybackFragment.PlaybackFragmentListener mPlaybackFragmentListener =
-            () -> getInnerViewModel().setMode(Mode.BROWSING);
+            () -> changeMode(Mode.BROWSING);
 
     /**
      * Possible modes of the application UI
@@ -168,7 +163,9 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         /** The user is interacting with the full screen playback UI */
         PLAYBACK,
         /** The user is searching within a media source */
-        SEARCHING
+        SEARCHING,
+        /** There's no browse tree and playback doesn't work.*/
+        FATAL_ERROR
     }
 
     @Override
@@ -185,8 +182,8 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         // initialized...
         if (localViewModel.needsInitialization()) {
             localViewModel.init(playbackViewModel);
-            localViewModel.setMode(Mode.BROWSING);
         }
+        mMode = localViewModel.getSavedMode();
 
         mAppBarView = findViewById(R.id.app_bar);
         mAppBarView.setListener(mAppBarListener);
@@ -231,8 +228,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         browsePlaybackControls.setModel(playbackViewModel, this);
 
         mMiniPlaybackControls = findViewById(R.id.minimized_playback_controls);
-        mMiniPlaybackControls.setOnClickListener(
-                view -> getInnerViewModel().setMode(Mode.PLAYBACK));
+        mMiniPlaybackControls.setOnClickListener(view -> changeMode(Mode.PLAYBACK));
 
         mFadeDuration = getResources().getInteger(
                 R.integer.new_album_art_fade_in_duration);
@@ -255,9 +251,6 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
         playbackViewModel.getPlaybackStateWrapper().observe(this, this::handlePlaybackState);
 
-        localViewModel.getModeAndErrorState().observe(this, pair ->
-                handleModeAndErrorState(pair.first, pair.second));
-
         mCarUxRestrictionsUtil = CarUxRestrictionsUtil.getInstance(this);
         mRestrictions = CarUxRestrictions.UX_RESTRICTIONS_NO_SETUP;
         mCarUxRestrictionsUtil.register(mListener);
@@ -277,9 +270,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         // TODO(arnaudberry) rethink interactions between customized layouts and dynamic visibility.
         mCanShowMiniPlaybackControls = (state != null) && state.shouldDisplay();
 
-        // TODO(b/131252925) clean this up after Google IO.
-        Pair<Mode, Boolean> modeState = getInnerViewModel().getModeAndErrorState().getValue();
-        if (modeState == null || modeState.first != Mode.PLAYBACK) {
+        if (mMode != Mode.PLAYBACK) {
             ViewUtils.setVisible(mMiniPlaybackControls, mCanShowMiniPlaybackControls);
             getInnerViewModel().setMiniControlsVisible(mCanShowMiniPlaybackControls);
         }
@@ -310,7 +301,6 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             displayedMessage = getString(R.string.default_error_message);
         }
 
-        boolean showErrorFragment = false;
         if (!TextUtils.isEmpty(displayedMessage)) {
             if (mIsBrowseTreeReady) {
                 if (intent != null && !isUxRestricted()) {
@@ -321,10 +311,9 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             } else {
                 mErrorFragment = ErrorFragment.newInstance(displayedMessage, label, intent);
                 setErrorFragment(mErrorFragment);
-                showErrorFragment = true;
+                changeMode(Mode.FATAL_ERROR);
             }
         }
-        getInnerViewModel().setErrorState(showErrorFragment);
     }
 
     private void showDialog(PendingIntent intent, String message, String positiveBtnText,
@@ -353,6 +342,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     private void maybeCancelToast() {
         if (mToast != null) {
             mToast.cancel();
+            mToast = null;
         }
     }
 
@@ -389,8 +379,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             mAppBarView.setTitle(null);
             updateTabs(null);
             mSearchFragment.resetSearchState();
-            getInnerViewModel().setMode(Mode.BROWSING);
-            getInnerViewModel().setErrorState(false);
+            changeMode(Mode.BROWSING);
             String packageName = mediaSource.getPackageName();
             updateSourcePreferences(packageName);
 
@@ -472,17 +461,20 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
     @Nullable
     private BrowseFragment getCurrentBrowseFragment() {
-        return getInnerViewModel().mMode.getValue() == Mode.SEARCHING
-                ? mSearchFragment
-                : mBrowseFragment;
+        return mMode == Mode.SEARCHING ? mSearchFragment : mBrowseFragment;
     }
 
-    private void handleModeAndErrorState(Mode mode, Boolean isErrorMode) {
+    private void changeMode(Mode mode) {
+        if (mMode == mode) return;
+
         if (Log.isLoggable(TAG, Log.INFO)) {
-            Log.i(TAG, "switchToMode(); mode: " + mode + " errorState: " + isErrorMode);
+            Log.i(TAG, "Changing mode from: " + mMode+ " to: " + mode);
         }
 
-        if (isErrorMode) {
+        getInnerViewModel().saveMode(mode);
+        mMode = mode;
+
+        if (mode == Mode.FATAL_ERROR) {
             ViewUtils.showViewAnimated(mErrorContainer, mFadeDuration);
             ViewUtils.hideViewAnimated(mPlaybackContainer, mFadeDuration);
             ViewUtils.hideViewAnimated(mBrowseContainer, mFadeDuration);
@@ -500,7 +492,6 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                 ViewUtils.hideViewAnimated(mBrowseContainer, mFadeDuration);
                 ViewUtils.hideViewAnimated(mSearchContainer, mFadeDuration);
                 ViewUtils.hideViewAnimated(mAppBarView, mFadeDuration);
-                mAppBarView.setState(AppBarView.State.PLAYING);
                 break;
             case BROWSING:
                 ViewUtils.hideViewAnimated(mErrorContainer, mFadeDuration);
@@ -508,7 +499,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                 ViewUtils.showViewAnimated(mBrowseContainer, mFadeDuration);
                 ViewUtils.hideViewAnimated(mSearchContainer, mFadeDuration);
                 ViewUtils.showViewAnimated(mAppBarView, mFadeDuration);
-                updateAppBar(mode);
+                updateAppBar();
                 break;
             case SEARCHING:
                 ViewUtils.hideViewAnimated(mErrorContainer, mFadeDuration);
@@ -516,15 +507,15 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                 ViewUtils.hideViewAnimated(mBrowseContainer, mFadeDuration);
                 ViewUtils.showViewAnimated(mSearchContainer, mFadeDuration);
                 ViewUtils.showViewAnimated(mAppBarView, mFadeDuration);
-                updateAppBar(mode);
+                updateAppBar();
                 break;
         }
     }
 
-    private void updateAppBar(Mode mode) {
+    private void updateAppBar() {
         BrowseFragment fragment = getCurrentBrowseFragment();
         boolean isStacked = fragment != null && !fragment.isAtTopStack();
-        AppBarView.State unstackedState = mode == Mode.SEARCHING
+        AppBarView.State unstackedState = mMode == Mode.SEARCHING
                 ? AppBarView.State.SEARCHING
                 : AppBarView.State.BROWSING;
         mAppBarView.setTitle(isStacked ? fragment.getCurrentMediaItem().getTitle() : null);
@@ -546,7 +537,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
     @Override
     public void onBackStackChanged() {
-        updateAppBar(getInnerViewModel().mMode.getValue());
+        updateAppBar();
     }
 
     @Override
@@ -556,9 +547,9 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         boolean switchToPlayback = getResources().getBoolean(
                 R.bool.switch_to_playback_view_when_playable_item_is_clicked);
         if (switchToPlayback) {
-            getInnerViewModel().setMode(Mode.PLAYBACK);
-        } else if (getInnerViewModel().mMode.getValue() == Mode.SEARCHING) {
-            getInnerViewModel().setMode(Mode.BROWSING);
+            changeMode(Mode.PLAYBACK);
+        } else if (mMode == Mode.SEARCHING) {
+            changeMode(Mode.BROWSING);
         }
         setIntent(null);
     }
@@ -588,11 +579,10 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     public static class ViewModel extends AndroidViewModel {
         private boolean mNeedsInitialization = true;
         private PlaybackViewModel mPlaybackViewModel;
-        private MutableLiveData<Boolean> mIsMiniControlsVisible = new MutableLiveData<>();
+        /** Saves the Mode across config changes. */
+        private Mode mSavedMode;
 
-        private MutableLiveData<Boolean> mIsErrorState = new MutableLiveData<>();
-        private MutableLiveData<Mode> mMode = new MutableLiveData<>();
-        private LiveData<Pair<Mode, Boolean>> mModeAndErrorState = pair(mMode, mIsErrorState);
+        private MutableLiveData<Boolean> mIsMiniControlsVisible = new MutableLiveData<>();
 
         public ViewModel(@NonNull Application application) {
             super(application);
@@ -603,8 +593,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                 return;
             }
             mPlaybackViewModel = playbackViewModel;
-
-            mIsErrorState.setValue(false);
+            mSavedMode = Mode.BROWSING;
             mNeedsInitialization = false;
         }
 
@@ -620,16 +609,12 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             return mIsMiniControlsVisible;
         }
 
-        void setMode(Mode mode) {
-            mMode.setValue(mode);
+        void saveMode(Mode mode) {
+            mSavedMode = mode;
         }
 
-        LiveData<Pair<Mode, Boolean>> getModeAndErrorState() {
-            return mModeAndErrorState;
-        }
-
-        void setErrorState(boolean state) {
-            mIsErrorState.setValue(state);
+        Mode getSavedMode() {
+            return mSavedMode;
         }
     }
 }
