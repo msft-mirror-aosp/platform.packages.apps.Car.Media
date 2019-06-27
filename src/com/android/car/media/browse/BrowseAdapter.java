@@ -271,12 +271,12 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
                 currentTitleGrouping = titleGrouping;
                 itemsBuilder.addTitle(titleGrouping, null);
             }
-            if (item.isPlayable()) {
-                itemsBuilder.addItem(item, getPlayableViewType(mParentMediaItem),
-                        observer -> observer.onPlayableItemClicked(item));
-            } else if (item.isBrowsable()) {
+            if (item.isBrowsable()) {
                 itemsBuilder.addItem(item, getBrowsableViewType(mParentMediaItem),
                         observer -> observer.onBrowsableItemClicked(item));
+            } else if (item.isPlayable()) {
+                itemsBuilder.addItem(item, getPlayableViewType(mParentMediaItem),
+                        observer -> observer.onPlayableItemClicked(item));
             }
         }
 

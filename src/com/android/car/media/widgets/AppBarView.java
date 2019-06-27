@@ -72,11 +72,6 @@ public class AppBarView extends ConstraintLayout {
         void onBack();
 
         /**
-         * Invoked when the user clicks on the collapse button
-         */
-        void onCollapse();
-
-        /**
          * Invoked when the user clicks on the settings button.
          */
         void onSettingsSelection();
@@ -106,11 +101,6 @@ public class AppBarView extends ConstraintLayout {
          * the name of the element and we disable the back button.
          */
         STACKED,
-        /**
-         * Indicates that we have expanded a view that can be collapsed. We show the
-         * title of the application and a collapse icon
-         */
-        PLAYING,
         /**
          * Indicates that the user is currently entering a search query. We show the search bar and
          * a collapse icon
@@ -194,8 +184,7 @@ public class AppBarView extends ConstraintLayout {
                 break;
             case SEARCHING:
                 mSearchBar.showSearchBar(false);
-            case PLAYING:
-                mListener.onCollapse();
+                mListener.onBack();
                 break;
         }
     }
@@ -348,8 +337,6 @@ public class AppBarView extends ConstraintLayout {
                 mSearchButton.setVisibility(mSearchSupported ? View.VISIBLE : View.GONE);
                 showSettings(true);
                 mAppSelector.setVisibility(View.VISIBLE);
-                break;
-            case PLAYING:
                 break;
             case SEARCHING:
                 mNavIcon.setImageDrawable(mArrowBack);
