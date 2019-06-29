@@ -19,8 +19,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/playback_container"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_marginBottom="@dimen/control_bar_margin_bottom">
+    android:layout_height="match_parent">
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/app_bar_guideline"
@@ -29,12 +28,12 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_begin="@dimen/appbar_first_row_height"/>
 
-    <androidx.constraintlayout.widget.Guideline
+    <Space
         android:id="@+id/control_bar_first_row_guideline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_end="@dimen/control_bar_height"/>
+        android:layout_width="0dp"
+        android:layout_height="@dimen/control_bar_height"
+        android:layout_marginBottom="@dimen/control_bar_margin_bottom"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
     <com.android.car.apps.common.BackgroundImageView
         android:id="@+id/playback_background"
@@ -171,6 +170,7 @@
         android:id="@+id/playback_controls"
         style="@style/ControlBar"
         android:layout_marginHorizontal="@dimen/control_bar_margin_x"
+        android:layout_marginBottom="@dimen/control_bar_margin_bottom"
         app:columns="5"
         app:enableOverflow="true"
         app:layout_constraintBottom_toBottomOf="parent"

@@ -15,12 +15,14 @@
  */
 package com.android.car.media;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Application;
 import android.app.PendingIntent;
 import android.car.Car;
 import android.car.drivingstate.CarUxRestrictions;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
@@ -28,11 +30,16 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
 import android.transition.Fade;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.GestureDetectorCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.AndroidViewModel;
@@ -73,6 +80,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     private PlaybackViewModel.PlaybackController mPlaybackController;
 
     /** Layout views */
+    private View mRootView;
     private AppBarView mAppBarView;
     private PlaybackFragment mPlaybackFragment;
     private BrowseFragment mSearchFragment;
@@ -185,6 +193,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         }
         mMode = localViewModel.getSavedMode();
 
+        mRootView = findViewById(R.id.media_activity_root);
         mAppBarView = findViewById(R.id.app_bar);
         mAppBarView.setListener(mAppBarListener);
         mediaSourceViewModel.getPrimaryMediaSource().observe(this,
@@ -230,8 +239,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         mMiniPlaybackControls = findViewById(R.id.minimized_playback_controls);
         mMiniPlaybackControls.setOnClickListener(view -> changeMode(Mode.PLAYBACK));
 
-        mFadeDuration = getResources().getInteger(
-                R.integer.new_album_art_fade_in_duration);
+        mFadeDuration = getResources().getInteger(R.integer.new_album_art_fade_in_duration);
         mBrowseContainer = findViewById(R.id.fragment_container);
         mErrorContainer = findViewById(R.id.error_container);
         mPlaybackContainer = findViewById(R.id.playback_container);
@@ -254,6 +262,8 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         mCarUxRestrictionsUtil = CarUxRestrictionsUtil.getInstance(this);
         mRestrictions = CarUxRestrictions.UX_RESTRICTIONS_NO_SETUP;
         mCarUxRestrictionsUtil.register(mListener);
+
+        mPlaybackContainer.setOnTouchListener(new ClosePlaybackDetector(this));
     }
 
     @Override
@@ -375,7 +385,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             if (Log.isLoggable(TAG, Log.INFO)) {
                 Log.i(TAG, "Browsing: " + mediaSource.getName());
             }
-            mAppBarView.setMediaAppName(mediaSource.getName());
+            mAppBarView.setMediaAppTitle(mediaSource.getName());
             mAppBarView.setTitle(null);
             updateTabs(null);
             mSearchFragment.resetSearchState();
@@ -386,7 +396,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             // Always go through the trampoline activity to keep all the dispatching logic there.
             startActivity(new Intent(Car.CAR_INTENT_ACTION_MEDIA_TEMPLATE));
         } else {
-            mAppBarView.setMediaAppName("");
+            mAppBarView.setMediaAppTitle(null);
             mAppBarView.setTitle(null);
             updateTabs(null);
             updateSourcePreferences(null);
@@ -437,7 +447,14 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                 .filter(MediaItemMetadata::isBrowsable)
                 .collect(Collectors.toList());
 
-        mAppBarView.setItems(browsableTopLevel);
+        if (browsableTopLevel.size() == 1) {
+            // If there is only a single tab, use it as a header instead
+            mAppBarView.setMediaAppTitle(browsableTopLevel.get(0).getTitle());
+            mAppBarView.setTitle(null);
+            mAppBarView.setItems(null);
+        } else {
+            mAppBarView.setItems(browsableTopLevel);
+        }
         showTopItem(browsableTopLevel.isEmpty() ? null : browsableTopLevel.get(0));
     }
 
@@ -471,6 +488,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             Log.i(TAG, "Changing mode from: " + mMode+ " to: " + mode);
         }
 
+        Mode oldMode = mMode;
         getInnerViewModel().saveMode(mode);
         mMode = mode;
 
@@ -487,6 +505,8 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
         switch (mode) {
             case PLAYBACK:
+                mPlaybackContainer.setY(0);
+                mPlaybackContainer.setAlpha(0f);
                 ViewUtils.hideViewAnimated(mErrorContainer, mFadeDuration);
                 ViewUtils.showViewAnimated(mPlaybackContainer, mFadeDuration);
                 ViewUtils.hideViewAnimated(mBrowseContainer, mFadeDuration);
@@ -494,11 +514,23 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                 ViewUtils.hideViewAnimated(mAppBarView, mFadeDuration);
                 break;
             case BROWSING:
-                ViewUtils.hideViewAnimated(mErrorContainer, mFadeDuration);
-                ViewUtils.hideViewAnimated(mPlaybackContainer, mFadeDuration);
-                ViewUtils.showViewAnimated(mBrowseContainer, mFadeDuration);
-                ViewUtils.hideViewAnimated(mSearchContainer, mFadeDuration);
-                ViewUtils.showViewAnimated(mAppBarView, mFadeDuration);
+                if (oldMode == Mode.PLAYBACK) {
+                    ViewUtils.hideViewAnimated(mErrorContainer, 0);
+                    ViewUtils.showViewAnimated(mBrowseContainer, 0);
+                    ViewUtils.hideViewAnimated(mSearchContainer, 0);
+                    ViewUtils.showViewAnimated(mAppBarView, 0);
+                    mPlaybackContainer.animate()
+                            .translationY(mRootView.getHeight())
+                            .setDuration(mFadeDuration)
+                            .setListener(ViewUtils.hideViewAfterAnimation(mPlaybackContainer))
+                            .start();
+                } else {
+                    ViewUtils.hideViewAnimated(mErrorContainer, mFadeDuration);
+                    ViewUtils.hideViewAnimated(mPlaybackContainer, mFadeDuration);
+                    ViewUtils.showViewAnimated(mBrowseContainer, mFadeDuration);
+                    ViewUtils.hideViewAnimated(mSearchContainer, mFadeDuration);
+                    ViewUtils.showViewAnimated(mAppBarView, mFadeDuration);
+                }
                 updateAppBar();
                 break;
             case SEARCHING:
@@ -523,10 +555,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     }
 
     private void updateMetadata(Mode mode) {
-        if (mode == Mode.PLAYBACK) {
-            ViewUtils.hideViewAnimated(mMiniPlaybackControls, mFadeDuration);
-            getInnerViewModel().setMiniControlsVisible(false);
-        } else {
+        if (mode != Mode.PLAYBACK) {
             mPlaybackFragment.closeOverflowMenu();
             if (mCanShowMiniPlaybackControls) {
                 ViewUtils.showViewAnimated(mMiniPlaybackControls, mFadeDuration);
@@ -615,6 +644,45 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
         Mode getSavedMode() {
             return mSavedMode;
+        }
+    }
+
+
+    private class ClosePlaybackDetector extends GestureDetector.SimpleOnGestureListener
+            implements View.OnTouchListener {
+
+        private final ViewConfiguration mViewConfig;
+        private final GestureDetectorCompat mDetector;
+
+
+        ClosePlaybackDetector(Context context) {
+            mViewConfig = ViewConfiguration.get(context);
+            mDetector = new GestureDetectorCompat(context, this);
+        }
+
+        @SuppressLint("ClickableViewAccessibility")
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            return mDetector.onTouchEvent(event);
+        }
+
+        @Override
+        public boolean onDown(MotionEvent event) {
+            return (mMode == Mode.PLAYBACK);
+        }
+
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float vX, float vY) {
+            float dY = e2.getY() - e1.getY();
+            if (dY > mViewConfig.getScaledTouchSlop() &&
+                    Math.abs(vY) > mViewConfig.getScaledMinimumFlingVelocity()) {
+                float dX = e2.getX() - e1.getX();
+                float tan = Math.abs(dX) / dY;
+                if (tan <= 0.58) { // Accept 30 degrees on each side of the down vector.
+                    changeMode(Mode.BROWSING);
+                }
+            }
+            return true;
         }
     }
 }
