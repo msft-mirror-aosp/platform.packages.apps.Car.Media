@@ -246,11 +246,12 @@ public class AppBarView extends ConstraintLayout {
 
     /**
      * Sets the name of the currently displayed media app. This is used as the default title for
-     * playback and the root browse menu
+     * playback and the root browse menu. If provided title is null, will use default media center
+     * title.
      */
-    public void setMediaAppName(CharSequence appName) {
-        mMediaAppTitle = appName == null ? getResources().getString(R.string.media_app_title)
-                : appName.toString();
+    public void setMediaAppTitle(CharSequence appTitle) {
+        mMediaAppTitle = appTitle == null ? getResources().getString(R.string.media_app_title)
+                : appTitle.toString();
     }
 
     /** Sets whether the source has settings (not all screens show it). */

@@ -385,7 +385,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             if (Log.isLoggable(TAG, Log.INFO)) {
                 Log.i(TAG, "Browsing: " + mediaSource.getName());
             }
-            mAppBarView.setMediaAppName(mediaSource.getName());
+            mAppBarView.setMediaAppTitle(mediaSource.getName());
             mAppBarView.setTitle(null);
             updateTabs(null);
             mSearchFragment.resetSearchState();
@@ -396,7 +396,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             // Always go through the trampoline activity to keep all the dispatching logic there.
             startActivity(new Intent(Car.CAR_INTENT_ACTION_MEDIA_TEMPLATE));
         } else {
-            mAppBarView.setMediaAppName("");
+            mAppBarView.setMediaAppTitle(null);
             mAppBarView.setTitle(null);
             updateTabs(null);
             updateSourcePreferences(null);
@@ -447,7 +447,14 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                 .filter(MediaItemMetadata::isBrowsable)
                 .collect(Collectors.toList());
 
-        mAppBarView.setItems(browsableTopLevel);
+        if (browsableTopLevel.size() == 1) {
+            // If there is only a single tab, use it as a header instead
+            mAppBarView.setMediaAppTitle(browsableTopLevel.get(0).getTitle());
+            mAppBarView.setTitle(null);
+            mAppBarView.setItems(null);
+        } else {
+            mAppBarView.setItems(browsableTopLevel);
+        }
         showTopItem(browsableTopLevel.isEmpty() ? null : browsableTopLevel.get(0));
     }
 
