@@ -24,7 +24,7 @@
     <string name="unknown_error" msgid="6146463797752964372">"エラーが発生しました"</string>
     <string name="media_browse_more" msgid="6330295386693311592">"その他…"</string>
     <string name="media_app_title" msgid="94717597743776797">"メディア"</string>
-    <string name="search_hint" msgid="8273719939080187914">"検索"</string>
+    <string name="search_hint" msgid="5401750426238148416">"曲、アーティストなどを検索..."</string>
     <string name="default_error_message" msgid="5555889194833511375">"アプリで不明なエラーが発生しました"</string>
     <string name="fragment_playback_title" msgid="5014481549024607614">"この曲なに？"</string>
 </resources>
