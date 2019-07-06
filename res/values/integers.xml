@@ -21,11 +21,8 @@
     <!-- The maximum number of lines for the artist of a currently playing media item. -->
     <integer name="media_artist_max_lines">1</integer>
 
-    <!-- Maximum number of browse tabs -->
-    <integer name="max_browse_tabs">4</integer>
-
     <!-- Number of columns in the browse view -->
-    <integer name="num_browse_columns">4</integer>
+    <integer name="num_browse_columns">3</integer>
 
     <!-- The amount of time it takes for the app selector to fade in and out -->
     <integer name="app_selector_fade_duration">500</integer>
