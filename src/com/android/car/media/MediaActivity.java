@@ -383,9 +383,9 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         maybeCancelToast();
         if (mediaSource != null) {
             if (Log.isLoggable(TAG, Log.INFO)) {
-                Log.i(TAG, "Browsing: " + mediaSource.getName());
+                Log.i(TAG, "Browsing: " + mediaSource.getDisplayName());
             }
-            mAppBarView.setMediaAppTitle(mediaSource.getName());
+            mAppBarView.setMediaAppTitle(mediaSource.getDisplayName());
             mAppBarView.setTitle(null);
             updateTabs(null);
             mSearchFragment.resetSearchState();
@@ -403,6 +403,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         }
     }
 
+    // TODO(b/136274938): display the preference screen for each media service.
     private void updateSourcePreferences(@Nullable String packageName) {
         mCurrentSourcePreferences = null;
         if (packageName != null) {
