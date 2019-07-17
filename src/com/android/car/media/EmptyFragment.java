@@ -87,7 +87,7 @@ public class EmptyFragment extends Fragment {
                 mMessage.setText(requireContext().getString(
                         R.string.cannot_connect_to_app,
                         mediaSource != null
-                                ? mediaSource.getName()
+                                ? mediaSource.getDisplayName()
                                 : requireContext().getString(
                                         R.string.unknown_media_provider_name)));
                 break;
