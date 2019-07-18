@@ -89,8 +89,9 @@ public class PlaybackFragment extends Fragment {
     private boolean mShowIconForActiveQueueItem;
     private boolean mShowThumbnailForQueueItem;
 
+    private boolean mShowLinearProgressBar;
+
     private int mFadeDuration;
-    private float mPlaybackQueueBackgroundAlpha;
 
     /**
      * PlaybackFragment listener
@@ -287,21 +288,30 @@ public class PlaybackFragment extends Fragment {
                 R.bool.show_icon_for_now_playing_queue_list_item);
         mShowThumbnailForQueueItem = getContext().getResources().getBoolean(
                 R.bool.show_thumbnail_for_queue_list_item);
+        mShowLinearProgressBar = getContext().getResources().getBoolean(
+                R.bool.show_linear_progress_bar);
 
-        boolean useMediaSourceColor = res.getBoolean(
-                R.bool.use_media_source_color_for_progress_bar);
-        int defaultColor = res.getColor(R.color.progress_bar_highlight, null);
-        if (useMediaSourceColor) {
-            getPlaybackViewModel().getMediaSourceColors().observe(getViewLifecycleOwner(),
-                    sourceColors -> {
-                        int color = sourceColors != null ? sourceColors.getAccentColor(defaultColor)
-                                : defaultColor;
-                        mSeekBar.setThumbTintList(ColorStateList.valueOf(color));
-                        mSeekBar.setProgressTintList(ColorStateList.valueOf(color));
-                    });
-        } else {
-            mSeekBar.setThumbTintList(ColorStateList.valueOf(defaultColor));
-            mSeekBar.setProgressTintList(ColorStateList.valueOf(defaultColor));
+        if (mSeekBar != null) {
+            if (mShowLinearProgressBar) {
+                boolean useMediaSourceColor = res.getBoolean(
+                        R.bool.use_media_source_color_for_progress_bar);
+                int defaultColor = res.getColor(R.color.progress_bar_highlight, null);
+                if (useMediaSourceColor) {
+                    getPlaybackViewModel().getMediaSourceColors().observe(getViewLifecycleOwner(),
+                            sourceColors -> {
+                                int color = sourceColors != null ? sourceColors.getAccentColor(
+                                        defaultColor)
+                                        : defaultColor;
+                                mSeekBar.setThumbTintList(ColorStateList.valueOf(color));
+                                mSeekBar.setProgressTintList(ColorStateList.valueOf(color));
+                            });
+                } else {
+                    mSeekBar.setThumbTintList(ColorStateList.valueOf(defaultColor));
+                    mSeekBar.setProgressTintList(ColorStateList.valueOf(defaultColor));
+                }
+            } else {
+                mSeekBar.setVisibility(View.GONE);
+            }
         }
 
         MediaAppSelectorWidget appIcon = view.findViewById(R.id.app_icon_container);
@@ -399,8 +409,6 @@ public class PlaybackFragment extends Fragment {
     private void initQueue() {
         mFadeDuration = getResources().getInteger(
                 R.integer.fragment_playback_queue_fade_duration_ms);
-        mPlaybackQueueBackgroundAlpha = getResources().getFloat(
-                R.dimen.playback_queue_background_alpha);
 
         int decorationHeight = getResources().getDimensionPixelSize(
                 R.dimen.playback_queue_list_padding_top);
@@ -460,7 +468,7 @@ public class PlaybackFragment extends Fragment {
         TextView curTime = view.findViewById(R.id.current_time);
         TextView innerSeparator = view.findViewById(R.id.inner_separator);
         TextView maxTime = view.findViewById(R.id.max_time);
-        SeekBar seekbar = view.findViewById(R.id.seek_bar);
+        SeekBar seekbar = mShowLinearProgressBar? mSeekBar : null;
 
         mMetadataController = new MetadataController(getViewLifecycleOwner(),
                 getPlaybackViewModel(), title, artist, albumTitle, outerSeparator,
@@ -477,14 +485,18 @@ public class PlaybackFragment extends Fragment {
         mQueueButton.setSelected(mQueueIsVisible);
         if (mQueueIsVisible) {
             ViewUtils.hideViewAnimated(mMetadataContainer, mFadeDuration);
-            ViewUtils.hideViewAnimated(mSeekBar, mFadeDuration);
             ViewUtils.showViewAnimated(mQueue, mFadeDuration);
             ViewUtils.showViewAnimated(mBackgroundScrim, mFadeDuration);
+            if (mShowLinearProgressBar) {
+                ViewUtils.hideViewAnimated(mSeekBar, mFadeDuration);
+            }
         } else {
             ViewUtils.hideViewAnimated(mQueue, mFadeDuration);
             ViewUtils.showViewAnimated(mMetadataContainer, mFadeDuration);
-            ViewUtils.showViewAnimated(mSeekBar, mFadeDuration);
             ViewUtils.hideViewAnimated(mBackgroundScrim, mFadeDuration);
+            if (mShowLinearProgressBar) {
+                ViewUtils.showViewAnimated(mSeekBar, mFadeDuration);
+            }
         }
     }
 
