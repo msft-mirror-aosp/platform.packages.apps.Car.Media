@@ -95,6 +95,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     private ViewGroup mSearchContainer;
 
     private Toast mToast;
+    private AlertDialog mDialog;
 
     /** Current state */
     private Mode mMode;
@@ -172,7 +173,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         PLAYBACK,
         /** The user is searching within a media source */
         SEARCHING,
-        /** There's no browse tree and playback doesn't work.*/
+        /** There's no browse tree and playback doesn't work. */
         FATAL_ERROR
     }
 
@@ -328,8 +329,9 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
     private void showDialog(PendingIntent intent, String message, String positiveBtnText,
             String negativeButtonText) {
+        maybeCancelDialog();
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        dialog.setMessage(message)
+        mDialog = dialog.setMessage(message)
                 .setNegativeButton(negativeButtonText, null)
                 .setPositiveButton(positiveBtnText, (dialogInterface, i) -> {
                     try {
@@ -341,6 +343,13 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                     }
                 })
                 .show();
+    }
+
+    private void maybeCancelDialog() {
+        if (mDialog != null) {
+            mDialog.cancel();
+            mDialog = null;
+        }
     }
 
     private void showToast(String message) {
@@ -381,6 +390,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     private void onMediaSourceChanged(@Nullable MediaSource mediaSource) {
         mIsBrowseTreeReady = false;
         maybeCancelToast();
+        maybeCancelDialog();
         if (mediaSource != null) {
             if (Log.isLoggable(TAG, Log.INFO)) {
                 Log.i(TAG, "Browsing: " + mediaSource.getDisplayName());
@@ -486,7 +496,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         if (mMode == mode) return;
 
         if (Log.isLoggable(TAG, Log.INFO)) {
-            Log.i(TAG, "Changing mode from: " + mMode+ " to: " + mode);
+            Log.i(TAG, "Changing mode from: " + mMode + " to: " + mode);
         }
 
         Mode oldMode = mMode;
