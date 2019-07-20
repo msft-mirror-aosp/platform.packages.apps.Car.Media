@@ -61,7 +61,10 @@ import com.android.car.media.common.source.MediaSourceViewModel;
 import com.android.car.media.widgets.AppBarView;
 import com.android.car.media.widgets.SearchBar;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -175,6 +178,31 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         SEARCHING,
         /** There's no browse tree and playback doesn't work. */
         FATAL_ERROR
+    }
+
+    private static final Map<Integer, Integer> ERROR_CODE_MESSAGES_MAP;
+
+    static {
+        Map<Integer, Integer> map = new HashMap<>();
+        map.put(PlaybackStateCompat.ERROR_CODE_APP_ERROR, R.string.error_code_app_error);
+        map.put(PlaybackStateCompat.ERROR_CODE_NOT_SUPPORTED, R.string.error_code_not_supported);
+        map.put(PlaybackStateCompat.ERROR_CODE_AUTHENTICATION_EXPIRED,
+                R.string.error_code_authentication_expired);
+        map.put(PlaybackStateCompat.ERROR_CODE_PREMIUM_ACCOUNT_REQUIRED,
+                R.string.error_code_premium_account_required);
+        map.put(PlaybackStateCompat.ERROR_CODE_CONCURRENT_STREAM_LIMIT,
+                R.string.error_code_concurrent_stream_limit);
+        map.put(PlaybackStateCompat.ERROR_CODE_PARENTAL_CONTROL_RESTRICTED,
+                R.string.error_code_parental_control_restricted);
+        map.put(PlaybackStateCompat.ERROR_CODE_NOT_AVAILABLE_IN_REGION,
+                R.string.error_code_not_available_in_region);
+        map.put(PlaybackStateCompat.ERROR_CODE_CONTENT_ALREADY_PLAYING,
+                R.string.error_code_content_already_playing);
+        map.put(PlaybackStateCompat.ERROR_CODE_SKIP_LIMIT_REACHED,
+                R.string.error_code_skip_limit_reached);
+        map.put(PlaybackStateCompat.ERROR_CODE_ACTION_ABORTED, R.string.error_code_action_aborted);
+        map.put(PlaybackStateCompat.ERROR_CODE_END_OF_QUEUE, R.string.error_code_end_of_queue);
+        ERROR_CODE_MESSAGES_MAP = Collections.unmodifiableMap(map);
     }
 
     @Override
@@ -298,19 +326,9 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         Bundle extras = state.getExtras();
         PendingIntent intent = extras == null ? null : extras.getParcelable(
                 MediaConstants.ERROR_RESOLUTION_ACTION_INTENT);
-
         String label = extras == null ? null : extras.getString(
                 MediaConstants.ERROR_RESOLUTION_ACTION_LABEL);
-
-        String displayedMessage = null;
-        if (!TextUtils.isEmpty(state.getErrorMessage())) {
-            displayedMessage = state.getErrorMessage().toString();
-        } else if (state.getErrorCode() != PlaybackStateCompat.ERROR_CODE_UNKNOWN_ERROR) {
-            // TODO(b/131601881): convert the error codes to prebuilt error messages
-            displayedMessage = getString(R.string.default_error_message);
-        } else if (state.getState() == PlaybackStateCompat.STATE_ERROR) {
-            displayedMessage = getString(R.string.default_error_message);
-        }
+        String displayedMessage = getDisplayedMessage(state);
 
         if (!TextUtils.isEmpty(displayedMessage)) {
             if (mIsBrowseTreeReady) {
@@ -325,6 +343,22 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                 changeMode(Mode.FATAL_ERROR);
             }
         }
+    }
+
+    private String getDisplayedMessage(PlaybackViewModel.PlaybackStateWrapper state) {
+        if (!TextUtils.isEmpty(state.getErrorMessage())) {
+            return state.getErrorMessage().toString();
+        }
+        // ERROR_CODE_UNKNOWN_ERROR means there is no error in PlaybackState.
+        if (state.getErrorCode() != PlaybackStateCompat.ERROR_CODE_UNKNOWN_ERROR) {
+            Integer messageId = ERROR_CODE_MESSAGES_MAP.get(state.getErrorCode());
+            return messageId != null ? getString(messageId) : getString(
+                    R.string.default_error_message);
+        }
+        if (state.getState() == PlaybackStateCompat.STATE_ERROR) {
+            return getString(R.string.default_error_message);
+        }
+        return null;
     }
 
     private void showDialog(PendingIntent intent, String message, String positiveBtnText,
