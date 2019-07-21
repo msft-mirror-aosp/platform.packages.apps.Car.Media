@@ -125,7 +125,7 @@
     <dimen name="media_browse_indicator_size">25dp</dimen>
 
     <!-- metadata_normal.xml -->
-    <dimen name="metadata_title_subtitle_margin">@*android:dimen/car_padding_4</dimen>
+    <dimen name="metadata_title_subtitle_margin">@*android:dimen/car_padding_2</dimen>
     <dimen name="metadata_subtitles_margin">@*android:dimen/car_padding_2</dimen>
     <dimen name="art_metadata_margin">48dp</dimen>
 
