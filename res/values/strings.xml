@@ -42,7 +42,7 @@
     <!-- Error message set when the request is not supported by the application. [CHAR LIMIT=100] -->
     <string name="error_code_not_supported">This app can’t do that</string>
     <!-- Error message set when the request cannot be performed because authentication has expired. [CHAR LIMIT=100] -->
-    <string name="error_code_authentication_expired">Try signing in again</string>
+    <string name="error_code_authentication_expired">Sign in to use this app</string>
     <!-- Error message set when a premium account is required for the request to succeed. [CHAR LIMIT=100] -->
     <string name="error_code_premium_account_required">Premium access required</string>
     <!-- Error message set when too many concurrent streams are detected. [CHAR LIMIT=100] -->
