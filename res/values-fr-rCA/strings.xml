@@ -29,7 +29,7 @@
     <string name="default_error_message" msgid="6365377134388091079">"Quelque chose ne va pas. Réessayez plus tard."</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"Impossible d\'effectuer cette action pour le moment"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"Cette application ne peut pas effectuer cette action"</string>
-    <string name="error_code_authentication_expired" msgid="470036816278170698">"Essayez de vous reconnecter"</string>
+    <string name="error_code_authentication_expired" msgid="905154133202017052">"Connectez-vous pour utiliser cette application"</string>
     <string name="error_code_premium_account_required" msgid="4736461331592855166">"Un accès Premium est requis"</string>
     <string name="error_code_concurrent_stream_limit" msgid="1279573243715957403">"Écoute en cours sur trop d\'appareils"</string>
     <string name="error_code_parental_control_restricted" msgid="5222841294702530806">"Ce contenu est bloqué"</string>

@@ -29,7 +29,7 @@
     <string name="default_error_message" msgid="6365377134388091079">"የሆነ ችግር አለ። በኋላ ይሞክሩ።"</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"አሁን ይህን ማድረግ አይቻልም"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"ይህ መተግበሪያ ይህን ማድረግ አይችልም"</string>
-    <string name="error_code_authentication_expired" msgid="470036816278170698">"እንደገና ለመግባት ይሞክሩ"</string>
+    <string name="error_code_authentication_expired" msgid="905154133202017052">"ይህን መተግበሪያ ለመጠቀም በመለያ ይግቡ"</string>
     <string name="error_code_premium_account_required" msgid="4736461331592855166">"ፕሪሚየም መዳረሻ ያስፈልጋል"</string>
     <string name="error_code_concurrent_stream_limit" msgid="1279573243715957403">"በጣም ብዙ መሣሪያዎችን በማዳመጥ ላይ"</string>
     <string name="error_code_parental_control_restricted" msgid="5222841294702530806">"ይዘቱ ታግዷል"</string>

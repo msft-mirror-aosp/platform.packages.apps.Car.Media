@@ -29,7 +29,7 @@
     <string name="default_error_message" msgid="6365377134388091079">"යම් දෙයක් වැරදියි. පසුව උත්සාහ කරන්න."</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"දැන් එය කළ නොහැක"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"මෙම යෙදුමට එය කළ නොහැක"</string>
-    <string name="error_code_authentication_expired" msgid="470036816278170698">"නැවත පිරීමට උත්සාහ කරන්න"</string>
+    <string name="error_code_authentication_expired" msgid="905154133202017052">"මෙම යෙදුම භාවිත කිරීමට පුරන්න"</string>
     <string name="error_code_premium_account_required" msgid="4736461331592855166">"පාරිතෝෂික ප්‍රවේශය අවශ්‍යයි"</string>
     <string name="error_code_concurrent_stream_limit" msgid="1279573243715957403">"ඕනෑවට වඩා උපාංග මත සවන් දීම"</string>
     <string name="error_code_parental_control_restricted" msgid="5222841294702530806">"එම අන්තර්ගතය අවහිර කර ඇත"</string>

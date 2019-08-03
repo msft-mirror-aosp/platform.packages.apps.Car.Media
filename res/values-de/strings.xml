@@ -29,7 +29,7 @@
     <string name="default_error_message" msgid="6365377134388091079">"Ein Fehler ist aufgetreten. Versuch es später noch mal."</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"Das ist gerade nicht möglich"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"Diese App kann das nicht"</string>
-    <string name="error_code_authentication_expired" msgid="470036816278170698">"Melde dich noch einmal an"</string>
+    <string name="error_code_authentication_expired" msgid="905154133202017052">"Damit du diese App verwenden kannst, musst du dich zuerst anmelden"</string>
     <string name="error_code_premium_account_required" msgid="4736461331592855166">"Premiumzugriff erforderlich"</string>
     <string name="error_code_concurrent_stream_limit" msgid="1279573243715957403">"Es wird auf zu vielen Geräten gleichzeitig gestreamt"</string>
     <string name="error_code_parental_control_restricted" msgid="5222841294702530806">"Der Inhalt ist gesperrt"</string>

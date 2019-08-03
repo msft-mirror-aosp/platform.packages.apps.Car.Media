@@ -29,7 +29,7 @@
     <string name="default_error_message" msgid="6365377134388091079">"Бир жерден ката кетти. Кийинчерээк кайталаңыз."</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"Аны азыр аткаруу мүмкүн эмес"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"Бул колдонмо аны аткара албайт"</string>
-    <string name="error_code_authentication_expired" msgid="470036816278170698">"Кайра кирип көрүңүз"</string>
+    <string name="error_code_authentication_expired" msgid="905154133202017052">"Бул колдонмону пайдалануу үчүн аккаунтуңузга кириңиз"</string>
     <string name="error_code_premium_account_required" msgid="4736461331592855166">"Артыкчылыктуу кирүү мүмкүнчүлүгү талап кылынат"</string>
     <string name="error_code_concurrent_stream_limit" msgid="1279573243715957403">"Өтө көп түзмөк угулууда"</string>
     <string name="error_code_parental_control_restricted" msgid="5222841294702530806">"Ал мазмун бөгөттөлгөн"</string>

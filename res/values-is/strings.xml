@@ -29,7 +29,7 @@
     <string name="default_error_message" msgid="6365377134388091079">"Eitthvað er ekki í lagi. Reyna síðar."</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"Ekki er hægt að framkvæma þetta eins og er"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"Forritið getur ekki framkvæmt þetta"</string>
-    <string name="error_code_authentication_expired" msgid="470036816278170698">"Reyndu að skrá þig inn aftur"</string>
+    <string name="error_code_authentication_expired" msgid="905154133202017052">"Skráðu þig inn til að nota þetta forrit"</string>
     <string name="error_code_premium_account_required" msgid="4736461331592855166">"Premium-aðgangur er nauðsynlegur"</string>
     <string name="error_code_concurrent_stream_limit" msgid="1279573243715957403">"Hlustað í of mörgum tækjum"</string>
     <string name="error_code_parental_control_restricted" msgid="5222841294702530806">"Þetta efni er á bannlista"</string>

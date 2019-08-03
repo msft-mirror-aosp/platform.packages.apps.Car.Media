@@ -29,7 +29,7 @@
     <string name="default_error_message" msgid="6365377134388091079">"Ada yang tidak kena. Cuba nanti."</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"Tidak dapat berbuat demikian sekarang"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"Apl ini tidak dapat berbuat demikian"</string>
-    <string name="error_code_authentication_expired" msgid="470036816278170698">"Cuba log masuk semula"</string>
+    <string name="error_code_authentication_expired" msgid="905154133202017052">"Log masuk untuk menggunakan apl ini"</string>
     <string name="error_code_premium_account_required" msgid="4736461331592855166">"Akses premium diperlukan"</string>
     <string name="error_code_concurrent_stream_limit" msgid="1279573243715957403">"Mendengar pada terlalu banyak peranti"</string>
     <string name="error_code_parental_control_restricted" msgid="5222841294702530806">"Kandungan itu disekat"</string>

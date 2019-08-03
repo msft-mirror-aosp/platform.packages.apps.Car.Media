@@ -330,7 +330,7 @@ public class PlaybackFragment extends Fragment {
             int viewId = hideViewIds.getResourceId(i, 0);
             if (viewId != 0) {
                 View viewToHide = view.findViewById(viewId);
-                if (viewToHide != null) {
+                if (viewToHide != null && (mShowLinearProgressBar || viewToHide != mSeekBar)) {
                     mViewsToHideForCustomActions.add(viewToHide);
                 }
             }
@@ -468,7 +468,7 @@ public class PlaybackFragment extends Fragment {
         TextView curTime = view.findViewById(R.id.current_time);
         TextView innerSeparator = view.findViewById(R.id.inner_separator);
         TextView maxTime = view.findViewById(R.id.max_time);
-        SeekBar seekbar = mShowLinearProgressBar? mSeekBar : null;
+        SeekBar seekbar = mShowLinearProgressBar ? mSeekBar : null;
 
         mMetadataController = new MetadataController(getViewLifecycleOwner(),
                 getPlaybackViewModel(), title, artist, albumTitle, outerSeparator,

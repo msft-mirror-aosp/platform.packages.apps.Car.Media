@@ -29,7 +29,7 @@
     <string name="default_error_message" msgid="6365377134388091079">"Někde se stala chyba. Zkuste to později."</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"Tuto akci teď nelze provést"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"Tuto akci aplikace nedokáže provést"</string>
-    <string name="error_code_authentication_expired" msgid="470036816278170698">"Zkuste se přihlásit znovu"</string>
+    <string name="error_code_authentication_expired" msgid="905154133202017052">"Chcete-li aplikaci použít, přihlaste se"</string>
     <string name="error_code_premium_account_required" msgid="4736461331592855166">"Je vyžadován prémiový přístup"</string>
     <string name="error_code_concurrent_stream_limit" msgid="1279573243715957403">"Poslech je aktivován v příliš mnoha zařízeních"</string>
     <string name="error_code_parental_control_restricted" msgid="5222841294702530806">"Obsah je blokován"</string>

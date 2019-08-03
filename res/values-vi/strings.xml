@@ -29,7 +29,7 @@
     <string name="default_error_message" msgid="6365377134388091079">"Đã xảy ra lỗi. Hãy thử lại sau."</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"Không thể thực hiện yêu cầu đó ngay bây giờ"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"Ứng dụng này không thể thực hiện yêu cầu đó"</string>
-    <string name="error_code_authentication_expired" msgid="470036816278170698">"Thử đăng nhập lại"</string>
+    <string name="error_code_authentication_expired" msgid="905154133202017052">"Hãy đăng nhập để dùng ứng dụng này"</string>
     <string name="error_code_premium_account_required" msgid="4736461331592855166">"Yêu cầu quyền truy cập đặc biệt"</string>
     <string name="error_code_concurrent_stream_limit" msgid="1279573243715957403">"Đang nghe trên quá nhiều thiết bị"</string>
     <string name="error_code_parental_control_restricted" msgid="5222841294702530806">"Nội dung đó đã bị chặn"</string>

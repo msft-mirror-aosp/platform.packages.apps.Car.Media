@@ -29,7 +29,7 @@
     <string name="default_error_message" msgid="6365377134388091079">"Bir şeyler ters gitti. Daha sonra tekrar deneyin."</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"İşlem şu anda gerçekleştirilemiyor"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"Uygulama bu işlemi gerçekleştiremiyor"</string>
-    <string name="error_code_authentication_expired" msgid="470036816278170698">"Tekrar oturum açmayı deneyin"</string>
+    <string name="error_code_authentication_expired" msgid="905154133202017052">"Bu uygulamayı kullanmak için oturum açın"</string>
     <string name="error_code_premium_account_required" msgid="4736461331592855166">"Premium erişim gerekli"</string>
     <string name="error_code_concurrent_stream_limit" msgid="1279573243715957403">"Çok fazla cihazda dinleme yapılıyor"</string>
     <string name="error_code_parental_control_restricted" msgid="5222841294702530806">"Bu içerik engellendi"</string>

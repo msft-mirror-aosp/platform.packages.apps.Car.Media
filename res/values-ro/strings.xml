@@ -29,7 +29,7 @@
     <string name="default_error_message" msgid="6365377134388091079">"A apărut o problemă. Încercați mai târziu."</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"Acțiunea nu poate fi realizată momentan"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"Aplicația nu poate realiza această acțiune"</string>
-    <string name="error_code_authentication_expired" msgid="470036816278170698">"Încercați să vă conectați din nou"</string>
+    <string name="error_code_authentication_expired" msgid="905154133202017052">"Conectați-vă pentru a folosi aplicația"</string>
     <string name="error_code_premium_account_required" msgid="4736461331592855166">"Este necesar accesul premium"</string>
     <string name="error_code_concurrent_stream_limit" msgid="1279573243715957403">"Se ascultă prea multe dispozitive"</string>
     <string name="error_code_parental_control_restricted" msgid="5222841294702530806">"Conținutul este blocat"</string>

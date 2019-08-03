@@ -29,7 +29,7 @@
     <string name="default_error_message" msgid="6365377134388091079">"Noe gikk galt. Prøv senere."</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"Du kan ikke gjøre det akkurat nå"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"Denne appen kan ikke gjøre det"</string>
-    <string name="error_code_authentication_expired" msgid="470036816278170698">"Prøv å logge på igjen"</string>
+    <string name="error_code_authentication_expired" msgid="905154133202017052">"Logg på for å bruke denne appen"</string>
     <string name="error_code_premium_account_required" msgid="4736461331592855166">"Premiumtilgang kreves"</string>
     <string name="error_code_concurrent_stream_limit" msgid="1279573243715957403">"Du lytter på for mange enheter"</string>
     <string name="error_code_parental_control_restricted" msgid="5222841294702530806">"Innholdet er blokkert"</string>

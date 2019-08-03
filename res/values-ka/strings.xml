@@ -29,7 +29,7 @@
     <string name="default_error_message" msgid="6365377134388091079">"რაღაც შეცდომაა. ცადეთ მოგვიანებით."</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"ამჟამად ამის გაკეთება შეუძლებელია"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"ეს აპი ამას ვერ გააკეთებს"</string>
-    <string name="error_code_authentication_expired" msgid="470036816278170698">"ცადეთ სისტემაში ხელახლა შესვლა"</string>
+    <string name="error_code_authentication_expired" msgid="905154133202017052">"ამ აპით სარგებლობისთვის შედით სისტემაში"</string>
     <string name="error_code_premium_account_required" msgid="4736461331592855166">"საჭიროა პრემიუმ ტიპის წვდომა"</string>
     <string name="error_code_concurrent_stream_limit" msgid="1279573243715957403">"მოსმენა მიმდინარეობს მეტისმეტად ბევრ მოწყობილობაზე"</string>
     <string name="error_code_parental_control_restricted" msgid="5222841294702530806">"ეს კონტენტი დაბლოკილია"</string>

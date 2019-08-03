@@ -29,7 +29,7 @@
     <string name="default_error_message" msgid="6365377134388091079">"ஏதோ தவறாகிவிட்டது. பிறகு முயலவும்."</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"தற்சமயம் இதை செய்ய இயலாது"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"இந்த ஆப்ஸ் ஆதரிக்கவில்லை"</string>
-    <string name="error_code_authentication_expired" msgid="470036816278170698">"மீண்டும் உள்நுழையவும்"</string>
+    <string name="error_code_authentication_expired" msgid="905154133202017052">"இந்த ஆப்ஸை உபயோகிக்க உள்நுழைய வேண்டும்"</string>
     <string name="error_code_premium_account_required" msgid="4736461331592855166">"Premium அணுகல் தேவை"</string>
     <string name="error_code_concurrent_stream_limit" msgid="1279573243715957403">"பல்வேறு சாதனங்களைக் கவனிக்கிறது"</string>
     <string name="error_code_parental_control_restricted" msgid="5222841294702530806">"இது தடுக்கப்பட்டுள்ளது"</string>

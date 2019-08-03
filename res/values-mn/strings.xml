@@ -29,7 +29,7 @@
     <string name="default_error_message" msgid="6365377134388091079">"Ямар нэг асуудал гарлаа. Дараа оролдоно уу."</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"Яг одоо үүнийг хийх боломжгүй"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"Энэ аппаар үүнийг хийх боломжгүй"</string>
-    <string name="error_code_authentication_expired" msgid="470036816278170698">"Дахин нэвтэрнэ үү"</string>
+    <string name="error_code_authentication_expired" msgid="905154133202017052">"Энэ аппыг ашиглахын тулд нэвтэрнэ үү"</string>
     <string name="error_code_premium_account_required" msgid="4736461331592855166">"Premium хандалт шаардлагатай"</string>
     <string name="error_code_concurrent_stream_limit" msgid="1279573243715957403">"Хэт олон төхөөрөмж сонсож байна"</string>
     <string name="error_code_parental_control_restricted" msgid="5222841294702530806">"Ийм контентыг блоклодог"</string>

@@ -29,7 +29,7 @@
     <string name="default_error_message" msgid="6365377134388091079">"Нешто не е во ред. Обидете се подоцна."</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"Не може да се направи тоа во моментов"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"Апликацијава не може да го направи тоа"</string>
-    <string name="error_code_authentication_expired" msgid="470036816278170698">"Обидете се да се најавите повторно"</string>
+    <string name="error_code_authentication_expired" msgid="905154133202017052">"Најавете се за да ја користите апликацијава"</string>
     <string name="error_code_premium_account_required" msgid="4736461331592855166">"Потребен е пристап со Premium"</string>
     <string name="error_code_concurrent_stream_limit" msgid="1279573243715957403">"Се слуша на премногу уреди"</string>
     <string name="error_code_parental_control_restricted" msgid="5222841294702530806">"Таа содржина е блокирана"</string>

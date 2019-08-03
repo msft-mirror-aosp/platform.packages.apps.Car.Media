@@ -29,7 +29,7 @@
     <string name="default_error_message" msgid="6365377134388091079">"Terjadi masalah. Coba nanti."</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"Tidak dapat melakukannya saat ini"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"Aplikasi ini tidak dapat melakukannya"</string>
-    <string name="error_code_authentication_expired" msgid="470036816278170698">"Coba login lagi"</string>
+    <string name="error_code_authentication_expired" msgid="905154133202017052">"Login untuk menggunakan aplikasi ini"</string>
     <string name="error_code_premium_account_required" msgid="4736461331592855166">"Perlu akses premium"</string>
     <string name="error_code_concurrent_stream_limit" msgid="1279573243715957403">"Terlalu banyak perangkat digunakan untuk mendengarkan"</string>
     <string name="error_code_parental_control_restricted" msgid="5222841294702530806">"Konten tersebut diblokir"</string>

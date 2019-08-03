@@ -29,7 +29,7 @@
     <string name="default_error_message" msgid="6365377134388091079">"發生錯誤，請稍後再試。"</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"目前無法執行有關操作"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"此應用程式無法執行有關操作"</string>
-    <string name="error_code_authentication_expired" msgid="470036816278170698">"請嘗試再次登入"</string>
+    <string name="error_code_authentication_expired" msgid="905154133202017052">"登入即可使用此應用程式"</string>
     <string name="error_code_premium_account_required" msgid="4736461331592855166">"需要有付費帳戶方可存取"</string>
     <string name="error_code_concurrent_stream_limit" msgid="1279573243715957403">"過多裝置正在同時收聽"</string>
     <string name="error_code_parental_control_restricted" msgid="5222841294702530806">"有關內容已封鎖"</string>

@@ -29,7 +29,7 @@
     <string name="default_error_message" msgid="6365377134388091079">"مشکلی رخ داد. بعداً امتحان کنید."</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"درحال‌حاضر انجام نمی‌شود"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"این برنامه قادر به انجام آن نیست."</string>
-    <string name="error_code_authentication_expired" msgid="470036816278170698">"دوباره سعی کنید به سیستم وارد شوید"</string>
+    <string name="error_code_authentication_expired" msgid="905154133202017052">"برای استفاده از این به برنامه، به سیستم وارد شوید"</string>
     <string name="error_code_premium_account_required" msgid="4736461331592855166">"دسترسی ممتاز لازم است"</string>
     <string name="error_code_concurrent_stream_limit" msgid="1279573243715957403">"درحال پخش در تعداد زیادی دستگاه"</string>
     <string name="error_code_parental_control_restricted" msgid="5222841294702530806">"این محتوا مسدود شده است"</string>

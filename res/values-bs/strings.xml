@@ -29,7 +29,7 @@
     <string name="default_error_message" msgid="6365377134388091079">"Nešto nije uredu. Pokušajte kasnije."</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"Taj zahtjev trenutno nije moguće izvršiti"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"Ova aplikacija ne može izvršiti taj zahtjev"</string>
-    <string name="error_code_authentication_expired" msgid="470036816278170698">"Pokušajte se ponovo prijaviti"</string>
+    <string name="error_code_authentication_expired" msgid="905154133202017052">"Prijavite se da koristite ovu aplikaciju"</string>
     <string name="error_code_premium_account_required" msgid="4736461331592855166">"Potreban je premijum pristup"</string>
     <string name="error_code_concurrent_stream_limit" msgid="1279573243715957403">"Previše je uređaja na kojima se sluša"</string>
     <string name="error_code_parental_control_restricted" msgid="5222841294702530806">"Sadržaj je blokiran"</string>

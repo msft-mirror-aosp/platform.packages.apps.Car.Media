@@ -29,7 +29,7 @@
     <string name="default_error_message" msgid="6365377134388091079">"Er is iets misgegaan. Probeer het later opnieuw."</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"Kan dat nu niet doen"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"Deze app kan dat niet doen"</string>
-    <string name="error_code_authentication_expired" msgid="470036816278170698">"Probeer opnieuw in te loggen"</string>
+    <string name="error_code_authentication_expired" msgid="905154133202017052">"Log in om deze app te gebruiken"</string>
     <string name="error_code_premium_account_required" msgid="4736461331592855166">"Premium-toegang vereist"</string>
     <string name="error_code_concurrent_stream_limit" msgid="1279573243715957403">"Er wordt op te veel apparaten geluisterd"</string>
     <string name="error_code_parental_control_restricted" msgid="5222841294702530806">"Die content is geblokkeerd"</string>

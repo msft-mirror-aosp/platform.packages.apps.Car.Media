@@ -29,7 +29,7 @@
     <string name="default_error_message" msgid="6365377134388091079">"문제가 발생했습니다. 나중에 다시 시도하세요."</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"지금은 요청하신 작업을 할 수 없습니다."</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"이 앱에서는 요청하신 작업을 지원하지 않습니다."</string>
-    <string name="error_code_authentication_expired" msgid="470036816278170698">"다시 로그인해 주세요."</string>
+    <string name="error_code_authentication_expired" msgid="905154133202017052">"이 앱을 사용하려면 로그인하세요."</string>
     <string name="error_code_premium_account_required" msgid="4736461331592855166">"프리미엄 액세스 권한이 필요합니다."</string>
     <string name="error_code_concurrent_stream_limit" msgid="1279573243715957403">"너무 많은 기기에서 스트리밍하고 있습니다."</string>
     <string name="error_code_parental_control_restricted" msgid="5222841294702530806">"차단된 콘텐츠입니다."</string>

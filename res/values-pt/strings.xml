@@ -29,7 +29,7 @@
     <string name="default_error_message" msgid="6365377134388091079">"Algo deu errado. Tente mais tarde."</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"Não é possível fazer isso no momento"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"Não é possível fazer isso com este app"</string>
-    <string name="error_code_authentication_expired" msgid="470036816278170698">"Tente fazer login novamente"</string>
+    <string name="error_code_authentication_expired" msgid="905154133202017052">"Faça login para usar este app"</string>
     <string name="error_code_premium_account_required" msgid="4736461331592855166">"É necessário ter acesso Premium"</string>
     <string name="error_code_concurrent_stream_limit" msgid="1279573243715957403">"Ouvindo em muitos dispositivos"</string>
     <string name="error_code_parental_control_restricted" msgid="5222841294702530806">"Esse conteúdo está bloqueado"</string>
