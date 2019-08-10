@@ -48,5 +48,6 @@
         android:layout_marginLeft="@dimen/appbar_view_search_margin"
         android:padding="@dimen/appbar_view_icon_padding"
         android:background="@drawable/appbar_view_icon_background"
+        android:visibility="gone"
         android:src="@drawable/ic_close"/>
 </merge>

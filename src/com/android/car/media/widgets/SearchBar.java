@@ -125,8 +125,10 @@ public class SearchBar extends LinearLayout {
 
     private void onSearch(String query) {
         if (mListener == null || TextUtils.isEmpty(query)) {
+            mCloseIcon.setVisibility(GONE);
             return;
         }
+        mCloseIcon.setVisibility(VISIBLE);
         mListener.onSearch(query);
     }
 }
