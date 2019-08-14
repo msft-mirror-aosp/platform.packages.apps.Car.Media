@@ -242,13 +242,19 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                             mediaSourceViewModel.getPrimaryMediaSource().getValue());
                 });
         mediaBrowserViewModel.getBrowsedMediaItems().observe(this, futureData -> {
-            if (!futureData.isLoading()) {
-                if (futureData.getData() != null) {
-                    mIsBrowseTreeReady = true;
-                    handlePlaybackState(playbackViewModel.getPlaybackStateWrapper().getValue());
-                }
-                updateTabs(futureData.getData());
+            if (futureData.isLoading()) {
+                mIsBrowseTreeReady = false;
+                return;
             }
+            final boolean browseTreeReady =
+                    futureData.getData() != null && !futureData.getData().isEmpty();
+            if (Log.isLoggable(TAG, Log.INFO)) {
+                Log.i(TAG, "Browse tree ready status changed: " + mIsBrowseTreeReady + " -> "
+                        + browseTreeReady);
+            }
+            mIsBrowseTreeReady = browseTreeReady;
+            handlePlaybackState(playbackViewModel.getPlaybackStateWrapper().getValue(), false);
+            updateTabs(futureData.getData());
         });
         mediaBrowserViewModel.supportsSearch().observe(this,
                 mAppBarView::setSearchSupported);
@@ -286,7 +292,8 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                     mPlaybackController = playbackController;
                 });
 
-        playbackViewModel.getPlaybackStateWrapper().observe(this, this::handlePlaybackState);
+        playbackViewModel.getPlaybackStateWrapper().observe(this,
+                state -> handlePlaybackState(state, true));
 
         mCarUxRestrictionsUtil = CarUxRestrictionsUtil.getInstance(this);
         mRestrictions = CarUxRestrictions.UX_RESTRICTIONS_NO_SETUP;
@@ -305,7 +312,13 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         return CarUxRestrictionsUtil.isRestricted(mRestrictions, mActiveCarUxRestrictions);
     }
 
-    private void handlePlaybackState(PlaybackViewModel.PlaybackStateWrapper state) {
+    private void handlePlaybackState(PlaybackViewModel.PlaybackStateWrapper state,
+            boolean ignoreSameState) {
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Log.d(TAG, "handlePlaybackState(); state change: " + mCurrentPlaybackState + " -> "
+                    + (state != null ? state.getState() : null));
+        }
+
         // TODO(arnaudberry) rethink interactions between customized layouts and dynamic visibility.
         mCanShowMiniPlaybackControls = (state != null) && state.shouldDisplay();
 
@@ -316,12 +329,19 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         if (state == null) {
             return;
         }
+        if (ignoreSameState && mCurrentPlaybackState != null
+                && mCurrentPlaybackState == state.getState()) {
+            if (Log.isLoggable(TAG, Log.DEBUG)) {
+                Log.d(TAG, "Ignore same playback state.");
+            }
+            return;
+        }
         if (mCurrentPlaybackState == null || mCurrentPlaybackState != state.getState()) {
             mCurrentPlaybackState = state.getState();
-            if (Log.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "handlePlaybackState(); state change: " + mCurrentPlaybackState);
-            }
         }
+
+        maybeCancelToast();
+        maybeCancelDialog();
 
         Bundle extras = state.getExtras();
         PendingIntent intent = extras == null ? null : extras.getParcelable(
@@ -330,7 +350,11 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                 MediaConstants.ERROR_RESOLUTION_ACTION_LABEL);
         String displayedMessage = getDisplayedMessage(state);
 
+        boolean isFatalError = false;
         if (!TextUtils.isEmpty(displayedMessage)) {
+            if (Log.isLoggable(TAG, Log.DEBUG)) {
+                Log.d(TAG, "Error message is not empty");
+            }
             if (mIsBrowseTreeReady) {
                 if (intent != null && !isUxRestricted()) {
                     showDialog(intent, displayedMessage, label, getString(android.R.string.cancel));
@@ -340,8 +364,13 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             } else {
                 mErrorFragment = ErrorFragment.newInstance(displayedMessage, label, intent);
                 setErrorFragment(mErrorFragment);
-                changeMode(Mode.FATAL_ERROR);
+                isFatalError = true;
             }
+        }
+        if (isFatalError) {
+            changeMode(Mode.FATAL_ERROR);
+        } else if (mMode == Mode.FATAL_ERROR) {
+            changeMode(Mode.BROWSING);
         }
     }
 
@@ -363,7 +392,6 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
     private void showDialog(PendingIntent intent, String message, String positiveBtnText,
             String negativeButtonText) {
-        maybeCancelDialog();
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         mDialog = dialog.setMessage(message)
                 .setNegativeButton(negativeButtonText, null)
@@ -387,7 +415,6 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     }
 
     private void showToast(String message) {
-        maybeCancelToast();
         mToast = Toast.makeText(this, message, Toast.LENGTH_LONG);
         mToast.show();
     }
@@ -422,7 +449,12 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
      * @param mediaSource the new media source we are going to try to browse
      */
     private void onMediaSourceChanged(@Nullable MediaSource mediaSource) {
+        if (Log.isLoggable(TAG, Log.INFO)) {
+            Log.i(TAG, "MediaSource changed to " + mediaSource);
+        }
+
         mIsBrowseTreeReady = false;
+        mCurrentPlaybackState = null;
         maybeCancelToast();
         maybeCancelDialog();
         if (mediaSource != null) {
