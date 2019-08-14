@@ -50,4 +50,7 @@
 
     <!-- fragment_error.xml -->
     <color name="error_button_text_color">@color/uxr_button_text_color_selector</color>
+
+    <!-- Color used for the search bar underline -->
+    <color name="search_bar_underline_color">@android:color/white</color>
 </resources>
