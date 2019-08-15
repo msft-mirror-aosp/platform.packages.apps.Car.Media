@@ -271,6 +271,7 @@ public class BrowseFragment extends Fragment {
             if (isLoading) {
                 ViewUtils.hideViewAnimated(mBrowseList, mFadeDuration);
                 startLoadingIndicator();
+                mBrowseAdapter.submitItems(null, null);
                 return;
             }
             stopLoadingIndicator();

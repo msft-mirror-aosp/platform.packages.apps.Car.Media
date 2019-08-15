@@ -145,16 +145,22 @@
         android:layout_height="@dimen/fragment_playback_queue_overlap_bottom"
         app:layout_constraintTop_toTopOf="@+id/control_bar_first_row_guideline"/>
 
-    <com.android.car.apps.common.widget.PagedRecyclerView
-        android:id="@+id/queue_list"
+    <!-- The queue_container is a workaround for a bug in PagedRecyclerView (b/136669451). -->
+    <RelativeLayout
+        android:id="@+id/queue_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:visibility="gone"
         app:layout_constraintTop_toTopOf="@+id/queue_list_top_constraint"
-        app:layout_constraintBottom_toBottomOf="@+id/queue_list_bottom_constraint"
-        android:fadeScrollbars="true"
-        android:requiresFadingEdge="vertical"
-        android:fadingEdgeLength="@dimen/queue_fading_edge_length"/>
+        app:layout_constraintBottom_toBottomOf="@+id/queue_list_bottom_constraint">
+        <com.android.car.apps.common.widget.PagedRecyclerView
+            android:id="@+id/queue_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            android:fadeScrollbars="true"
+            android:requiresFadingEdge="vertical"
+            android:fadingEdgeLength="@dimen/queue_fading_edge_length"/>
+    </RelativeLayout>
 
     <include
         layout="@layout/scrim_overlay"
