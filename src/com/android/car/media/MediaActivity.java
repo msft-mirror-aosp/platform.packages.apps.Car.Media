@@ -254,6 +254,8 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             }
             mIsBrowseTreeReady = browseTreeReady;
             handlePlaybackState(playbackViewModel.getPlaybackStateWrapper().getValue(), false);
+
+            mAppBarView.setDataLoaded(true);
             updateTabs(futureData.getData());
         });
         mediaBrowserViewModel.supportsSearch().observe(this,
@@ -455,6 +457,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
         mIsBrowseTreeReady = false;
         mCurrentPlaybackState = null;
+        mAppBarView.setDataLoaded(false);
         maybeCancelToast();
         maybeCancelDialog();
         if (mediaSource != null) {
