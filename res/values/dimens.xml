@@ -129,7 +129,6 @@
 
     <!-- browse_playback_background.xml -->
     <dimen name="browse_playback_background_radius">@*android:dimen/car_radius_2</dimen>
-    <dimen name="browse_playback_album_art_size">96dp</dimen>
     <dimen name="browse_playback_album_art_margin_start">@*android:dimen/car_padding_2</dimen>
     <dimen name="browse_playback_album_art_margin_end">@*android:dimen/car_padding_4</dimen>
     <dimen name="browse_playback_text_margin_bottom">@*android:dimen/car_padding_1</dimen>

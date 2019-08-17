@@ -30,6 +30,7 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
 import android.transition.Fade;
 import android.util.Log;
+import android.util.Size;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -269,9 +270,10 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         mAppSelectionFragment.setEnterTransition(new Fade().setDuration(fadeDuration));
         mAppSelectionFragment.setExitTransition(new Fade().setDuration(fadeDuration));
 
+        Size maxArtSize = MediaAppConfig.getMediaItemsBitmapMaxSize(this);
         MinimizedPlaybackControlBar browsePlaybackControls =
                 findViewById(R.id.minimized_playback_controls);
-        browsePlaybackControls.setModel(playbackViewModel, this);
+        browsePlaybackControls.setModel(playbackViewModel, this, maxArtSize);
 
         mMiniPlaybackControls = findViewById(R.id.minimized_playback_controls);
         mMiniPlaybackControls.setOnClickListener(view -> changeMode(Mode.PLAYBACK));
