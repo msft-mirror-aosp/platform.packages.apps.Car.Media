@@ -53,5 +53,12 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".service.MediaConnectorService">
+            <intent-filter>
+                <action android:name="com.android.car.media.MEDIA_CONNECTION"/>
+            </intent-filter>
+        </service>
     </application>
 </manifest>

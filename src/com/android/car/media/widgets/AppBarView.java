@@ -223,7 +223,7 @@ public class AppBarView extends ConstraintLayout {
         if (items != null && !items.isEmpty()) {
             int count = 0;
             for (MediaItemMetadata item : items) {
-                MediaItemTab tab = new MediaItemTab(mContext, item);
+                MediaItemTab tab = new MediaItemTab(item);
                 mTabsContainer.addCarTab(tab);
 
                 count++;

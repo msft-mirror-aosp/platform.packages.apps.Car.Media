@@ -19,12 +19,12 @@ package com.android.car.media;
 import android.annotation.Nullable;
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Size;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,6 +40,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.car.apps.common.BackgroundImageView;
+import com.android.car.apps.common.imaging.ImageBinder;
+import com.android.car.apps.common.imaging.ImageBinder.PlaceholderType;
+import com.android.car.apps.common.imaging.ImageViewBinder;
 import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.media.common.MediaAppSelectorWidget;
 import com.android.car.media.common.MediaItemMetadata;
@@ -51,7 +54,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
+
 
 /**
  * A {@link Fragment} that implements both the playback and the content forward browsing experience.
@@ -61,7 +64,7 @@ import java.util.concurrent.CompletableFuture;
 public class PlaybackFragment extends Fragment {
     private static final String TAG = "PlaybackFragment";
 
-    private CompletableFuture<Bitmap> mFutureAlbumBackground;
+    private ImageBinder<MediaItemMetadata.ArtworkRef> mAlbumArtBinder;
     private BackgroundImageView mAlbumBackground;
     private View mBackgroundScrim;
     private View mControlBarScrim;
@@ -115,6 +118,8 @@ public class PlaybackFragment extends Fragment {
         private final TextView mTimeSeparator;
         private final ImageView mActiveIcon;
 
+        private final ImageViewBinder<MediaItemMetadata.ArtworkRef> mThumbnailBinder;
+
         QueueViewHolder(View itemView) {
             super(itemView);
             mView = itemView;
@@ -126,6 +131,9 @@ public class PlaybackFragment extends Fragment {
             mMaxTime = itemView.findViewById(R.id.max_time);
             mTimeSeparator = itemView.findViewById(R.id.separator);
             mActiveIcon = itemView.findViewById(R.id.now_playing_icon);
+
+            Size maxArtSize = MediaAppConfig.getMediaItemsBitmapMaxSize(itemView.getContext());
+            mThumbnailBinder = new ImageViewBinder<>(maxArtSize, mThumbnail);
         }
 
         boolean bind(MediaItemMetadata item) {
@@ -133,8 +141,8 @@ public class PlaybackFragment extends Fragment {
 
             ViewUtils.setVisible(mThumbnailContainer, mShowThumbnailForQueueItem);
             if (mShowThumbnailForQueueItem) {
-                MediaItemMetadata.updateImageView(mThumbnail.getContext(), item, mThumbnail, 0,
-                        true);
+                Context context = mView.getContext();
+                mThumbnailBinder.setImage(context, item != null ? item.getArtworkKey() : null);
             }
 
             ViewUtils.setVisible(mSpacer, !mShowThumbnailForQueueItem);
@@ -337,29 +345,14 @@ public class PlaybackFragment extends Fragment {
         }
         hideViewIds.recycle();
 
-        int albumBgSizePx = getResources().getInteger(
-                com.android.car.apps.common.R.integer.background_bitmap_target_size_px);
+        mAlbumArtBinder = new ImageBinder<>(
+                PlaceholderType.BACKGROUND,
+                MediaAppConfig.getMediaItemsBitmapMaxSize(getContext()),
+                drawable -> mAlbumBackground.setBackgroundDrawable(drawable));
 
         getPlaybackViewModel().getMetadata().observe(getViewLifecycleOwner(),
-                metadata -> {
-                    if (mFutureAlbumBackground != null && !mFutureAlbumBackground.isDone()) {
-                        mFutureAlbumBackground.cancel(true);
-                    }
-                    if (metadata == null) {
-                        setBackgroundImage(null);
-                        mFutureAlbumBackground = null;
-                    } else {
-                        mFutureAlbumBackground = metadata.getAlbumArt(
-                                getContext(), albumBgSizePx, albumBgSizePx, false);
-                        mFutureAlbumBackground.whenComplete((result, throwable) -> {
-                            if (throwable != null) {
-                                setBackgroundImage(null);
-                            } else {
-                                setBackgroundImage(result);
-                            }
-                        });
-                    }
-                });
+                item -> mAlbumArtBinder.setImage(PlaybackFragment.this.getContext(),
+                        item != null ? item.getArtworkKey() : null));
 
         return view;
     }
@@ -372,10 +365,6 @@ public class PlaybackFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-    }
-
-    private void setBackgroundImage(Bitmap bitmap) {
-        mAlbumBackground.setBackgroundImage(bitmap, bitmap != null);
     }
 
     private void initPlaybackControls(PlaybackControlsActionBar playbackControls) {
@@ -470,10 +459,10 @@ public class PlaybackFragment extends Fragment {
         TextView maxTime = view.findViewById(R.id.max_time);
         SeekBar seekbar = mShowLinearProgressBar ? mSeekBar : null;
 
+        Size maxArtSize = MediaAppConfig.getMediaItemsBitmapMaxSize(view.getContext());
         mMetadataController = new MetadataController(getViewLifecycleOwner(),
                 getPlaybackViewModel(), title, artist, albumTitle, outerSeparator,
-                curTime, innerSeparator, maxTime, seekbar, albumArt,
-                getResources().getDimensionPixelSize(R.dimen.playback_album_art_size));
+                curTime, innerSeparator, maxTime, seekbar, albumArt, maxArtSize);
     }
 
     /**
