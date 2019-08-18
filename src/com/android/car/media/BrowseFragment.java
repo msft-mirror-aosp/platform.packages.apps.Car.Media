@@ -240,10 +240,7 @@ public class BrowseFragment extends Fragment {
 
         mBrowseList.setLayoutManager(gridLayoutManager);
         mBrowseList.addItemDecoration(new GridSpacingItemDecoration(
-                getResources().getDimensionPixelSize(R.dimen.grid_item_spacing),
-                getResources().getDimensionPixelSize(R.dimen.grid_item_margin_x),
-                getResources().getDimensionPixelSize(R.dimen.grid_item_margin_x)
-        ));
+                getResources().getDimensionPixelSize(R.dimen.grid_item_spacing)));
 
         mBrowseAdapter = new BrowseAdapter(mBrowseList.getContext());
         mBrowseList.setAdapter(mBrowseAdapter);
