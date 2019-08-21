@@ -22,6 +22,7 @@ import android.util.Size;
 import android.widget.ImageView;
 
 import com.android.car.apps.common.imaging.ImageBinder;
+import com.android.car.apps.common.imaging.ImageBinder.PlaceholderType;
 import com.android.car.apps.common.imaging.ImageViewBinder;
 import com.android.car.apps.common.widget.CarTabLayout;
 import com.android.car.media.MediaAppConfig;
@@ -48,7 +49,7 @@ public class MediaItemTab extends CarTabLayout.CarTab {
     protected void bindIcon(ImageView imageView) {
         Context context = imageView.getContext();
         Size maxArtSize = MediaAppConfig.getMediaItemsBitmapMaxSize(context);
-        mArtBinder = new ImageViewBinder<>(ImageBinder.PlaceholderType.NONE, maxArtSize, imageView);
+        mArtBinder = new ImageViewBinder<>(PlaceholderType.NONE, maxArtSize, imageView, true);
         mArtBinder.setImage(context, mItem.getArtworkKey());
     }
 

@@ -6,11 +6,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import com.android.car.apps.common.UxrButton;
 import com.android.car.apps.common.UxrTextView;
 
 /**
@@ -27,7 +27,7 @@ public class ErrorFragment extends Fragment {
     // provide clarity as it may be misleading to assume that mErrorMessageView extends all TextView
     // methods. In addition, it increases discoverability of runtime issues that may occur.
     private UxrTextView mErrorMessageView;
-    private Button mErrorButton;
+    private UxrButton mErrorButton;
 
     private String mErrorMessageStr;
     private String mErrorLabel;
