@@ -61,11 +61,17 @@
         <item name="android:layout_marginHorizontal">@dimen/fragment_metadata_margin_x</item>
     </style>
 
-    <style name="BrowseSubheaderStyle" parent="TextAppearance.Body3"/>
+    <style name="BrowseSubheaderStyle" parent="TextAppearance.Body3">
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
     <style name="BrowseListTitleStyle" parent="TextAppearance.Body1"/>
-    <style name="BrowseListSubtitleStyle" parent="TextAppearance.Body3"/>
+    <style name="BrowseListSubtitleStyle" parent="TextAppearance.Body3">
+        <item name="android:textColor">@color/secondary_text_color</item>
+    </style>
     <style name="BrowseGridTitleStyle" parent="TextAppearance.Body2"/>
-    <style name="BrowseGridSubtitleStyle" parent="TextAppearance.Body3"/>
+    <style name="BrowseGridSubtitleStyle" parent="TextAppearance.Body3">
+        <item name="android:textColor">@color/secondary_text_color</item>
+    </style>
 
     <style name="ErrorTextStyle" parent="TextAppearance.Body1"/>
 
