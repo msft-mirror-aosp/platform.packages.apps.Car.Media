@@ -266,7 +266,8 @@ public class BrowseFragment extends Fragment {
             }
             boolean isLoading = futureData.isLoading();
             if (isLoading) {
-                ViewUtils.hideViewAnimated(mBrowseList, mFadeDuration);
+                // TODO(b/139759881) build a jank-free animation of the transition.
+                mBrowseList.setAlpha(0f);
                 startLoadingIndicator();
                 mBrowseAdapter.submitItems(null, null);
                 return;

@@ -77,7 +77,7 @@
     <dimen name="appbar_view_tabs_margin_end">@*android:dimen/car_padding_3</dimen>
     <dimen name="appbar_view_control_buttons_spacing">@*android:dimen/car_padding_3</dimen>
     <dimen name="appbar_view_control_buttons_margin_end">@*android:dimen/car_padding_2</dimen>
-    <dimen name="appbar_view_title_margin_start">@*android:dimen/car_padding_2</dimen>
+    <dimen name="appbar_view_title_margin_start">@dimen/appbar_view_nav_button_width</dimen>
 
     <!-- browse_state.xml -->
     <dimen name="browse_state_progress_height">@*android:dimen/car_double_line_list_item_height
