@@ -492,7 +492,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             Intent prefsIntent = new Intent(Intent.ACTION_APPLICATION_PREFERENCES);
             prefsIntent.setPackage(packageName);
             ResolveInfo info = getPackageManager().resolveActivity(prefsIntent, 0);
-            if (info != null) {
+            if (info != null && info.activityInfo != null && info.activityInfo.exported) {
                 mCurrentSourcePreferences = new Intent(prefsIntent.getAction())
                         .setClassName(info.activityInfo.packageName, info.activityInfo.name);
             }
