@@ -70,12 +70,10 @@ public class SearchBar extends LinearLayout {
         mSearchText.setOnFocusChangeListener(
                 (view, hasFocus) -> {
                     if (hasFocus) {
-                        mSearchText.setCursorVisible(true);
                         ((InputMethodManager)
                                 context.getSystemService(Context.INPUT_METHOD_SERVICE))
                                 .showSoftInput(view, 0);
                     } else {
-                        mSearchText.setCursorVisible(false);
                         ((InputMethodManager)
                                 context.getSystemService(Context.INPUT_METHOD_SERVICE))
                                 .hideSoftInputFromWindow(view.getWindowToken(), 0);
@@ -97,7 +95,7 @@ public class SearchBar extends LinearLayout {
         });
         mSearchText.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                mSearchText.setCursorVisible(false);
+                mSearchText.clearFocus();
             }
             return false;
         });

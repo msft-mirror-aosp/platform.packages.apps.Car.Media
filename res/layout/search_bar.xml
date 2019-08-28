@@ -43,8 +43,7 @@
         android:backgroundTint="@color/search_bar_underline_color"
         android:inputType="text"
         android:singleLine="true"
-        android:imeOptions="actionDone"
-        android:cursorVisible="false"/>
+        android:imeOptions="actionDone"/>
 
     <ImageView
         android:id="@+id/search_close"
