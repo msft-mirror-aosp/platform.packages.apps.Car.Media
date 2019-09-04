@@ -29,6 +29,9 @@ import com.android.car.media.common.playback.PlaybackViewModel;
  * TODO(b/139497602): merge this class into CarMediaService, so it doesn't depend on Media Center
  */
 public class MediaConnectorService extends LifecycleService {
+
+    private static int FOREGROUND_NOTIFICATION_ID = 1;
+
     @Override
     public IBinder onBind(Intent intent) {
         return super.onBind(intent);
@@ -41,9 +44,17 @@ public class MediaConnectorService extends LifecycleService {
         PlaybackViewModel playbackViewModel = PlaybackViewModel.get(getApplication());
         playbackViewModel.getPlaybackController().observe(this,
                 playbackController -> {
-                    if (playbackController != null) playbackController.prepare();
+                    if (playbackController != null) {
+                        playbackController.prepare();
+                        // Stop this service after we've successfully connected to the
+                        // MediaBrowser, since we no longer need to do anything.
+                        stopSelf(startId);
+                    }
                 });
 
+        // Since this service is started from CarMediaService (which runs in background), we need
+        // to call startForeground to prevent the system from stopping this service and ANRing.
+        startForeground(FOREGROUND_NOTIFICATION_ID, null);
         return START_NOT_STICKY;
     }
 }
