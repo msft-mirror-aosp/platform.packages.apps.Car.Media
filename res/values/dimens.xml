@@ -111,7 +111,7 @@
     <dimen name="media_browse_list_item_text_margin_x">@*android:dimen/car_keyline_4</dimen>
     <dimen name="media_browse_list_item_icon_margin_start">@*android:dimen/car_keyline_1</dimen>
     <dimen name="media_browse_list_item_arrow_size">@*android:dimen/car_primary_icon_size</dimen>
-    <dimen name="media_browse_list_item_thumbnail_margin_bottom">1dp</dimen>
+    <dimen name="media_browse_list_item_thumbnail_margin_bottom">4dp</dimen>
 
     <!-- media_browse_panel_item.xml -->
     <dimen name="media_browse_panel_item_height">@*android:dimen/car_single_line_list_item_height
