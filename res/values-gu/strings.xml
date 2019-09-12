@@ -38,4 +38,5 @@
     <string name="error_code_skip_limit_reached" msgid="8926507875025988831">"કોઈ વધુ ટ્રૅક છોડી શકતા નથી"</string>
     <string name="error_code_action_aborted" msgid="3889734248905737169">"સમાપ્ત કરી શક્યાં નથી. ફરી પ્રયાસ કરો."</string>
     <string name="error_code_end_of_queue" msgid="2842652212154074468">"બીજું કંઈ કતારમાં નથી"</string>
+    <string name="service_notification_title" msgid="8085444675783592744">"મીડિયા સાથે કનેક્ટ કરી રહ્યાં છીએ"</string>
 </resources>

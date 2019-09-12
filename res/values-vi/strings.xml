@@ -38,4 +38,5 @@
     <string name="error_code_skip_limit_reached" msgid="8926507875025988831">"Không thể bỏ qua bản nhạc nào nữa"</string>
     <string name="error_code_action_aborted" msgid="3889734248905737169">"Không thể hoàn tất hành động. Hãy thử lại."</string>
     <string name="error_code_end_of_queue" msgid="2842652212154074468">"Không có nội dung nào khác trong hàng đợi"</string>
+    <string name="service_notification_title" msgid="8085444675783592744">"Đang kết nối với nội dung nghe nhìn"</string>
 </resources>

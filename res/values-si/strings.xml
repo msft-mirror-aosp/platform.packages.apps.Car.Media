@@ -38,4 +38,5 @@
     <string name="error_code_skip_limit_reached" msgid="8926507875025988831">"තවත් ඛණ්ඩ මඟ හැරිය නොහැක"</string>
     <string name="error_code_action_aborted" msgid="3889734248905737169">"අවසන් කිරීමට නොහැකි විය. නැවත උත්සාහ කරන්න."</string>
     <string name="error_code_end_of_queue" msgid="2842652212154074468">"වෙන කිසිවක් පෝලිමේ නැත"</string>
+    <string name="service_notification_title" msgid="8085444675783592744">"මාධ්‍ය වෙත සබැඳීම"</string>
 </resources>
