@@ -38,4 +38,5 @@
     <string name="error_code_skip_limit_reached" msgid="8926507875025988831">"Boshqa treklarni qoldirib ketish imkonsiz"</string>
     <string name="error_code_action_aborted" msgid="3889734248905737169">"Tugallanmadi. Qaytadan urining."</string>
     <string name="error_code_end_of_queue" msgid="2842652212154074468">"Ijro navbatida boshqa fayllar mavjud emas"</string>
+    <string name="service_notification_title" msgid="8085444675783592744">"Media manbaga ulanish"</string>
 </resources>

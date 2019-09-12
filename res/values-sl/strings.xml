@@ -38,4 +38,5 @@
     <string name="error_code_skip_limit_reached" msgid="8926507875025988831">"Dosegli ste omejitev preskakovanja skladb"</string>
     <string name="error_code_action_aborted" msgid="3889734248905737169">"Ni bilo mogoče dokončati. Poskusite znova."</string>
     <string name="error_code_end_of_queue" msgid="2842652212154074468">"Čakalna vrsta je prazna"</string>
+    <string name="service_notification_title" msgid="8085444675783592744">"Povezovanje s predstavnostjo"</string>
 </resources>
