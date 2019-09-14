@@ -38,4 +38,5 @@
     <string name="error_code_skip_limit_reached" msgid="8926507875025988831">"ఇక ఏ ట్రాక్‌లనూ దాటవేయడం సాధ్యపడదు"</string>
     <string name="error_code_action_aborted" msgid="3889734248905737169">"పూర్తి చేయడం సాధ్యపడలేదు. మళ్ళీ ప్రయత్నించండి."</string>
     <string name="error_code_end_of_queue" msgid="2842652212154074468">"వరుసలో ఏమీ లేదు"</string>
+    <string name="service_notification_title" msgid="8085444675783592744">"మీడియాకు కనెక్ట్ చేస్తోంది"</string>
 </resources>
