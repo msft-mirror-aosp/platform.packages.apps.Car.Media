@@ -38,4 +38,5 @@
     <string name="error_code_skip_limit_reached" msgid="8926507875025988831">"कुनै पनि थप ट्रयाकहरू छाड्न सकिँदैन"</string>
     <string name="error_code_action_aborted" msgid="3889734248905737169">"समाप्त गर्न सकिएन। फेरि प्रयास गर्नुहोस्।"</string>
     <string name="error_code_end_of_queue" msgid="2842652212154074468">"यसदेखि बाहेक केही पङ्क्तिबद्ध गरिएको छैन"</string>
+    <string name="service_notification_title" msgid="8085444675783592744">"मिडियामा जोड्दै"</string>
 </resources>
