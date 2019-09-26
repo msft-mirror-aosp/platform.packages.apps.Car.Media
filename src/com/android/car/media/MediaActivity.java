@@ -105,8 +105,8 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     private Mode mMode;
     private Intent mCurrentSourcePreferences;
     private boolean mCanShowMiniPlaybackControls;
-    private boolean mIsBrowseTreeReady;
-    private Integer mCurrentPlaybackState;
+    private boolean mBrowseTreeHasChildren;
+    private PlaybackViewModel.PlaybackStateWrapper mCurrentPlaybackStateWrapper;
     private List<MediaItemMetadata> mTopItems;
 
     private CarUxRestrictionsUtil mCarUxRestrictionsUtil;
@@ -244,16 +244,19 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                 });
         mediaBrowserViewModel.getBrowsedMediaItems().observe(this, futureData -> {
             if (futureData.isLoading()) {
-                mIsBrowseTreeReady = false;
+                if (Log.isLoggable(TAG, Log.INFO)) {
+                    Log.i(TAG, "Loading browse tree...");
+                }
+                mBrowseTreeHasChildren = false;
                 return;
             }
-            final boolean browseTreeReady =
+            final boolean browseTreeHasChildren =
                     futureData.getData() != null && !futureData.getData().isEmpty();
             if (Log.isLoggable(TAG, Log.INFO)) {
-                Log.i(TAG, "Browse tree ready status changed: " + mIsBrowseTreeReady + " -> "
-                        + browseTreeReady);
+                Log.i(TAG, "Browse tree loaded, status (has children or not) changed: "
+                        + mBrowseTreeHasChildren + " -> " + browseTreeHasChildren);
             }
-            mIsBrowseTreeReady = browseTreeReady;
+            mBrowseTreeHasChildren = browseTreeHasChildren;
             handlePlaybackState(playbackViewModel.getPlaybackStateWrapper().getValue(), false);
 
             mAppBarView.setDataLoaded(true);
@@ -319,8 +322,11 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     private void handlePlaybackState(PlaybackViewModel.PlaybackStateWrapper state,
             boolean ignoreSameState) {
         if (Log.isLoggable(TAG, Log.DEBUG)) {
-            Log.d(TAG, "handlePlaybackState(); state change: " + mCurrentPlaybackState + " -> "
-                    + (state != null ? state.getState() : null));
+            Log.d(TAG,
+                    "handlePlaybackState(); state change: " + (mCurrentPlaybackStateWrapper != null
+                            ? mCurrentPlaybackStateWrapper.getState() : null) + " -> " + (
+                            state != null ? state.getState() : null));
+
         }
 
         // TODO(arnaudberry) rethink interactions between customized layouts and dynamic visibility.
@@ -331,18 +337,25 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             getInnerViewModel().setMiniControlsVisible(mCanShowMiniPlaybackControls);
         }
         if (state == null) {
+            mCurrentPlaybackStateWrapper = null;
             return;
         }
-        if (ignoreSameState && mCurrentPlaybackState != null
-                && mCurrentPlaybackState == state.getState()) {
+
+        String displayedMessage = getDisplayedMessage(state);
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Log.d(TAG, "Displayed error message: [" + displayedMessage + "]");
+        }
+        if (ignoreSameState && mCurrentPlaybackStateWrapper != null
+                && mCurrentPlaybackStateWrapper.getState() == state.getState()
+                && TextUtils.equals(displayedMessage,
+                getDisplayedMessage(mCurrentPlaybackStateWrapper))) {
             if (Log.isLoggable(TAG, Log.DEBUG)) {
                 Log.d(TAG, "Ignore same playback state.");
             }
             return;
         }
-        if (mCurrentPlaybackState == null || mCurrentPlaybackState != state.getState()) {
-            mCurrentPlaybackState = state.getState();
-        }
+
+        mCurrentPlaybackStateWrapper = state;
 
         maybeCancelToast();
         maybeCancelDialog();
@@ -352,14 +365,10 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                 MediaConstants.ERROR_RESOLUTION_ACTION_INTENT);
         String label = extras == null ? null : extras.getString(
                 MediaConstants.ERROR_RESOLUTION_ACTION_LABEL);
-        String displayedMessage = getDisplayedMessage(state);
 
         boolean isFatalError = false;
         if (!TextUtils.isEmpty(displayedMessage)) {
-            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                Log.d(TAG, "Error message is not empty");
-            }
-            if (mIsBrowseTreeReady) {
+            if (mBrowseTreeHasChildren) {
                 if (intent != null && !isUxRestricted()) {
                     showDialog(intent, displayedMessage, label, getString(android.R.string.cancel));
                 } else {
@@ -378,7 +387,10 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         }
     }
 
-    private String getDisplayedMessage(PlaybackViewModel.PlaybackStateWrapper state) {
+    private String getDisplayedMessage(@Nullable PlaybackViewModel.PlaybackStateWrapper state) {
+        if (state == null) {
+            return null;
+        }
         if (!TextUtils.isEmpty(state.getErrorMessage())) {
             return state.getErrorMessage().toString();
         }
@@ -457,8 +469,8 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             Log.i(TAG, "MediaSource changed to " + mediaSource);
         }
 
-        mIsBrowseTreeReady = false;
-        mCurrentPlaybackState = null;
+        mBrowseTreeHasChildren = false;
+        mCurrentPlaybackStateWrapper = null;
         mAppBarView.setDataLoaded(false);
         maybeCancelToast();
         maybeCancelDialog();
