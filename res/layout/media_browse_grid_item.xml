@@ -23,6 +23,7 @@
     android:focusable="true"
     android:clickable="true"
     android:foreground="@drawable/grid_item_background"
+    android:padding="@dimen/media_browse_grid_item_padding"
     android:layout_marginBottom="@dimen/media_browse_grid_item_margin_bottom">
 
     <com.android.car.media.common.FixedRatioImageView
