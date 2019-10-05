@@ -90,7 +90,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     private BrowseFragment mSearchFragment;
     private BrowseFragment mBrowseFragment;
     private AppSelectionFragment mAppSelectionFragment;
-    private ViewGroup mMiniPlaybackControls;
+    private MinimizedPlaybackControlBar mMiniPlaybackControls;
     private EmptyFragment mEmptyFragment;
     private ViewGroup mBrowseContainer;
     private ViewGroup mPlaybackContainer;
@@ -274,11 +274,8 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         mAppSelectionFragment.setExitTransition(new Fade().setDuration(fadeDuration));
 
         Size maxArtSize = MediaAppConfig.getMediaItemsBitmapMaxSize(this);
-        MinimizedPlaybackControlBar browsePlaybackControls =
-                findViewById(R.id.minimized_playback_controls);
-        browsePlaybackControls.setModel(playbackViewModel, this, maxArtSize);
-
         mMiniPlaybackControls = findViewById(R.id.minimized_playback_controls);
+        mMiniPlaybackControls.setModel(playbackViewModel, this, maxArtSize);
         mMiniPlaybackControls.setOnClickListener(view -> changeMode(Mode.PLAYBACK));
 
         mFadeDuration = getResources().getInteger(R.integer.new_album_art_fade_in_duration);
@@ -331,11 +328,8 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
         // TODO(arnaudberry) rethink interactions between customized layouts and dynamic visibility.
         mCanShowMiniPlaybackControls = (state != null) && state.shouldDisplay();
+        updateMiniPlaybackControls();
 
-        if (mMode != Mode.PLAYBACK) {
-            ViewUtils.setVisible(mMiniPlaybackControls, mCanShowMiniPlaybackControls);
-            getInnerViewModel().setMiniControlsVisible(mCanShowMiniPlaybackControls);
-        }
         if (state == null) {
             mCurrentPlaybackStateWrapper = null;
             return;
@@ -595,18 +589,17 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         getInnerViewModel().saveMode(mode);
         mMode = mode;
 
-        if (mode == Mode.FATAL_ERROR) {
-            ViewUtils.showViewAnimated(mErrorContainer, mFadeDuration);
-            ViewUtils.hideViewAnimated(mPlaybackContainer, mFadeDuration);
-            ViewUtils.hideViewAnimated(mBrowseContainer, mFadeDuration);
-            ViewUtils.hideViewAnimated(mSearchContainer, mFadeDuration);
-            mAppBarView.setState(AppBarView.State.EMPTY);
-            return;
-        }
+        mPlaybackFragment.closeOverflowMenu();
+        updateMiniPlaybackControls();
 
-        updateMetadata(mode);
-
-        switch (mode) {
+        switch (mMode) {
+            case FATAL_ERROR:
+                ViewUtils.showViewAnimated(mErrorContainer, mFadeDuration);
+                ViewUtils.hideViewAnimated(mPlaybackContainer, mFadeDuration);
+                ViewUtils.hideViewAnimated(mBrowseContainer, mFadeDuration);
+                ViewUtils.hideViewAnimated(mSearchContainer, mFadeDuration);
+                mAppBarView.setState(AppBarView.State.EMPTY);
+                break;
             case PLAYBACK:
                 mPlaybackContainer.setY(0);
                 mPlaybackContainer.setAlpha(0f);
@@ -657,14 +650,16 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         mAppBarView.setState(isStacked ? AppBarView.State.STACKED : unstackedState);
     }
 
-    private void updateMetadata(Mode mode) {
-        if (mode != Mode.PLAYBACK) {
-            mPlaybackFragment.closeOverflowMenu();
-            if (mCanShowMiniPlaybackControls) {
-                ViewUtils.showViewAnimated(mMiniPlaybackControls, mFadeDuration);
-                getInnerViewModel().setMiniControlsVisible(true);
-            }
+    private void updateMiniPlaybackControls() {
+        // Minimized control bar should be hidden in playback view.
+        final boolean shouldShowMiniPlaybackControls =
+                mCanShowMiniPlaybackControls && mMode != Mode.PLAYBACK;
+        if (shouldShowMiniPlaybackControls) {
+            ViewUtils.showViewAnimated(mMiniPlaybackControls, mFadeDuration);
+        } else {
+            ViewUtils.hideViewAnimated(mMiniPlaybackControls, mFadeDuration);
         }
+        getInnerViewModel().setMiniControlsVisible(shouldShowMiniPlaybackControls);
     }
 
     @Override
@@ -674,7 +669,6 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
     @Override
     public void onPlayableItemClicked(MediaItemMetadata item) {
-        mPlaybackController.stop();
         mPlaybackController.playItem(item);
         boolean switchToPlayback = getResources().getBoolean(
                 R.bool.switch_to_playback_view_when_playable_item_is_clicked);
