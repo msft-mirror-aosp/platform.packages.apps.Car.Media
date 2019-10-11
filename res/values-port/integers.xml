@@ -14,10 +14,8 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="oval">
-    <solid android:color="@color/progress_bar_thumb_color"/>
-    <size
-        android:width="@dimen/playback_seekbar_thumb_width"
-        android:height="@dimen/playback_seekbar_thumb_height"/>
-</shape>
+<resources>
+    <!-- Number of rows in the app bar view -->
+    <integer name="num_app_bar_view_rows">2</integer>
+    <integer name="num_browse_columns">3</integer>
+</resources>

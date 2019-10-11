@@ -16,11 +16,18 @@
 -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:id="@android:id/background"
-        android:drawable="@color/progress_bar_background" />
+    <item android:id="@android:id/background">
+        <shape android:shape="line">
+            <stroke android:width="@dimen/playback_seekbar_track_height"/>
+        </shape>
+    </item>
 
     <item android:id="@android:id/progress">
-        <clip android:drawable="@color/progress_bar_highlight" />
+        <clip>
+            <shape android:shape="line">
+                <stroke android:width="@dimen/playback_seekbar_track_height"/>
+            </shape>
+        </clip>
     </item>
 
 </layer-list>
