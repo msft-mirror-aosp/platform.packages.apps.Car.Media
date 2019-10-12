@@ -39,15 +39,6 @@
     <!-- Number of rows in the app bar view -->
     <integer name="num_app_bar_view_rows">1</integer>
 
-
-    <!-- Defines the maximum square into which requested media items bitmaps must fit (smaller
-        bitmaps are not modified, larger ones are resized to fit into the square, preserving their
-        aspect ratio). A 256x256 bitmap takes 250 KB or memory, and a 512x512 takes 1 MB so this
-        number should be set conservatively.
-    -->
-    <integer name="media_items_bitmap_max_size_px">256</integer>
-
-
     <!-- Views to hide when opening the custom actions when the queue isn't visible. -->
     <integer-array name="playback_views_to_hide_when_showing_custom_actions">
         <item>@id/seek_bar</item>
