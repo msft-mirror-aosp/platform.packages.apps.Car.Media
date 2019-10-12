@@ -22,6 +22,8 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
+import android.support.v4.media.session.PlaybackStateCompat;
+import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 import androidx.lifecycle.LifecycleService;
@@ -32,14 +34,17 @@ import com.android.car.media.common.playback.PlaybackViewModel;
 /**
  * This service is started by CarMediaService when a new user is unlocked. It connects to the
  * media source provided by CarMediaService and calls prepare() on the active MediaSession.
+ * Additionally, CarMediaService can instruct this service to autoplay, in which case this service
+ * will attempt to play the source before stopping.
  *
  * TODO(b/139497602): merge this class into CarMediaService, so it doesn't depend on Media Center
  */
 public class MediaConnectorService extends LifecycleService {
 
     private static int FOREGROUND_NOTIFICATION_ID = 1;
-    private static String NOTIFICATION_CHANNEL_ID = "com.android.car.media.service";
-    private static String NOTIFICATION_CHANNEL_NAME = "MediaConnectorService";
+    private static final String NOTIFICATION_CHANNEL_ID = "com.android.car.media.service";
+    private static final String NOTIFICATION_CHANNEL_NAME = "MediaConnectorService";
+    private static final String EXTRA_AUTOPLAY = "com.android.car.media.autoplay";
 
     @Override
     public void onCreate() {
@@ -60,14 +65,31 @@ public class MediaConnectorService extends LifecycleService {
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
 
+        final boolean autoplay = intent.getBooleanExtra(EXTRA_AUTOPLAY, false);
         PlaybackViewModel playbackViewModel = PlaybackViewModel.get(getApplication());
-        playbackViewModel.getPlaybackController().observe(this,
-                playbackController -> {
-                    if (playbackController != null) {
-                        playbackController.prepare();
-                        // Stop this service after we've successfully connected to the
-                        // MediaBrowser, since we no longer need to do anything.
-                        stopSelf(startId);
+        // Listen to playback state updates to determine which actions are supported;
+        // relevant actions here are prepare() and play()
+        // If we should autoplay the source, we wait until play() is available before we
+        // stop the service, otherwise just calling prepare() is sufficient.
+        playbackViewModel.getPlaybackStateWrapper().observe(this,
+                playbackStateWrapper -> {
+                    if (playbackStateWrapper != null) {
+                        if (playbackStateWrapper.isPlaying()) {
+                            stopSelf(startId);
+                            return;
+                        }
+                        if ((playbackStateWrapper.getSupportedActions()
+                                & PlaybackStateCompat.ACTION_PREPARE) != 0) {
+                            playbackViewModel.getPlaybackController().getValue().prepare();
+                            if (!autoplay) {
+                                stopSelf(startId);
+                            }
+                        }
+                        if (autoplay && (playbackStateWrapper.getSupportedActions()
+                                & PlaybackStateCompat.ACTION_PLAY) != 0) {
+                            playbackViewModel.getPlaybackController().getValue().play();
+                            stopSelf(startId);
+                        }
                     }
                 });
 
