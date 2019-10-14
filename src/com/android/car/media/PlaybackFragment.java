@@ -379,8 +379,10 @@ public class PlaybackFragment extends Fragment {
 
             if (expanding) {
                 ViewUtils.showViewAnimated(mControlBarScrim, millis);
+                ViewUtils.hideViewAnimated(mSeekBar, millis);
             } else {
                 ViewUtils.hideViewAnimated(mControlBarScrim, millis);
+                ViewUtils.showViewAnimated(mSeekBar, millis);
             }
 
             if (!mQueueIsVisible) {
