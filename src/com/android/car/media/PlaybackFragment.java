@@ -19,9 +19,9 @@ package com.android.car.media;
 import android.annotation.Nullable;
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.graphics.Rect;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Size;
@@ -71,11 +71,14 @@ public class PlaybackFragment extends Fragment {
     private PlaybackControlsActionBar mPlaybackControls;
     private QueueItemsAdapter mQueueAdapter;
     private RecyclerView mQueue;
-    private ConstraintLayout mMetadataContainer;
     private SeekBar mSeekBar;
     private View mQueueButton;
     private ViewGroup mNavIconContainer;
     private List<View> mViewsToHideForCustomActions;
+    private List<View> mViewsToHideWhenQueueIsVisible;
+    private List<View> mViewsToShowWhenQueueIsVisible;
+    private List<View> mViewsToHideImmediatelyWhenQueueIsVisible;
+    private List<View> mViewsToShowImmediatelyWhenQueueIsVisible;
 
     private DefaultItemAnimator mItemAnimator;
 
@@ -91,6 +94,7 @@ public class PlaybackFragment extends Fragment {
     private boolean mShowTimeForActiveQueueItem;
     private boolean mShowIconForActiveQueueItem;
     private boolean mShowThumbnailForQueueItem;
+    private boolean mShowSubtitleForQueueItem;
 
     private boolean mShowLinearProgressBar;
 
@@ -113,6 +117,7 @@ public class PlaybackFragment extends Fragment {
         private final ImageView mThumbnail;
         private final View mSpacer;
         private final TextView mTitle;
+        private final TextView mSubtitle;
         private final TextView mCurrentTime;
         private final TextView mMaxTime;
         private final TextView mTimeSeparator;
@@ -126,7 +131,8 @@ public class PlaybackFragment extends Fragment {
             mThumbnailContainer = itemView.findViewById(R.id.thumbnail_container);
             mThumbnail = itemView.findViewById(R.id.thumbnail);
             mSpacer = itemView.findViewById(R.id.spacer);
-            mTitle = itemView.findViewById(R.id.title);
+            mTitle = itemView.findViewById(R.id.queue_list_item_title);
+            mSubtitle = itemView.findViewById(R.id.queue_list_item_subtitle);
             mCurrentTime = itemView.findViewById(R.id.current_time);
             mMaxTime = itemView.findViewById(R.id.max_time);
             mTimeSeparator = itemView.findViewById(R.id.separator);
@@ -163,6 +169,10 @@ public class PlaybackFragment extends Fragment {
 
             boolean shouldShowIcon = mShowIconForActiveQueueItem && active;
             ViewUtils.setVisible(mActiveIcon, shouldShowIcon);
+
+            if (mShowSubtitleForQueueItem) {
+                mSubtitle.setText(item.getSubtitle());
+            }
 
             return active;
         }
@@ -276,7 +286,6 @@ public class PlaybackFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_playback, container, false);
         mAlbumBackground = view.findViewById(R.id.playback_background);
         mQueue = view.findViewById(R.id.queue_list);
-        mMetadataContainer = view.findViewById(R.id.metadata_container);
         mSeekBar = view.findViewById(R.id.seek_bar);
         mQueueButton = view.findViewById(R.id.queue_button);
         mQueueButton.setOnClickListener(button -> toggleQueueVisibility());
@@ -285,9 +294,11 @@ public class PlaybackFragment extends Fragment {
         mBackgroundScrim = view.findViewById(R.id.background_scrim);
         ViewUtils.setVisible(mBackgroundScrim, false);
         mControlBarScrim = view.findViewById(R.id.control_bar_scrim);
-        ViewUtils.setVisible(mControlBarScrim, false);
-        mControlBarScrim.setOnClickListener(scrim -> mPlaybackControls.close());
-        mControlBarScrim.setClickable(false);
+        if (mControlBarScrim != null) {
+            ViewUtils.setVisible(mControlBarScrim, false);
+            mControlBarScrim.setOnClickListener(scrim -> mPlaybackControls.close());
+            mControlBarScrim.setClickable(false);
+        }
 
         Resources res = getResources();
         mShowTimeForActiveQueueItem = res.getBoolean(
@@ -298,6 +309,8 @@ public class PlaybackFragment extends Fragment {
                 R.bool.show_thumbnail_for_queue_list_item);
         mShowLinearProgressBar = getContext().getResources().getBoolean(
                 R.bool.show_linear_progress_bar);
+        mShowSubtitleForQueueItem = getContext().getResources().getBoolean(
+            R.bool.show_subtitle_for_queue_list_item);
 
         if (mSeekBar != null) {
             if (mShowLinearProgressBar) {
@@ -331,19 +344,20 @@ public class PlaybackFragment extends Fragment {
         initMetadataController(view);
         initQueue();
 
-        TypedArray hideViewIds =
-                res.obtainTypedArray(R.array.playback_views_to_hide_when_showing_custom_actions);
-        mViewsToHideForCustomActions = new ArrayList<>(hideViewIds.length());
-        for (int i = 0; i < hideViewIds.length(); i++) {
-            int viewId = hideViewIds.getResourceId(i, 0);
-            if (viewId != 0) {
-                View viewToHide = view.findViewById(viewId);
-                if (viewToHide != null && (mShowLinearProgressBar || viewToHide != mSeekBar)) {
-                    mViewsToHideForCustomActions.add(viewToHide);
-                }
-            }
-        }
-        hideViewIds.recycle();
+        // Don't update the visibility of seekBar if show_linear_progress_bar is false.
+        ViewUtils.Filter ignoreSeekBarFilter =
+            (viewToFilter) -> mShowLinearProgressBar || viewToFilter != mSeekBar;
+
+        mViewsToHideForCustomActions = ViewUtils.getViewsById(view, res,
+            R.array.playback_views_to_hide_when_showing_custom_actions, ignoreSeekBarFilter);
+        mViewsToHideWhenQueueIsVisible = ViewUtils.getViewsById(view, res,
+            R.array.playback_views_to_hide_when_queue_is_visible, ignoreSeekBarFilter);
+        mViewsToShowWhenQueueIsVisible = ViewUtils.getViewsById(view, res,
+            R.array.playback_views_to_show_when_queue_is_visible, null);
+        mViewsToHideImmediatelyWhenQueueIsVisible = ViewUtils.getViewsById(view, res,
+            R.array.playback_views_to_hide_immediately_when_queue_is_visible, ignoreSeekBarFilter);
+        mViewsToShowImmediatelyWhenQueueIsVisible = ViewUtils.getViewsById(view, res,
+            R.array.playback_views_to_show_immediately_when_queue_is_visible, null);
 
         mAlbumArtBinder = new ImageBinder<>(
                 PlaceholderType.BACKGROUND,
@@ -371,21 +385,29 @@ public class PlaybackFragment extends Fragment {
         mPlaybackControls = playbackControls;
         mPlaybackControls.setModel(getPlaybackViewModel(), getViewLifecycleOwner());
         mPlaybackControls.registerExpandCollapseCallback((expanding) -> {
-            mControlBarScrim.setClickable(expanding);
-
             Resources res = getContext().getResources();
             int millis = expanding ? res.getInteger(R.integer.control_bar_expand_anim_duration) :
-                    res.getInteger(R.integer.control_bar_collapse_anim_duration);
+                res.getInteger(R.integer.control_bar_collapse_anim_duration);
+
+            if (mControlBarScrim != null) {
+                mControlBarScrim.setClickable(expanding);
+            }
 
             if (expanding) {
                 ViewUtils.showViewAnimated(mControlBarScrim, millis);
                 if (mShowLinearProgressBar) {
                     ViewUtils.hideViewAnimated(mSeekBar, millis);
                 }
+                if (mControlBarScrim != null) {
+                    ViewUtils.showViewAnimated(mControlBarScrim, millis);
+                }
             } else {
                 ViewUtils.hideViewAnimated(mControlBarScrim, millis);
                 if (mShowLinearProgressBar) {
                     ViewUtils.showViewAnimated(mSeekBar, millis);
+                }
+                if (mControlBarScrim != null) {
+                    ViewUtils.hideViewAnimated(mControlBarScrim, millis);
                 }
             }
 
@@ -479,19 +501,16 @@ public class PlaybackFragment extends Fragment {
         mQueueButton.setActivated(mQueueIsVisible);
         mQueueButton.setSelected(mQueueIsVisible);
         if (mQueueIsVisible) {
-            ViewUtils.hideViewAnimated(mMetadataContainer, mFadeDuration);
-            ViewUtils.showViewAnimated(mQueue, mFadeDuration);
-            ViewUtils.showViewAnimated(mBackgroundScrim, mFadeDuration);
-            if (mShowLinearProgressBar) {
-                ViewUtils.hideViewAnimated(mSeekBar, mFadeDuration);
-            }
+
+            ViewUtils.showViewsAnimated(mViewsToShowWhenQueueIsVisible, mFadeDuration);
+            ViewUtils.hideViewsAnimated(mViewsToHideWhenQueueIsVisible, mFadeDuration);
+            ViewUtils.setVisible(mViewsToShowImmediatelyWhenQueueIsVisible, true);
+            ViewUtils.setVisible(mViewsToHideImmediatelyWhenQueueIsVisible, false);
         } else {
-            ViewUtils.hideViewAnimated(mQueue, mFadeDuration);
-            ViewUtils.showViewAnimated(mMetadataContainer, mFadeDuration);
-            ViewUtils.hideViewAnimated(mBackgroundScrim, mFadeDuration);
-            if (mShowLinearProgressBar) {
-                ViewUtils.showViewAnimated(mSeekBar, mFadeDuration);
-            }
+            ViewUtils.hideViewsAnimated(mViewsToShowWhenQueueIsVisible, mFadeDuration);
+            ViewUtils.showViewsAnimated(mViewsToHideWhenQueueIsVisible, mFadeDuration);
+            ViewUtils.setVisible(mViewsToShowImmediatelyWhenQueueIsVisible, false);
+            ViewUtils.setVisible(mViewsToHideImmediatelyWhenQueueIsVisible, true);
         }
     }
 
