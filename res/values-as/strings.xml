@@ -38,4 +38,5 @@
     <string name="error_code_skip_limit_reached" msgid="8926507875025988831">"আৰু ট্ৰেক এৰি যাব নোৱাৰি"</string>
     <string name="error_code_action_aborted" msgid="3889734248905737169">"সম্পূর্ণ কৰিব পৰা নগ’ল। আকৌ চেষ্টা কৰক।"</string>
     <string name="error_code_end_of_queue" msgid="2842652212154074468">"শাৰীত অন্য একো নাই"</string>
+    <string name="service_notification_title" msgid="8085444675783592744">"মিডিয়াৰ সৈতে সংযোগ কৰি থকা হৈছে"</string>
 </resources>
