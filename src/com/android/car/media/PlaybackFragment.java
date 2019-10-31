@@ -394,7 +394,6 @@ public class PlaybackFragment extends Fragment {
             }
 
             if (expanding) {
-                ViewUtils.showViewAnimated(mControlBarScrim, millis);
                 if (mShowLinearProgressBar) {
                     ViewUtils.hideViewAnimated(mSeekBar, millis);
                 }
@@ -402,7 +401,6 @@ public class PlaybackFragment extends Fragment {
                     ViewUtils.showViewAnimated(mControlBarScrim, millis);
                 }
             } else {
-                ViewUtils.hideViewAnimated(mControlBarScrim, millis);
                 if (mShowLinearProgressBar) {
                     ViewUtils.showViewAnimated(mSeekBar, millis);
                 }
