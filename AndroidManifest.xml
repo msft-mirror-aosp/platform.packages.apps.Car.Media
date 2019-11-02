@@ -43,6 +43,7 @@
         <!-- The Media center entry point that trampolines into MediaActivity or the radio app. -->
         <activity
             android:name=".MediaDispatcherActivity"
+            android:theme="@android:style/Theme.NoDisplay"
             android:launchMode="singleTask">
             <meta-data android:name="distractionOptimized" android:value="true"/>
             <intent-filter>
