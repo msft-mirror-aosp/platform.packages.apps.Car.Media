@@ -48,6 +48,6 @@
     <color name="tab_view_icon_tint">@*android:color/car_tint_light</color>
     <color name="tab_view_text_color">@*android:color/car_grey_400</color>
 
-    <!-- fragment_error.xml -->
-    <color name="error_button_text_color">@color/uxr_button_text_color_selector</color>
+    <!-- Color used for the search bar underline -->
+    <color name="search_bar_underline_color">@android:color/white</color>
 </resources>

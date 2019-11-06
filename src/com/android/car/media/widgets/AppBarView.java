@@ -52,6 +52,7 @@ public class AppBarView extends ConstraintLayout {
     private String mMediaAppTitle;
     private boolean mSearchSupported;
     private int mMaxRows;
+    private boolean mIsDataLoaded;
 
     public interface AppBarProvider {
         AppBarView getAppBar();
@@ -222,7 +223,7 @@ public class AppBarView extends ConstraintLayout {
         if (items != null && !items.isEmpty()) {
             int count = 0;
             for (MediaItemMetadata item : items) {
-                MediaItemTab tab = new MediaItemTab(mContext, item);
+                MediaItemTab tab = new MediaItemTab(item);
                 mTabsContainer.addCarTab(tab);
 
                 count++;
@@ -307,10 +308,16 @@ public class AppBarView extends ConstraintLayout {
      */
     public void setState(State state) {
         mState = state;
+        if (mIsDataLoaded) {
+            updateState();
+        }
+    }
+
+    private void updateState() {
         final boolean hasTabs = mTabsContainer.getCarTabCount() > 0;
         final boolean showTitle = !hasTabs || mMaxRows == 2;
-        Log.d(TAG, "Updating state: " + state + " (has tabs: " + hasTabs + ")");
-        switch (state) {
+        Log.d(TAG, "Updating state: " + mState + " (has tabs: " + hasTabs + ")");
+        switch (mState) {
             case EMPTY:
                 mNavIconContainer.setVisibility(View.GONE);
                 setShowTabs(false);
@@ -350,5 +357,10 @@ public class AppBarView extends ConstraintLayout {
                 mAppSelector.setVisibility(View.GONE);
                 break;
         }
+    }
+
+    /** Sets whether the tabs data is loaded. */
+    public void setDataLoaded(boolean loaded) {
+        mIsDataLoaded = loaded;
     }
 }

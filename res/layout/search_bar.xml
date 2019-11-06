@@ -26,16 +26,21 @@
         android:orientation="horizontal"
         android:gravity="center"
         android:background="@drawable/appbar_view_icon_background"
-        app:switchingEnabled="false"/>
+        app:switchingEnabled="false"
+        app:appIconSize="@dimen/appbar_view_search_app_icon_size"/>
 
     <EditText
         android:id="@+id/search_bar"
         android:layout_height="match_parent"
         android:layout_width="match_parent"
-        android:paddingLeft="@dimen/appbar_view_icon_touch_target_size"
-        android:layout_marginLeft="@dimen/appbar_view_search_margin"
+        android:paddingStart="@dimen/appbar_view_search_bar_padding_start"
+        android:paddingEnd="@dimen/appbar_view_search_bar_padding_end"
+        android:layout_marginStart="@dimen/appbar_view_search_app_icon_margin"
+        android:layout_marginEnd="@dimen/appbar_view_search_bar_end_margin"
         android:hint="@string/search_hint"
         android:textColorHint="@color/search_hint_text_color"
+        android:textCursorDrawable="@null"
+        android:backgroundTint="@color/search_bar_underline_color"
         android:inputType="text"
         android:singleLine="true"
         android:imeOptions="actionDone"
@@ -45,8 +50,9 @@
         android:id="@+id/search_close"
         android:layout_width="@dimen/appbar_view_icon_touch_target_size"
         android:layout_height="@dimen/appbar_view_icon_touch_target_size"
-        android:layout_marginLeft="@dimen/appbar_view_search_margin"
+        android:layout_marginStart="@dimen/appbar_view_search_close_icon_margin"
         android:padding="@dimen/appbar_view_icon_padding"
         android:background="@drawable/appbar_view_icon_background"
+        android:visibility="gone"
         android:src="@drawable/ic_close"/>
 </merge>

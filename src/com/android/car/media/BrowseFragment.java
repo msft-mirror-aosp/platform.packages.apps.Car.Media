@@ -240,10 +240,7 @@ public class BrowseFragment extends Fragment {
 
         mBrowseList.setLayoutManager(gridLayoutManager);
         mBrowseList.addItemDecoration(new GridSpacingItemDecoration(
-                getResources().getDimensionPixelSize(R.dimen.grid_item_spacing),
-                getResources().getDimensionPixelSize(R.dimen.grid_item_margin_x),
-                getResources().getDimensionPixelSize(R.dimen.grid_item_margin_x)
-        ));
+                getResources().getDimensionPixelSize(R.dimen.grid_item_spacing)));
 
         mBrowseAdapter = new BrowseAdapter(mBrowseList.getContext());
         mBrowseList.setAdapter(mBrowseAdapter);
@@ -269,8 +266,10 @@ public class BrowseFragment extends Fragment {
             }
             boolean isLoading = futureData.isLoading();
             if (isLoading) {
-                ViewUtils.hideViewAnimated(mBrowseList, mFadeDuration);
+                // TODO(b/139759881) build a jank-free animation of the transition.
+                mBrowseList.setAlpha(0f);
                 startLoadingIndicator();
+                mBrowseAdapter.submitItems(null, null);
                 return;
             }
             stopLoadingIndicator();

@@ -77,9 +77,7 @@
     <dimen name="appbar_view_tabs_margin_end">@*android:dimen/car_padding_3</dimen>
     <dimen name="appbar_view_control_buttons_spacing">@*android:dimen/car_padding_3</dimen>
     <dimen name="appbar_view_control_buttons_margin_end">@*android:dimen/car_padding_2</dimen>
-    <dimen name="appbar_view_title_margin_start">@*android:dimen/car_padding_2</dimen>
-    <!-- negative margin to overlap icons on search bar -->
-    <dimen name="appbar_view_search_margin">-96dp</dimen>
+    <dimen name="appbar_view_title_margin_start">@dimen/appbar_view_nav_button_width</dimen>
 
     <!-- browse_state.xml -->
     <dimen name="browse_state_progress_height">@*android:dimen/car_double_line_list_item_height
@@ -93,13 +91,14 @@
     <!-- BrowseFragment.java -->
     <!-- Spacer used between the app bar and the top of the browse list/grid -->
     <dimen name="browse_spacer_height">@*android:dimen/car_padding_2</dimen>
-    <dimen name="grid_item_spacing">@*android:dimen/car_padding_4</dimen>
-    <dimen name="grid_item_margin_x">0dp</dimen>
+    <dimen name="grid_item_spacing">@*android:dimen/car_padding_3</dimen>
+
+    <!--  Space between title and subtitle on media browse list/grid  -->
+    <dimen name="media_browse_subtitle_margin_top">@*android:dimen/car_padding_0</dimen>
 
     <!-- media_browse_grid_item.xml -->
     <dimen name="media_browse_grid_item_margin_bottom">@*android:dimen/car_padding_4</dimen>
     <dimen name="media_browse_grid_item_text_margin_top">@*android:dimen/car_padding_3</dimen>
-    <dimen name="media_browse_grid_item_padding">12dp</dimen>
     <dimen name="media_browse_grid_item_background_radius">4dp</dimen>
 
     <!-- media_browse_header_item.xml -->
@@ -111,7 +110,8 @@
     <dimen name="media_browse_list_item_thumbnail_size">76dp</dimen>
     <dimen name="media_browse_list_item_text_margin_x">@*android:dimen/car_keyline_4</dimen>
     <dimen name="media_browse_list_item_icon_margin_start">@*android:dimen/car_keyline_1</dimen>
-    <dimen name="media_browse_list_item_arrow_size">@dimen/touch_target_size</dimen>
+    <dimen name="media_browse_list_item_arrow_size">@*android:dimen/car_primary_icon_size</dimen>
+    <dimen name="media_browse_list_item_thumbnail_margin_bottom">1dp</dimen>
 
     <!-- media_browse_panel_item.xml -->
     <dimen name="media_browse_panel_item_height">@*android:dimen/car_single_line_list_item_height
@@ -125,13 +125,12 @@
     <dimen name="media_browse_indicator_size">25dp</dimen>
 
     <!-- metadata_normal.xml -->
-    <dimen name="metadata_title_subtitle_margin">@*android:dimen/car_padding_4</dimen>
+    <dimen name="metadata_title_subtitle_margin">@*android:dimen/car_padding_2</dimen>
     <dimen name="metadata_subtitles_margin">@*android:dimen/car_padding_2</dimen>
     <dimen name="art_metadata_margin">48dp</dimen>
 
     <!-- browse_playback_background.xml -->
     <dimen name="browse_playback_background_radius">@*android:dimen/car_radius_2</dimen>
-    <dimen name="browse_playback_album_art_size">96dp</dimen>
     <dimen name="browse_playback_album_art_margin_start">@*android:dimen/car_padding_2</dimen>
     <dimen name="browse_playback_album_art_margin_end">@*android:dimen/car_padding_4</dimen>
     <dimen name="browse_playback_text_margin_bottom">@*android:dimen/car_padding_1</dimen>
@@ -141,9 +140,8 @@
     <dimen name="tab_view_icon_margin_bottom">@*android:dimen/car_padding_1</dimen>
 
     <!-- fragment_error.xml -->
-    <dimen name="fragment_error_margin_top">@*android:dimen/car_padding_4</dimen>
-    <dimen name="fragment_error_button_margin_top">80dp</dimen>
-    <dimen name="fragment_error_message_margin_side">80dp</dimen>
+    <dimen name="fragment_error_button_margin_top">@*android:dimen/car_padding_5</dimen>
+    <dimen name="fragment_error_message_margin_x">@*android:dimen/car_margin</dimen>
 
     <!-- fragment_playback.xml -->
     <!-- The length of playback queue fading edge, equals 0.1 * window_height. -->

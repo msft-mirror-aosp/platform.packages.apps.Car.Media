@@ -19,12 +19,12 @@ package com.android.car.media;
 import android.annotation.Nullable;
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Size;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,6 +40,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.car.apps.common.BackgroundImageView;
+import com.android.car.apps.common.imaging.ImageBinder;
+import com.android.car.apps.common.imaging.ImageBinder.PlaceholderType;
+import com.android.car.apps.common.imaging.ImageViewBinder;
 import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.media.common.MediaAppSelectorWidget;
 import com.android.car.media.common.MediaItemMetadata;
@@ -51,7 +54,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
+
 
 /**
  * A {@link Fragment} that implements both the playback and the content forward browsing experience.
@@ -61,7 +64,7 @@ import java.util.concurrent.CompletableFuture;
 public class PlaybackFragment extends Fragment {
     private static final String TAG = "PlaybackFragment";
 
-    private CompletableFuture<Bitmap> mFutureAlbumBackground;
+    private ImageBinder<MediaItemMetadata.ArtworkRef> mAlbumArtBinder;
     private BackgroundImageView mAlbumBackground;
     private View mBackgroundScrim;
     private View mControlBarScrim;
@@ -89,8 +92,9 @@ public class PlaybackFragment extends Fragment {
     private boolean mShowIconForActiveQueueItem;
     private boolean mShowThumbnailForQueueItem;
 
+    private boolean mShowLinearProgressBar;
+
     private int mFadeDuration;
-    private float mPlaybackQueueBackgroundAlpha;
 
     /**
      * PlaybackFragment listener
@@ -114,6 +118,8 @@ public class PlaybackFragment extends Fragment {
         private final TextView mTimeSeparator;
         private final ImageView mActiveIcon;
 
+        private final ImageViewBinder<MediaItemMetadata.ArtworkRef> mThumbnailBinder;
+
         QueueViewHolder(View itemView) {
             super(itemView);
             mView = itemView;
@@ -125,6 +131,9 @@ public class PlaybackFragment extends Fragment {
             mMaxTime = itemView.findViewById(R.id.max_time);
             mTimeSeparator = itemView.findViewById(R.id.separator);
             mActiveIcon = itemView.findViewById(R.id.now_playing_icon);
+
+            Size maxArtSize = MediaAppConfig.getMediaItemsBitmapMaxSize(itemView.getContext());
+            mThumbnailBinder = new ImageViewBinder<>(maxArtSize, mThumbnail);
         }
 
         boolean bind(MediaItemMetadata item) {
@@ -132,8 +141,8 @@ public class PlaybackFragment extends Fragment {
 
             ViewUtils.setVisible(mThumbnailContainer, mShowThumbnailForQueueItem);
             if (mShowThumbnailForQueueItem) {
-                MediaItemMetadata.updateImageView(mThumbnail.getContext(), item, mThumbnail, 0,
-                        true);
+                Context context = mView.getContext();
+                mThumbnailBinder.setImage(context, item != null ? item.getArtworkKey() : null);
             }
 
             ViewUtils.setVisible(mSpacer, !mShowThumbnailForQueueItem);
@@ -287,21 +296,30 @@ public class PlaybackFragment extends Fragment {
                 R.bool.show_icon_for_now_playing_queue_list_item);
         mShowThumbnailForQueueItem = getContext().getResources().getBoolean(
                 R.bool.show_thumbnail_for_queue_list_item);
+        mShowLinearProgressBar = getContext().getResources().getBoolean(
+                R.bool.show_linear_progress_bar);
 
-        boolean useMediaSourceColor = res.getBoolean(
-                R.bool.use_media_source_color_for_progress_bar);
-        int defaultColor = res.getColor(R.color.progress_bar_highlight, null);
-        if (useMediaSourceColor) {
-            getPlaybackViewModel().getMediaSourceColors().observe(getViewLifecycleOwner(),
-                    sourceColors -> {
-                        int color = sourceColors != null ? sourceColors.getAccentColor(defaultColor)
-                                : defaultColor;
-                        mSeekBar.setThumbTintList(ColorStateList.valueOf(color));
-                        mSeekBar.setProgressTintList(ColorStateList.valueOf(color));
-                    });
-        } else {
-            mSeekBar.setThumbTintList(ColorStateList.valueOf(defaultColor));
-            mSeekBar.setProgressTintList(ColorStateList.valueOf(defaultColor));
+        if (mSeekBar != null) {
+            if (mShowLinearProgressBar) {
+                boolean useMediaSourceColor = res.getBoolean(
+                        R.bool.use_media_source_color_for_progress_bar);
+                int defaultColor = res.getColor(R.color.progress_bar_highlight, null);
+                if (useMediaSourceColor) {
+                    getPlaybackViewModel().getMediaSourceColors().observe(getViewLifecycleOwner(),
+                            sourceColors -> {
+                                int color = sourceColors != null ? sourceColors.getAccentColor(
+                                        defaultColor)
+                                        : defaultColor;
+                                mSeekBar.setThumbTintList(ColorStateList.valueOf(color));
+                                mSeekBar.setProgressTintList(ColorStateList.valueOf(color));
+                            });
+                } else {
+                    mSeekBar.setThumbTintList(ColorStateList.valueOf(defaultColor));
+                    mSeekBar.setProgressTintList(ColorStateList.valueOf(defaultColor));
+                }
+            } else {
+                mSeekBar.setVisibility(View.GONE);
+            }
         }
 
         MediaAppSelectorWidget appIcon = view.findViewById(R.id.app_icon_container);
@@ -320,36 +338,21 @@ public class PlaybackFragment extends Fragment {
             int viewId = hideViewIds.getResourceId(i, 0);
             if (viewId != 0) {
                 View viewToHide = view.findViewById(viewId);
-                if (viewToHide != null) {
+                if (viewToHide != null && (mShowLinearProgressBar || viewToHide != mSeekBar)) {
                     mViewsToHideForCustomActions.add(viewToHide);
                 }
             }
         }
         hideViewIds.recycle();
 
-        int albumBgSizePx = getResources().getInteger(
-                com.android.car.apps.common.R.integer.background_bitmap_target_size_px);
+        mAlbumArtBinder = new ImageBinder<>(
+                PlaceholderType.BACKGROUND,
+                MediaAppConfig.getMediaItemsBitmapMaxSize(getContext()),
+                drawable -> mAlbumBackground.setBackgroundDrawable(drawable));
 
         getPlaybackViewModel().getMetadata().observe(getViewLifecycleOwner(),
-                metadata -> {
-                    if (mFutureAlbumBackground != null && !mFutureAlbumBackground.isDone()) {
-                        mFutureAlbumBackground.cancel(true);
-                    }
-                    if (metadata == null) {
-                        setBackgroundImage(null);
-                        mFutureAlbumBackground = null;
-                    } else {
-                        mFutureAlbumBackground = metadata.getAlbumArt(
-                                getContext(), albumBgSizePx, albumBgSizePx, false);
-                        mFutureAlbumBackground.whenComplete((result, throwable) -> {
-                            if (throwable != null) {
-                                setBackgroundImage(null);
-                            } else {
-                                setBackgroundImage(result);
-                            }
-                        });
-                    }
-                });
+                item -> mAlbumArtBinder.setImage(PlaybackFragment.this.getContext(),
+                        item != null ? item.getArtworkKey() : null));
 
         return view;
     }
@@ -362,10 +365,6 @@ public class PlaybackFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-    }
-
-    private void setBackgroundImage(Bitmap bitmap) {
-        mAlbumBackground.setBackgroundImage(bitmap, bitmap != null);
     }
 
     private void initPlaybackControls(PlaybackControlsActionBar playbackControls) {
@@ -399,8 +398,6 @@ public class PlaybackFragment extends Fragment {
     private void initQueue() {
         mFadeDuration = getResources().getInteger(
                 R.integer.fragment_playback_queue_fade_duration_ms);
-        mPlaybackQueueBackgroundAlpha = getResources().getFloat(
-                R.dimen.playback_queue_background_alpha);
 
         int decorationHeight = getResources().getDimensionPixelSize(
                 R.dimen.playback_queue_list_padding_top);
@@ -460,12 +457,12 @@ public class PlaybackFragment extends Fragment {
         TextView curTime = view.findViewById(R.id.current_time);
         TextView innerSeparator = view.findViewById(R.id.inner_separator);
         TextView maxTime = view.findViewById(R.id.max_time);
-        SeekBar seekbar = view.findViewById(R.id.seek_bar);
+        SeekBar seekbar = mShowLinearProgressBar ? mSeekBar : null;
 
+        Size maxArtSize = MediaAppConfig.getMediaItemsBitmapMaxSize(view.getContext());
         mMetadataController = new MetadataController(getViewLifecycleOwner(),
                 getPlaybackViewModel(), title, artist, albumTitle, outerSeparator,
-                curTime, innerSeparator, maxTime, seekbar, albumArt,
-                getResources().getDimensionPixelSize(R.dimen.playback_album_art_size));
+                curTime, innerSeparator, maxTime, seekbar, albumArt, maxArtSize);
     }
 
     /**
@@ -477,14 +474,18 @@ public class PlaybackFragment extends Fragment {
         mQueueButton.setSelected(mQueueIsVisible);
         if (mQueueIsVisible) {
             ViewUtils.hideViewAnimated(mMetadataContainer, mFadeDuration);
-            ViewUtils.hideViewAnimated(mSeekBar, mFadeDuration);
             ViewUtils.showViewAnimated(mQueue, mFadeDuration);
             ViewUtils.showViewAnimated(mBackgroundScrim, mFadeDuration);
+            if (mShowLinearProgressBar) {
+                ViewUtils.hideViewAnimated(mSeekBar, mFadeDuration);
+            }
         } else {
             ViewUtils.hideViewAnimated(mQueue, mFadeDuration);
             ViewUtils.showViewAnimated(mMetadataContainer, mFadeDuration);
-            ViewUtils.showViewAnimated(mSeekBar, mFadeDuration);
             ViewUtils.hideViewAnimated(mBackgroundScrim, mFadeDuration);
+            if (mShowLinearProgressBar) {
+                ViewUtils.showViewAnimated(mSeekBar, mFadeDuration);
+            }
         }
     }
 
