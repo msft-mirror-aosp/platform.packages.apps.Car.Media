@@ -51,6 +51,7 @@ import com.android.car.media.common.source.MediaSourceViewModel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 /**
  * A {@link Fragment} that implements the content forward browsing experience.
@@ -274,6 +275,10 @@ public class BrowseFragment extends Fragment {
             }
             stopLoadingIndicator();
             List<MediaItemMetadata> items = futureData.getData();
+            if (items != null) {
+                items = items.stream().filter(item ->
+                        (item.isPlayable() || item.isBrowsable())).collect(Collectors.toList());
+            }
             mBrowseAdapter.submitItems(getCurrentMediaItem(), items);
             if (items == null) {
                 mMessage.setText(R.string.unknown_error);
