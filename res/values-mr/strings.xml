@@ -29,8 +29,8 @@
     <string name="default_error_message" msgid="6365377134388091079">"काहीतरी चूकले. नंतर प्रयत्न करा."</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"ते याक्षणी केले जाऊ शकत नाही"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"हे ॲप ते करू शकत नाही"</string>
-    <string name="error_code_authentication_expired" msgid="905154133202017052">"हे अॅप वापरण्यासाठी साइन इन करा"</string>
-    <string name="error_code_premium_account_required" msgid="4736461331592855166">"प्रीमियम अॅक्सेस आवश्यक आहे"</string>
+    <string name="error_code_authentication_expired" msgid="905154133202017052">"हे ॲप वापरण्यासाठी साइन इन करा"</string>
+    <string name="error_code_premium_account_required" msgid="4736461331592855166">"प्रीमियम ॲक्सेस आवश्यक आहे"</string>
     <string name="error_code_concurrent_stream_limit" msgid="1279573243715957403">"अनेक डिव्हाइसवर ऐकत आहे"</string>
     <string name="error_code_parental_control_restricted" msgid="5222841294702530806">"तो आशय ब्लॉक केलेला आहे"</string>
     <string name="error_code_not_available_in_region" msgid="4106605584926645567">"तो आशय येथे आणू शकत नाही"</string>

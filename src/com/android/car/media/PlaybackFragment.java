@@ -71,6 +71,7 @@ public class PlaybackFragment extends Fragment {
     private PlaybackControlsActionBar mPlaybackControls;
     private QueueItemsAdapter mQueueAdapter;
     private RecyclerView mQueue;
+    private ViewGroup mSeekBarContainer;
     private SeekBar mSeekBar;
     private View mQueueButton;
     private ViewGroup mNavIconContainer;
@@ -286,6 +287,7 @@ public class PlaybackFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_playback, container, false);
         mAlbumBackground = view.findViewById(R.id.playback_background);
         mQueue = view.findViewById(R.id.queue_list);
+        mSeekBarContainer = view.findViewById(R.id.seek_bar_container);
         mSeekBar = view.findViewById(R.id.seek_bar);
         mQueueButton = view.findViewById(R.id.queue_button);
         mQueueButton.setOnClickListener(button -> toggleQueueVisibility());
@@ -346,7 +348,7 @@ public class PlaybackFragment extends Fragment {
 
         // Don't update the visibility of seekBar if show_linear_progress_bar is false.
         ViewUtils.Filter ignoreSeekBarFilter =
-            (viewToFilter) -> mShowLinearProgressBar || viewToFilter != mSeekBar;
+            (viewToFilter) -> mShowLinearProgressBar || viewToFilter != mSeekBarContainer;
 
         mViewsToHideForCustomActions = ViewUtils.getViewsById(view, res,
             R.array.playback_views_to_hide_when_showing_custom_actions, ignoreSeekBarFilter);
@@ -394,16 +396,10 @@ public class PlaybackFragment extends Fragment {
             }
 
             if (expanding) {
-                if (mShowLinearProgressBar) {
-                    ViewUtils.hideViewAnimated(mSeekBar, millis);
-                }
                 if (mControlBarScrim != null) {
                     ViewUtils.showViewAnimated(mControlBarScrim, millis);
                 }
             } else {
-                if (mShowLinearProgressBar) {
-                    ViewUtils.showViewAnimated(mSeekBar, millis);
-                }
                 if (mControlBarScrim != null) {
                     ViewUtils.hideViewAnimated(mControlBarScrim, millis);
                 }
@@ -499,7 +495,6 @@ public class PlaybackFragment extends Fragment {
         mQueueButton.setActivated(mQueueIsVisible);
         mQueueButton.setSelected(mQueueIsVisible);
         if (mQueueIsVisible) {
-
             ViewUtils.showViewsAnimated(mViewsToShowWhenQueueIsVisible, mFadeDuration);
             ViewUtils.hideViewsAnimated(mViewsToHideWhenQueueIsVisible, mFadeDuration);
             ViewUtils.setVisible(mViewsToShowImmediatelyWhenQueueIsVisible, true);
