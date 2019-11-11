@@ -111,27 +111,36 @@
         app:layout_constraintTop_toBottomOf="@id/app_bar_guideline"
         app:layout_constraintBottom_toTopOf="@+id/control_bar_first_row_guideline"/>
 
-    <SeekBar
+    <!-- @id/seek_bar should be hidden when @id/control_bar_scrim is expanded, and shown when the
+    scrim is collapsed. Since its visibility is also controlled by MetadataController, it could
+    become visible again even if the scrim is still expanded. To solve that we add a wrapper around
+    it and hide/show the wrapper when the scrim is expanded/collapsed.-->
+    <FrameLayout
         style="@style/SeekBarStyle"
-        android:id="@+id/seek_bar"
+        android:id="@+id/seek_bar_container"
         android:layout_gravity="center"
-        android:clickable="false"
-        android:focusable="false"
         android:layout_marginStart="@dimen/playback_seekbar_margin_x"
         android:layout_marginEnd="@dimen/playback_seekbar_margin_x"
-        android:paddingEnd="@dimen/playback_seekbar_padding_x"
-        android:paddingStart="@dimen/playback_seekbar_padding_x"
-        android:progressDrawable="@drawable/seekbar_background"
-        android:thumb="@drawable/seekbar_thumb"
-        android:thumbOffset="@dimen/playback_seekbar_thumb_offset"
-        android:splitTrack="false"
-        android:progressTint="@color/progress_bar_highlight"
-        android:progressBackgroundTint="@color/progress_bar_background"
-        android:background="@null"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/metadata_container"
-        app:layout_constraintBottom_toTopOf="@+id/control_bar_first_row_guideline"/>
+        app:layout_constraintBottom_toTopOf="@+id/control_bar_first_row_guideline">
+        <SeekBar
+            android:id="@+id/seek_bar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clickable="false"
+            android:focusable="false"
+            android:paddingEnd="@dimen/playback_seekbar_padding_x"
+            android:paddingStart="@dimen/playback_seekbar_padding_x"
+            android:progressDrawable="@drawable/seekbar_background"
+            android:thumb="@drawable/seekbar_thumb"
+            android:thumbOffset="@dimen/playback_seekbar_thumb_offset"
+            android:splitTrack="false"
+            android:progressTint="@color/progress_bar_highlight"
+            android:progressBackgroundTint="@color/progress_bar_background"
+            android:background="@null"/>
+    </FrameLayout>
 
     <Space
         android:id="@+id/queue_list_top_constraint"
