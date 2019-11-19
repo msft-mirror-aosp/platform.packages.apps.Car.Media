@@ -96,23 +96,29 @@
     <!--  Space between title and subtitle on media browse list/grid  -->
     <dimen name="media_browse_subtitle_margin_top">@*android:dimen/car_padding_0</dimen>
 
-    <!-- media_browse_grid_item.xml -->
+    <!-- media_browse_grid_[icons_]item.xml -->
     <dimen name="media_browse_grid_item_padding">0dp</dimen>
     <dimen name="media_browse_grid_item_margin_bottom">@*android:dimen/car_padding_4</dimen>
     <dimen name="media_browse_grid_item_text_margin_top">@*android:dimen/car_padding_3</dimen>
     <dimen name="media_browse_grid_item_background_radius">4dp</dimen>
 
+    <dimen name="media_browse_grid_icons_item_art_size">76dp</dimen>
+
     <!-- media_browse_header_item.xml -->
     <dimen name="media_browse_header_item_height">76dp</dimen>
     <dimen name="media_browse_header_item_margin_x">0dp</dimen>
 
-    <!-- media_browse_list_item.xml -->
+    <!-- media_browse_list_[icons_]item.xml -->
     <dimen name="media_browse_list_item_height">116dp</dimen>
     <dimen name="media_browse_list_item_thumbnail_size">76dp</dimen>
     <dimen name="media_browse_list_item_text_margin_x">@*android:dimen/car_keyline_4</dimen>
     <dimen name="media_browse_list_item_icon_margin_start">0dp</dimen>
     <dimen name="media_browse_list_item_arrow_size">@*android:dimen/car_primary_icon_size</dimen>
     <dimen name="media_browse_list_item_thumbnail_margin_bottom">4dp</dimen>
+
+    <dimen name="media_browse_list_icons_item_art_size">@*android:dimen/car_primary_icon_size</dimen>
+    <dimen name="media_browse_list_icons_item_art_margin_start">@*android:dimen/car_keyline_1</dimen>
+    <dimen name="media_browse_list_icons_item_text_margin_x">@*android:dimen/car_keyline_3</dimen>
 
     <!-- media_browse_panel_item.xml -->
     <dimen name="media_browse_panel_item_height">@*android:dimen/car_single_line_list_item_height
