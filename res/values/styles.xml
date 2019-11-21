@@ -21,27 +21,6 @@
         <item name="android:textColor">@color/no_content_text_color</item>
     </style>
 
-    <style name="AppBarTitleStyle">
-        <item name="android:textAppearance">@style/TextAppearance.Body1</item>
-        <item name="android:background">@drawable/media_app_title_background</item>
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:singleLine">true</item>
-    </style>
-
-    <style name="AppBarTabStyle">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">@dimen/appbar_first_row_height</item>
-        <item name="android:layout_marginStart">@dimen/appbar_view_tabs_margin_start</item>
-        <item name="android:layout_marginEnd">@dimen/appbar_view_tabs_margin_end</item>
-        <item name="layout_constraintTop_toTopOf">parent</item>
-        <item name="layout_constraintBottom_toTopOf">@+id/row_separator</item>
-        <item name="layout_constraintStart_toStartOf">parent</item>
-        <item name="layout_constraintEnd_toStartOf">@+id/search</item>
-        <item name="layout_constraintHorizontal_bias">0.0</item>
-        <item name="layout_constrainedWidth">true</item>
-    </style>
-
     <style name="MetadataPlaybackTitleStyle" parent="TextAppearance.Display2">
         <item name="android:maxLines">2</item>
         <item name="android:ellipsize">end</item>

@@ -25,10 +25,10 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
-import android.transition.Fade;
 import android.util.Log;
 import android.util.Size;
 import android.view.GestureDetector;
@@ -50,8 +50,6 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.android.car.apps.common.CarUxRestrictionsUtil;
 import com.android.car.apps.common.util.ViewUtils;
-import com.android.car.media.common.AppSelectionFragment;
-import com.android.car.media.common.MediaAppSelectorWidget;
 import com.android.car.media.common.MediaConstants;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.MinimizedPlaybackControlBar;
@@ -60,7 +58,8 @@ import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.common.source.MediaSourceViewModel;
 import com.android.car.media.widgets.AppBarView;
-import com.android.car.media.widgets.SearchBar;
+import com.android.car.ui.toolbar.Toolbar;
+import com.android.car.ui.AlertDialogBuilder;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -73,8 +72,7 @@ import java.util.stream.Collectors;
  * This activity controls the UI of media. It also updates the connection status for the media app
  * by broadcast.
  */
-public class MediaActivity extends FragmentActivity implements BrowseFragment.Callbacks,
-        AppBarView.AppBarProvider {
+public class MediaActivity extends FragmentActivity implements BrowseFragment.Callbacks {
     private static final String TAG = "MediaActivity";
 
     /** Configuration (controlled from resources) */
@@ -89,7 +87,6 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     private PlaybackFragment mPlaybackFragment;
     private BrowseFragment mSearchFragment;
     private BrowseFragment mBrowseFragment;
-    private AppSelectionFragment mAppSelectionFragment;
     private MinimizedPlaybackControlBar mMiniPlaybackControls;
     private EmptyFragment mEmptyFragment;
     private ViewGroup mBrowseContainer;
@@ -115,6 +112,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     private int mRestrictions;
     private final CarUxRestrictionsUtil.OnUxRestrictionsChangedListener mListener =
             (carUxRestrictions) -> mActiveCarUxRestrictions = carUxRestrictions;
+    private Intent mAppSelectorIntent;
 
     private AppBarView.AppBarListener mAppBarListener = new AppBarView.AppBarListener() {
         @Override
@@ -153,6 +151,19 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         @Override
         public void onSearchSelection() {
             changeMode(Mode.SEARCHING);
+        }
+
+        @Override
+        public void onAppSwitch() {
+            MediaActivity.this.startActivity(mAppSelectorIntent);
+        }
+
+        @Override
+        public void onHeightChanged(int height) {
+            BrowseFragment fragment = getCurrentBrowseFragment();
+            if (fragment != null) {
+                fragment.onAppBarHeightChanged(height);
+            }
         }
 
         @Override
@@ -229,19 +240,11 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         mediaSourceViewModel.getPrimaryMediaSource().observe(this,
                 this::onMediaSourceChanged);
 
-        MediaAppSelectorWidget appSelector = findViewById(R.id.app_switch_container);
-        appSelector.setFragmentActivity(this);
-        SearchBar searchBar = findViewById(R.id.search_bar_container);
-        searchBar.setFragmentActivity(this);
-        searchBar.setAppBarListener(mAppBarListener);
-
         mEmptyFragment = new EmptyFragment();
         MediaBrowserViewModel mediaBrowserViewModel = getRootBrowserViewModel();
         mediaBrowserViewModel.getBrowseState().observe(this,
-                browseState -> {
-                    mEmptyFragment.setState(browseState,
-                            mediaSourceViewModel.getPrimaryMediaSource().getValue());
-                });
+                browseState -> mEmptyFragment.setState(browseState,
+                        mediaSourceViewModel.getPrimaryMediaSource().getValue()));
         mediaBrowserViewModel.getBrowsedMediaItems().observe(this, futureData -> {
             if (futureData.isLoading()) {
                 if (Log.isLoggable(TAG, Log.INFO)) {
@@ -258,8 +261,6 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             }
             mBrowseTreeHasChildren = browseTreeHasChildren;
             handlePlaybackState(playbackViewModel.getPlaybackStateWrapper().getValue(), false);
-
-            mAppBarView.setDataLoaded(true);
             updateTabs(futureData.getData());
         });
         mediaBrowserViewModel.supportsSearch().observe(this,
@@ -268,10 +269,6 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         mPlaybackFragment = new PlaybackFragment();
         mPlaybackFragment.setListener(mPlaybackFragmentListener);
         mSearchFragment = BrowseFragment.newSearchInstance();
-        mAppSelectionFragment = new AppSelectionFragment();
-        int fadeDuration = getResources().getInteger(R.integer.app_selector_fade_duration);
-        mAppSelectionFragment.setEnterTransition(new Fade().setDuration(fadeDuration));
-        mAppSelectionFragment.setExitTransition(new Fade().setDuration(fadeDuration));
 
         Size maxArtSize = MediaAppConfig.getMediaItemsBitmapMaxSize(this);
         mMiniPlaybackControls = findViewById(R.id.minimized_playback_controls);
@@ -304,6 +301,8 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         mCarUxRestrictionsUtil.register(mListener);
 
         mPlaybackContainer.setOnTouchListener(new ClosePlaybackDetector(this));
+        mAppSelectorIntent = MediaSource.getSourceSelectorIntent(this, false);
+        mAppBarView.setAppLauncherSupported(mAppSelectorIntent != null);
     }
 
     @Override
@@ -402,7 +401,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
     private void showDialog(PendingIntent intent, String message, String positiveBtnText,
             String negativeButtonText) {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        AlertDialogBuilder dialog = new AlertDialogBuilder(this);
         mDialog = dialog.setMessage(message)
                 .setNegativeButton(negativeButtonText, null)
                 .setPositiveButton(positiveBtnText, (dialogInterface, i) -> {
@@ -441,18 +440,6 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         super.onBackPressed();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        MediaSource mediaSource = getMediaSourceViewModel().getPrimaryMediaSource().getValue();
-        if (mediaSource == null) {
-            mAppBarView.openAppSelector();
-        } else {
-            mAppBarView.closeAppSelector();
-        }
-    }
-
     /**
      * Sets the media source being browsed.
      *
@@ -465,28 +452,22 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
         mBrowseTreeHasChildren = false;
         mCurrentPlaybackStateWrapper = null;
-        mAppBarView.setDataLoaded(false);
         maybeCancelToast();
         maybeCancelDialog();
+        updateTabs(null);
+        mAppBarView.setTitle(null);
+        mAppBarView.setMediaAppTitle(mediaSource != null ? mediaSource.getDisplayName() : null);
         if (mediaSource != null) {
             if (Log.isLoggable(TAG, Log.INFO)) {
                 Log.i(TAG, "Browsing: " + mediaSource.getDisplayName());
             }
-            mAppBarView.setMediaAppTitle(mediaSource.getDisplayName());
-            mAppBarView.setTitle(null);
-            updateTabs(null);
             mSearchFragment.resetSearchState();
             // Changes the mode regardless of its previous value so that the views can be updated.
             changeModeInternal(Mode.BROWSING);
-            String packageName = mediaSource.getPackageName();
-            updateSourcePreferences(packageName);
-
+            updateSourcePreferences(mediaSource.getPackageName());
             // Always go through the trampoline activity to keep all the dispatching logic there.
             startActivity(new Intent(Car.CAR_INTENT_ACTION_MEDIA_TEMPLATE));
         } else {
-            mAppBarView.setMediaAppTitle(null);
-            mAppBarView.setTitle(null);
-            updateTabs(null);
             updateSourcePreferences(null);
         }
     }
@@ -506,6 +487,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         mAppBarView.setHasSettings(mCurrentSourcePreferences != null);
     }
 
+
     /**
      * Updates the tabs displayed on the app bar, based on the top level items on the browse tree.
      * If there is at least one browsable item, we show the browse content of that node. If there
@@ -523,7 +505,6 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             mTopItems = items;
             return;
         }
-
         if (Objects.equals(mTopItems, items)) {
             // When coming back to the app, the live data sends an update even if the list hasn't
             // changed. Updating the tabs then recreates the browse fragment, which produces jank
@@ -531,11 +512,9 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             return;
         }
         mTopItems = items;
-
         List<MediaItemMetadata> browsableTopLevel = items.stream()
                 .filter(MediaItemMetadata::isBrowsable)
                 .collect(Collectors.toList());
-
         if (browsableTopLevel.size() == 1) {
             // If there is only a single tab, use it as a header instead
             mAppBarView.setMediaAppTitle(browsableTopLevel.get(0).getTitle());
@@ -598,7 +577,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                 ViewUtils.hideViewAnimated(mPlaybackContainer, mFadeDuration);
                 ViewUtils.hideViewAnimated(mBrowseContainer, mFadeDuration);
                 ViewUtils.hideViewAnimated(mSearchContainer, mFadeDuration);
-                mAppBarView.setState(AppBarView.State.EMPTY);
+                mAppBarView.setState(Toolbar.State.HOME);
                 break;
             case PLAYBACK:
                 mPlaybackContainer.setY(0);
@@ -640,14 +619,22 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         }
     }
 
+    public int getAppBarHeight() {
+        return mAppBarView.getHeight();
+    }
+
     private void updateAppBar() {
         BrowseFragment fragment = getCurrentBrowseFragment();
         boolean isStacked = fragment != null && !fragment.isAtTopStack();
-        AppBarView.State unstackedState = mMode == Mode.SEARCHING
-                ? AppBarView.State.SEARCHING
-                : AppBarView.State.BROWSING;
+        MediaSource mediaSource = getMediaSourceViewModel().getPrimaryMediaSource().getValue();
+        Toolbar.State unstackedState = mMode == Mode.SEARCHING
+                ? Toolbar.State.SEARCH
+                : Toolbar.State.HOME;
         mAppBarView.setTitle(isStacked ? fragment.getCurrentMediaItem().getTitle() : null);
-        mAppBarView.setState(isStacked ? AppBarView.State.STACKED : unstackedState);
+        mAppBarView.setLogo(mediaSource != null
+                ? new BitmapDrawable(getResources(), mediaSource.getRoundPackageIcon())
+                : null);
+        mAppBarView.setState(isStacked ? Toolbar.State.SUBPAGE : unstackedState);
     }
 
     private void updateMiniPlaybackControls() {
@@ -695,11 +682,6 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
     public ViewModel getInnerViewModel() {
         return ViewModelProviders.of(this).get(ViewModel.class);
-    }
-
-    @Override
-    public AppBarView getAppBar() {
-        return mAppBarView;
     }
 
     public static class ViewModel extends AndroidViewModel {

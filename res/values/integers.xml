@@ -24,9 +24,6 @@
     <!-- Number of columns in the browse view -->
     <integer name="num_browse_columns">3</integer>
 
-    <!-- The amount of time it takes for the app selector to fade in and out -->
-    <integer name="app_selector_fade_duration">500</integer>
-
     <!-- The amount of time it takes for the fragment playback queue to fade in and out -->
     <integer name="fragment_playback_queue_fade_duration_ms">500</integer>
 
