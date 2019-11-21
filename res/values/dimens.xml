@@ -171,14 +171,12 @@
     <dimen name="queue_list_item_spacer_width">@dimen/queue_list_item_padding_x</dimen>
 
     <!-- fragment_browse.xml -->
-    <dimen name="browse_fragment_top_padding">@dimen/appbar_first_row_height</dimen>
     <dimen name="browse_fragment_bottom_padding">@dimen/minimized_control_bar_height</dimen>
-    <!-- Top padding to use when at browse levels deeper than the first level -->
-    <dimen name="browse_fragment_top_padding_stacked">@dimen/appbar_first_row_height</dimen>
     <item name="playback_queue_background_alpha" format="float" type="dimen">0.6</item>
 
     <!-- fragment_search.xml -->
-    <dimen name="search_fragment_top_padding">@dimen/appbar_first_row_height</dimen>
+    <!-- TODO: Replace this once CarUiRecyclerView is installed -->
+    <dimen name="search_fragment_top_padding">@dimen/car_ui_toolbar_row_height</dimen>
     <dimen name="search_fragment_bottom_padding">@dimen/minimized_control_bar_height</dimen>
 
     <!-- ic_queue_button.xml -->
