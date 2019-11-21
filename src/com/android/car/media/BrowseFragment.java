@@ -37,7 +37,6 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.car.apps.common.util.ViewUtils;
@@ -74,7 +73,6 @@ public class BrowseFragment extends Fragment {
     private int mFadeDuration;
     private int mLoadingIndicatorDelay;
     private boolean mIsSearchFragment;
-    private boolean mPlaybackControlsVisible = false;
     // todo(b/130760002): Create new browse fragments at deeper levels.
     private MutableLiveData<Boolean> mShowSearchResults = new MutableLiveData<>();
     private Handler mHandler = new Handler();
@@ -122,7 +120,6 @@ public class BrowseFragment extends Fragment {
             mMediaBrowserViewModel.search(mSearchQuery);
             mMediaBrowserViewModel.setCurrentBrowseId(getCurrentMediaItemId());
             getParent().onBackStackChanged();
-            adjustBrowseTopPadding();
             result = true;
         }
         if (mBrowseStack.isEmpty()) {
@@ -217,10 +214,7 @@ public class BrowseFragment extends Fragment {
 
         MediaActivity.ViewModel viewModel = ViewModelProviders.of(requireActivity()).get(
                 MediaActivity.ViewModel.class);
-        viewModel.getMiniControlsVisible().observe(this, (visible) -> {
-            mPlaybackControlsVisible = visible;
-            adjustBrowseTopPadding();
-        });
+        viewModel.getMiniControlsVisible().observe(this, this::onPlaybackControlsChanged);
 
     }
 
@@ -236,10 +230,7 @@ public class BrowseFragment extends Fragment {
         mMessage = view.findViewById(R.id.error_message);
         mFadeDuration = view.getContext().getResources().getInteger(
                 R.integer.new_album_art_fade_in_duration);
-        int numColumns = view.getContext().getResources().getInteger(R.integer.num_browse_columns);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), numColumns);
 
-        mBrowseList.setLayoutManager(gridLayoutManager);
         mBrowseList.addItemDecoration(new GridSpacingItemDecoration(
                 getResources().getDimensionPixelSize(R.dimen.grid_item_spacing)));
 
@@ -296,6 +287,7 @@ public class BrowseFragment extends Fragment {
                 ViewUtils.hideViewAnimated(mMessage, mFadeDuration);
             }
         });
+
         return view;
     }
 
@@ -337,7 +329,6 @@ public class BrowseFragment extends Fragment {
         mShowSearchResults.setValue(false);
         mMediaBrowserViewModel.setCurrentBrowseId(item.getId());
         getParent().onBackStackChanged();
-        adjustBrowseTopPadding();
     }
 
     /**
@@ -358,20 +349,24 @@ public class BrowseFragment extends Fragment {
         return currentItem != null ? currentItem.getId() : null;
     }
 
-    private void adjustBrowseTopPadding() {
-        if(mBrowseList == null) {
+    public void onAppBarHeightChanged(int height) {
+        if (mBrowseList == null) {
             return;
         }
 
-        int topPadding = isAtTopStack()
-                ? getResources().getDimensionPixelOffset(R.dimen.browse_fragment_top_padding)
-                : getResources().getDimensionPixelOffset(
-                        R.dimen.browse_fragment_top_padding_stacked);
-        int bottomPadding = mPlaybackControlsVisible
+        mBrowseList.setPadding(mBrowseList.getPaddingLeft(), height,
+                mBrowseList.getPaddingRight(), mBrowseList.getPaddingBottom());
+    }
+
+    private void onPlaybackControlsChanged(boolean visible) {
+        if (mBrowseList == null) {
+            return;
+        }
+
+        int bottomPadding = visible
                 ? getResources().getDimensionPixelOffset(R.dimen.browse_fragment_bottom_padding)
                 : 0;
-
-        mBrowseList.setPadding(mBrowseList.getPaddingLeft(), topPadding,
+        mBrowseList.setPadding(mBrowseList.getPaddingLeft(), mBrowseList.getPaddingTop(),
                 mBrowseList.getPaddingRight(), bottomPadding);
     }
 

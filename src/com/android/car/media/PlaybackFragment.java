@@ -44,11 +44,11 @@ import com.android.car.apps.common.imaging.ImageBinder;
 import com.android.car.apps.common.imaging.ImageBinder.PlaceholderType;
 import com.android.car.apps.common.imaging.ImageViewBinder;
 import com.android.car.apps.common.util.ViewUtils;
-import com.android.car.media.common.MediaAppSelectorWidget;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.MetadataController;
 import com.android.car.media.common.PlaybackControlsActionBar;
 import com.android.car.media.common.playback.PlaybackViewModel;
+import com.android.car.media.common.source.MediaSourceViewModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -337,8 +337,11 @@ public class PlaybackFragment extends Fragment {
             }
         }
 
-        MediaAppSelectorWidget appIcon = view.findViewById(R.id.app_icon_container);
-        appIcon.setFragmentActivity(getActivity());
+        ImageView logoView = view.findViewById(R.id.car_ui_toolbar_title_logo);
+        MediaSourceViewModel mediaSourceViewModel = getMediaSourceViewModel();
+        mediaSourceViewModel.getPrimaryMediaSource().observe(this, mediaSource ->
+                logoView.setImageBitmap(mediaSource != null
+                        ? mediaSource.getRoundPackageIcon() : null));
 
         getPlaybackViewModel().getPlaybackController().observe(getViewLifecycleOwner(),
                 controller -> mController = controller);
@@ -440,7 +443,6 @@ public class PlaybackFragment extends Fragment {
                     }
                 });
         mQueue.setAdapter(mQueueAdapter);
-        mQueue.setLayoutManager(new LinearLayoutManager(getContext()));
 
         // Disable item changed animation.
         mItemAnimator = new DefaultItemAnimator();
@@ -537,6 +539,10 @@ public class PlaybackFragment extends Fragment {
 
     private PlaybackViewModel getPlaybackViewModel() {
         return PlaybackViewModel.get(getActivity().getApplication());
+    }
+
+    private MediaSourceViewModel getMediaSourceViewModel() {
+        return MediaSourceViewModel.get(getActivity().getApplication());
     }
 
     /**
