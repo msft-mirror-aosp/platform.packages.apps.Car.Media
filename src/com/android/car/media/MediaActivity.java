@@ -61,6 +61,7 @@ import com.android.car.media.widgets.AppBarView;
 import com.android.car.ui.toolbar.Toolbar;
 import com.android.car.ui.AlertDialogBuilder;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -102,8 +103,12 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     private Mode mMode;
     private Intent mCurrentSourcePreferences;
     private boolean mCanShowMiniPlaybackControls;
-    private boolean mBrowseTreeHasChildren;
     private PlaybackViewModel.PlaybackStateWrapper mCurrentPlaybackStateWrapper;
+    /**
+     * Media items to display as tabs. If null, it means we haven't finished loading them yet. If
+     * empty, it means there are no tabs to show
+     */
+    @Nullable
     private List<MediaItemMetadata> mTopItems;
 
     private CarUxRestrictionsUtil mCarUxRestrictionsUtil;
@@ -250,18 +255,11 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                 if (Log.isLoggable(TAG, Log.INFO)) {
                     Log.i(TAG, "Loading browse tree...");
                 }
-                mBrowseTreeHasChildren = false;
+                updateTabs(null);
                 return;
             }
-            final boolean browseTreeHasChildren =
-                    futureData.getData() != null && !futureData.getData().isEmpty();
-            if (Log.isLoggable(TAG, Log.INFO)) {
-                Log.i(TAG, "Browse tree loaded, status (has children or not) changed: "
-                        + mBrowseTreeHasChildren + " -> " + browseTreeHasChildren);
-            }
-            mBrowseTreeHasChildren = browseTreeHasChildren;
             handlePlaybackState(playbackViewModel.getPlaybackStateWrapper().getValue(), false);
-            updateTabs(futureData.getData());
+            updateTabs(futureData.getData() != null ? futureData.getData() : new ArrayList<>());
         });
         mediaBrowserViewModel.supportsSearch().observe(this,
                 mAppBarView::setSearchSupported);
@@ -361,7 +359,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
 
         boolean isFatalError = false;
         if (!TextUtils.isEmpty(displayedMessage)) {
-            if (mBrowseTreeHasChildren) {
+            if (mTopItems != null) {
                 if (intent != null && !isUxRestricted()) {
                     showDialog(intent, displayedMessage, label, getString(android.R.string.cancel));
                 } else {
@@ -450,13 +448,14 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             Log.i(TAG, "MediaSource changed to " + mediaSource);
         }
 
-        mBrowseTreeHasChildren = false;
         mCurrentPlaybackStateWrapper = null;
         maybeCancelToast();
         maybeCancelDialog();
         updateTabs(null);
-        mAppBarView.setTitle(null);
-        mAppBarView.setMediaAppTitle(mediaSource != null ? mediaSource.getDisplayName() : null);
+        updateAppBarTitle();
+        mAppBarView.setLogo(mediaSource != null
+                ? new BitmapDrawable(getResources(), mediaSource.getRoundPackageIcon())
+                : null);
         if (mediaSource != null) {
             if (Log.isLoggable(TAG, Log.INFO)) {
                 Log.i(TAG, "Browsing: " + mediaSource.getDisplayName());
@@ -494,35 +493,31 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
      * are only playable items, then we show those items. If there are not items at all, we show the
      * empty message. If we receive null, we show the error message.
      *
-     * @param items top level items, or null if there was an error trying load those items.
+     * @param items top level items, null if the items are still being loaded, or empty list if
+     *              items couldn't be loaded.
      */
-    private void updateTabs(List<MediaItemMetadata> items) {
+    private void updateTabs(@Nullable List<MediaItemMetadata> items) {
         if (items == null || items.isEmpty()) {
             mAppBarView.setActiveItem(null);
             mAppBarView.setItems(null);
             setCurrentFragment(mEmptyFragment);
             mBrowseFragment = null;
             mTopItems = items;
+            updateAppBar();
             return;
         }
-        if (Objects.equals(mTopItems, items)) {
+        List<MediaItemMetadata> browsableTopLevel = items.stream()
+                .filter(MediaItemMetadata::isBrowsable)
+                .collect(Collectors.toList());
+        if (Objects.equals(mTopItems, browsableTopLevel)) {
             // When coming back to the app, the live data sends an update even if the list hasn't
             // changed. Updating the tabs then recreates the browse fragment, which produces jank
             // (b/131830876), and also resets the navigation to the top of the first tab...
             return;
         }
-        mTopItems = items;
-        List<MediaItemMetadata> browsableTopLevel = items.stream()
-                .filter(MediaItemMetadata::isBrowsable)
-                .collect(Collectors.toList());
-        if (browsableTopLevel.size() == 1) {
-            // If there is only a single tab, use it as a header instead
-            mAppBarView.setMediaAppTitle(browsableTopLevel.get(0).getTitle());
-            mAppBarView.setTitle(null);
-            mAppBarView.setItems(null);
-        } else {
-            mAppBarView.setItems(browsableTopLevel);
-        }
+        mTopItems = browsableTopLevel;
+        mAppBarView.setItems(mTopItems.size() == 1 ? null : mTopItems);
+        updateAppBar();
         showTopItem(browsableTopLevel.isEmpty() ? null : browsableTopLevel.get(0));
     }
 
@@ -618,22 +613,41 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                 break;
         }
     }
+    private void updateAppBarTitle() {
+        BrowseFragment fragment = getCurrentBrowseFragment();
+        boolean isStacked = fragment != null && !fragment.isAtTopStack();
 
-    public int getAppBarHeight() {
-        return mAppBarView.getHeight();
+        final CharSequence title;
+        if (isStacked) {
+            // If not at top level, show the current item as title
+            title = fragment.getCurrentMediaItem().getTitle();
+        } else if (mTopItems == null) {
+            // If still loading the tabs, force to show an empty bar.
+            title = "";
+        } else if (mTopItems.size() == 1) {
+            // If we finished loading tabs and there is only one, use that as title.
+            title = mTopItems.get(0).getTitle();
+        } else {
+            // Otherwise, show the current media source title (in case there are no tabs).
+            MediaSourceViewModel mediaSourceViewModel = getMediaSourceViewModel();
+            MediaSource mediaSource = mediaSourceViewModel.getPrimaryMediaSource().getValue();
+            title = (mediaSource != null) ? mediaSource.getDisplayName()
+                    : getResources().getString(R.string.media_app_title);
+        }
+
+        mAppBarView.setTitle(title);
     }
 
+    /**
+     * Update elements of the appbar that change depending on where we are in the browse.
+     */
     private void updateAppBar() {
         BrowseFragment fragment = getCurrentBrowseFragment();
         boolean isStacked = fragment != null && !fragment.isAtTopStack();
-        MediaSource mediaSource = getMediaSourceViewModel().getPrimaryMediaSource().getValue();
         Toolbar.State unstackedState = mMode == Mode.SEARCHING
                 ? Toolbar.State.SEARCH
                 : Toolbar.State.HOME;
-        mAppBarView.setTitle(isStacked ? fragment.getCurrentMediaItem().getTitle() : null);
-        mAppBarView.setLogo(mediaSource != null
-                ? new BitmapDrawable(getResources(), mediaSource.getRoundPackageIcon())
-                : null);
+        updateAppBarTitle();
         mAppBarView.setState(isStacked ? Toolbar.State.SUBPAGE : unstackedState);
     }
 

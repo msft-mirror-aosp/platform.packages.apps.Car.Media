@@ -31,7 +31,6 @@ public class AppBarView extends Toolbar {
     private MenuItem mSearch;
     private MenuItem mSettings;
     private MenuItem mAppSelector;
-    private String mMediaAppTitle;
 
     /**
      * Application bar listener
@@ -156,24 +155,6 @@ public class AppBarView extends Toolbar {
                 }
             }
         }
-    }
-
-    /**
-     * Updates the title to display when the bar is not showing tabs. If the provided title is null,
-     * will default to displaying the app name.
-     */
-    public void setTitle(CharSequence title) {
-        super.setTitle(title != null ? title : mMediaAppTitle);
-    }
-
-    /**
-     * Sets the name of the currently displayed media app. This is used as the default title for
-     * playback and the root browse menu. If provided title is null, will use default media center
-     * title.
-     */
-    public void setMediaAppTitle(CharSequence appTitle) {
-        mMediaAppTitle = appTitle == null ? getResources().getString(R.string.media_app_title)
-                : appTitle.toString();
     }
 
     /** Sets whether the source has settings (not all screens show it). */
