@@ -26,6 +26,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.audiofx.AudioEffect;
 import android.os.Bundle;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
@@ -103,6 +104,8 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     private Mode mMode;
     private Intent mCurrentSourcePreferences;
     private boolean mCanShowMiniPlaybackControls;
+    private boolean mShouldShowSoundSettings;
+
     private PlaybackViewModel.PlaybackStateWrapper mCurrentPlaybackStateWrapper;
     /**
      * Media items to display as tabs. If null, it means we haven't finished loading them yet. If
@@ -135,6 +138,14 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                     changeMode(Mode.BROWSING);
                 }
             }
+        }
+
+        @Override
+        public void onEqualizerSelection() {
+            Intent i = new Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL);
+            // Using startActivityForResult so that the control panel app can track changes for
+            // the launching package name.
+            startActivityForResult(i, 0);
         }
 
         @Override
@@ -297,6 +308,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         mCarUxRestrictionsUtil = CarUxRestrictionsUtil.getInstance(this);
         mRestrictions = CarUxRestrictions.UX_RESTRICTIONS_NO_SETUP;
         mCarUxRestrictionsUtil.register(mListener);
+        mShouldShowSoundSettings = getResources().getBoolean(R.bool.show_sound_settings);
 
         mPlaybackContainer.setOnTouchListener(new ClosePlaybackDetector(this));
         mAppSelectorIntent = MediaSource.getSourceSelectorIntent(this, false);
@@ -484,6 +496,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             }
         }
         mAppBarView.setHasSettings(mCurrentSourcePreferences != null);
+        mAppBarView.setHasEqualizer(mShouldShowSoundSettings);
     }
 
 
