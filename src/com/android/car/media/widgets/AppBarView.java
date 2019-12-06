@@ -30,6 +30,7 @@ public class AppBarView extends Toolbar {
     private AppBarListener mListener = DEFAULT_APPBAR_LISTENER;
     private MenuItem mSearch;
     private MenuItem mSettings;
+    private MenuItem mEqualizer;
     private MenuItem mAppSelector;
 
     /**
@@ -50,6 +51,11 @@ public class AppBarView extends Toolbar {
          * Invoked when the user clicks on the settings button.
          */
         void onSettingsSelection();
+
+        /**
+         * Invoked when the user clicks on the equalizer button.
+         */
+        void onEqualizerSelection();
 
         /**
          * Invoked when the user submits a search query.
@@ -81,6 +87,9 @@ public class AppBarView extends Toolbar {
 
         @Override
         public void onSettingsSelection() {}
+
+        @Override
+        public void onEqualizerSelection() {}
 
         @Override
         public void onSearch(String query) {}
@@ -121,11 +130,13 @@ public class AppBarView extends Toolbar {
         registerToolbarHeightChangeListener(height -> mListener.onHeightChanged(height));
         mSearch = MenuItem.Builder.createSearch(context, v -> mListener.onSearchSelection());
         mSettings = MenuItem.Builder.createSettings(context, v -> mListener.onSettingsSelection());
+        mEqualizer = MenuItem.Builder.createSoundSettings(context,
+                v -> mListener.onEqualizerSelection());
         mAppSelector = new MenuItem.Builder(context)
                 .setIcon(R.drawable.ic_app_switch)
                 .setOnClickListener(m -> mListener.onAppSwitch())
                 .build();
-        setMenuItems(Arrays.asList(mSearch, mSettings, mAppSelector));
+        setMenuItems(Arrays.asList(mSearch, mEqualizer, mSettings, mAppSelector));
     }
 
     /**
@@ -160,6 +171,11 @@ public class AppBarView extends Toolbar {
     /** Sets whether the source has settings (not all screens show it). */
     public void setHasSettings(boolean hasSettings) {
         mSettings.setVisible(hasSettings);
+    }
+
+    /** Sets whether the source has equalizer support. */
+    public void setHasEqualizer(boolean hasEqualizer) {
+        mEqualizer.setVisible(hasEqualizer);
     }
 
     /**
