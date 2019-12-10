@@ -61,4 +61,6 @@
     <string name="error_code_end_of_queue">Nothing else is queued up</string>
     <!-- Title string for the service used to bind to the current media source -->
     <string name="service_notification_title">Connecting to media</string>
+    <!-- Title of the sound settings menu item. Will be displayed if the button is in the overflow menu. [CHAR_LIMIT=50] -->
+    <string name="menu_item_sound_settings_title">Sound Settings</string>
 </resources>

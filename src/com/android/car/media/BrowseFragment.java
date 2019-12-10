@@ -16,16 +16,15 @@
 
 package com.android.car.media;
 
-import static com.android.car.apps.common.FragmentUtils.checkParent;
-import static com.android.car.apps.common.FragmentUtils.requireParent;
 import static com.android.car.arch.common.LiveDataFunctions.ifThenElse;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
-import android.os.Bundle;
+import android.content.res.Resources;
 import android.os.Handler;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,7 +32,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProviders;
@@ -45,30 +44,34 @@ import com.android.car.media.browse.BrowseAdapter;
 import com.android.car.media.common.GridSpacingItemDecoration;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.browse.MediaBrowserViewModel;
+import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.common.source.MediaSourceViewModel;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
 /**
- * A {@link Fragment} that implements the content forward browsing experience.
+ * A view "controller" that implements the content forward browsing experience.
  *
  * This can be used to display either search or browse results at the root level. Deeper levels will
- * be handled the same way between search and browse, using a backstack to return to the root.
+ * be handled the same way between search and browse, using a back stack to return to the root.
  */
-public class BrowseFragment extends Fragment {
+public class BrowseFragment {
     private static final String TAG = "BrowseFragment";
-    private static final String TOP_MEDIA_ITEM_KEY = "top_media_item";
-    private static final String SEARCH_KEY = "search_config";
-    private static final String BROWSE_STACK_KEY = "browse_stack";
+
+    private static final String REGULAR_BROWSER_VIEW_MODEL_KEY
+            = "com.android.car.media.regular_browser_view_model";
+    private static final String SEARCH_BROWSER_VIEW_MODEL_KEY
+            = "com.android.car.media.search_browser_view_model";
+
+    private final Callbacks mCallbacks;
+    private final View mFragmentContent;
 
     private RecyclerView mBrowseList;
     private ImageView mErrorIcon;
     private TextView mMessage;
     private BrowseAdapter mBrowseAdapter;
-    private MediaItemMetadata mTopMediaItem;
     private String mSearchQuery;
     private int mFadeDuration;
     private int mLoadingIndicatorDelay;
@@ -88,6 +91,7 @@ public class BrowseFragment extends Fragment {
 
         @Override
         protected void onBrowsableItemClicked(MediaItemMetadata item) {
+            hideKeyboard();
             navigateInto(item);
         }
     };
@@ -108,6 +112,8 @@ public class BrowseFragment extends Fragment {
          * @param item item to be played.
          */
         void onPlayableItemClicked(MediaItemMetadata item);
+
+        FragmentActivity getActivity();
     }
 
     /**
@@ -115,14 +121,14 @@ public class BrowseFragment extends Fragment {
      */
     boolean navigateBack() {
         boolean result = false;
-        if (!mBrowseStack.empty()) {
+        if (!isAtTopStack()) {
             mBrowseStack.pop();
             mMediaBrowserViewModel.search(mSearchQuery);
             mMediaBrowserViewModel.setCurrentBrowseId(getCurrentMediaItemId());
             getParent().onBackStackChanged();
             result = true;
         }
-        if (mBrowseStack.isEmpty()) {
+        if (isAtTopStack()) {
             mShowSearchResults.setValue(mIsSearchFragment);
         }
         return result;
@@ -130,29 +136,33 @@ public class BrowseFragment extends Fragment {
 
     @NonNull
     private Callbacks getParent() {
-        return requireParent(this, Callbacks.class);
+        return mCallbacks;
+    }
+
+    private FragmentActivity getActivity() {
+        return mCallbacks.getActivity();
     }
 
     /**
      * @return whether the user is at the top of the browsing stack.
      */
-    public boolean isAtTopStack() {
-        return mBrowseStack.isEmpty();
+    boolean isAtTopStack() {
+        if (mIsSearchFragment) {
+            return mBrowseStack.isEmpty();
+        } else {
+            // The mBrowseStack stack includes the tab...
+            return mBrowseStack.size() <= 1;
+        }
     }
 
     /**
      * Creates a new instance of this fragment. The root browse id will be the one provided to this
      * method.
-     *
-     * @param item media tree node to display on this fragment.
      * @return a fully initialized {@link BrowseFragment}
      */
-    public static BrowseFragment newInstance(MediaItemMetadata item) {
-        BrowseFragment fragment = new BrowseFragment();
-        Bundle args = new Bundle();
-        args.putParcelable(TOP_MEDIA_ITEM_KEY, item);
-        fragment.setArguments(args);
-        return fragment;
+    public static BrowseFragment newInstance(Callbacks callbacks, ViewGroup container) {
+        boolean isSearchFragment = false;
+        return new BrowseFragment(callbacks, container, isSearchFragment);
     }
 
     /**
@@ -161,15 +171,12 @@ public class BrowseFragment extends Fragment {
      *
      * @return a fully initialized {@link BrowseFragment}
      */
-    public static BrowseFragment newSearchInstance() {
-        BrowseFragment fragment = new BrowseFragment();
-        Bundle args = new Bundle();
-        args.putBoolean(SEARCH_KEY, true);
-        fragment.setArguments(args);
-        return fragment;
+    static BrowseFragment newSearchInstance(Callbacks callbacks, ViewGroup container) {
+        boolean isSearchFragment = true;
+        return new BrowseFragment(callbacks, container, isSearchFragment);
     }
 
-    public void updateSearchQuery(@Nullable String query) {
+    void updateSearchQuery(@Nullable String query) {
         mSearchQuery = query;
         mMediaBrowserViewModel.search(query);
     }
@@ -177,80 +184,67 @@ public class BrowseFragment extends Fragment {
     /**
      * Clears search state from this fragment, removes any UI elements from previous results.
      */
-    public void resetSearchState() {
-        updateSearchQuery(null);
+    void resetState() {
+        MediaActivity.ViewModel viewModel = ViewModelProviders.of(mCallbacks.getActivity()).get(
+                MediaActivity.ViewModel.class);
+
+        if (mIsSearchFragment) {
+            updateSearchQuery(viewModel.getSearchQuery());
+            mShowSearchResults.setValue(false);
+            mBrowseStack = viewModel.getSearchStack();
+            mShowSearchResults.setValue(isAtTopStack());
+        } else {
+            mBrowseStack = viewModel.getBrowseStack();
+            mShowSearchResults.setValue(false);
+        }
+
         mBrowseAdapter.submitItems(null, null);
         stopLoadingIndicator();
         ViewUtils.hideViewAnimated(mErrorIcon, mFadeDuration);
         ViewUtils.hideViewAnimated(mMessage, mFadeDuration);
+
+        mMediaBrowserViewModel.setCurrentBrowseId(getCurrentMediaItemId());
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Bundle arguments = getArguments();
-        if (arguments != null) {
-            mTopMediaItem = arguments.getParcelable(TOP_MEDIA_ITEM_KEY);
-            mIsSearchFragment = arguments.getBoolean(SEARCH_KEY, false);
-            mShowSearchResults.setValue(mIsSearchFragment);
-        }
-        if (savedInstanceState != null) {
-            List<MediaItemMetadata> savedStack =
-                    savedInstanceState.getParcelableArrayList(BROWSE_STACK_KEY);
-            mBrowseStack.clear();
-            if (savedStack != null) {
-                mBrowseStack.addAll(savedStack);
-            }
-        }
+    private BrowseFragment(Callbacks callbacks, ViewGroup container, boolean isSearchFragment) {
+        mCallbacks = callbacks;
 
-        // Get the MediaBrowserViewModel tied to the lifecycle of this fragment, but using the
-        // MediaSourceViewModel of the activity. This means the media source is consistent across
-        // all fragments, but the fragment contents themselves will vary
-        // (e.g. between different browse tabs, search)
+        FragmentActivity activity = callbacks.getActivity();
+
+        mIsSearchFragment = isSearchFragment;
         mMediaBrowserViewModel = MediaBrowserViewModel.Factory.getInstanceWithMediaBrowser(
-                ViewModelProviders.of(this),
-                MediaSourceViewModel.get(
-                        requireActivity().getApplication()).getConnectedMediaBrowser());
+                mIsSearchFragment ? SEARCH_BROWSER_VIEW_MODEL_KEY : REGULAR_BROWSER_VIEW_MODEL_KEY,
+                ViewModelProviders.of(activity),
+                MediaSourceViewModel.get(activity.getApplication()).getConnectedMediaBrowser());
 
-        MediaActivity.ViewModel viewModel = ViewModelProviders.of(requireActivity()).get(
-                MediaActivity.ViewModel.class);
-        viewModel.getMiniControlsVisible().observe(this, this::onPlaybackControlsChanged);
-
-    }
-
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, final ViewGroup container,
-            Bundle savedInstanceState) {
         int viewId = mIsSearchFragment ? R.layout.fragment_search : R.layout.fragment_browse;
-        View view = inflater.inflate(viewId, container, false);
-        mLoadingIndicatorDelay = view.getContext().getResources()
+        mFragmentContent =
+                LayoutInflater.from(container.getContext()).inflate(viewId, container, false);
+        mLoadingIndicatorDelay = mFragmentContent.getContext().getResources()
                 .getInteger(R.integer.progress_indicator_delay);
-        mBrowseList = view.findViewById(R.id.browse_list);
-        mErrorIcon = view.findViewById(R.id.error_icon);
-        mMessage = view.findViewById(R.id.error_message);
-        mFadeDuration = view.getContext().getResources().getInteger(
+        mBrowseList = mFragmentContent.findViewById(R.id.browse_list);
+        mErrorIcon = mFragmentContent.findViewById(R.id.error_icon);
+        mMessage = mFragmentContent.findViewById(R.id.error_message);
+        mFadeDuration = mFragmentContent.getContext().getResources().getInteger(
                 R.integer.new_album_art_fade_in_duration);
 
         mBrowseList.addItemDecoration(new GridSpacingItemDecoration(
-                getResources().getDimensionPixelSize(R.dimen.grid_item_spacing)));
+                activity.getResources().getDimensionPixelSize(R.dimen.grid_item_spacing)));
 
         mBrowseAdapter = new BrowseAdapter(mBrowseList.getContext());
         mBrowseList.setAdapter(mBrowseAdapter);
         mBrowseAdapter.registerObserver(mBrowseAdapterObserver);
 
-        if (savedInstanceState == null) {
-            mMediaBrowserViewModel.search(mSearchQuery);
-            mMediaBrowserViewModel.setCurrentBrowseId(getCurrentMediaItemId());
-        }
-        mMediaBrowserViewModel.rootBrowsableHint().observe(this, hint ->
+        mMediaBrowserViewModel.rootBrowsableHint().observe(activity, hint ->
                 mBrowseAdapter.setRootBrowsableViewType(hint));
-        mMediaBrowserViewModel.rootPlayableHint().observe(this, hint ->
+        mMediaBrowserViewModel.rootPlayableHint().observe(activity, hint ->
                 mBrowseAdapter.setRootPlayableViewType(hint));
         LiveData<FutureData<List<MediaItemMetadata>>> mediaItems = ifThenElse(mShowSearchResults,
                 mMediaBrowserViewModel.getSearchedMediaItems(),
                 mMediaBrowserViewModel.getBrowsedMediaItems());
 
-        mediaItems.observe(getViewLifecycleOwner(), futureData ->
+        // TODO(b/145688665) merge with #update
+        mediaItems.observe(activity, futureData ->
         {
             // Prevent showing loading spinner or any error messages if search is uninitialized
             if (mIsSearchFragment && TextUtils.isEmpty(mSearchQuery)) {
@@ -288,13 +282,7 @@ public class BrowseFragment extends Fragment {
             }
         });
 
-        return view;
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        checkParent(this, Callbacks.class);
+        container.addView(mFragmentContent);
     }
 
     private Runnable mLoadingIndicatorRunnable = new Runnable() {
@@ -316,18 +304,15 @@ public class BrowseFragment extends Fragment {
         ViewUtils.hideViewAnimated(mMessage, mFadeDuration);
     }
 
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        ArrayList<MediaItemMetadata> stack = new ArrayList<>(mBrowseStack);
-        outState.putParcelableArrayList(BROWSE_STACK_KEY, stack);
-    }
+    void navigateInto(@Nullable MediaItemMetadata item) {
+        if (item != null) {
+            mBrowseStack.push(item);
+            mMediaBrowserViewModel.setCurrentBrowseId(item.getId());
+        } else {
+            mMediaBrowserViewModel.setCurrentBrowseId(null);
+        }
 
-    private void navigateInto(MediaItemMetadata item) {
-        hideKeyboard();
-        mBrowseStack.push(item);
         mShowSearchResults.setValue(false);
-        mMediaBrowserViewModel.setCurrentBrowseId(item.getId());
         getParent().onBackStackChanged();
     }
 
@@ -336,11 +321,7 @@ public class BrowseFragment extends Fragment {
      */
     @Nullable
     MediaItemMetadata getCurrentMediaItem() {
-        if (mBrowseStack.isEmpty()) {
-            return mTopMediaItem;
-        } else {
-            return mBrowseStack.lastElement();
-        }
+        return mBrowseStack.isEmpty() ? null : mBrowseStack.lastElement();
     }
 
     @Nullable
@@ -358,13 +339,14 @@ public class BrowseFragment extends Fragment {
                 mBrowseList.getPaddingRight(), mBrowseList.getPaddingBottom());
     }
 
-    private void onPlaybackControlsChanged(boolean visible) {
+    void onPlaybackControlsChanged(boolean visible) {
         if (mBrowseList == null) {
             return;
         }
 
+        Resources res = getActivity().getResources();
         int bottomPadding = visible
-                ? getResources().getDimensionPixelOffset(R.dimen.browse_fragment_bottom_padding)
+                ? res.getDimensionPixelOffset(R.dimen.browse_fragment_bottom_padding)
                 : 0;
         mBrowseList.setPadding(mBrowseList.getPaddingLeft(), mBrowseList.getPaddingTop(),
                 mBrowseList.getPaddingRight(), bottomPadding);
@@ -373,6 +355,50 @@ public class BrowseFragment extends Fragment {
     private void hideKeyboard() {
         InputMethodManager in =
                 (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        in.hideSoftInputFromWindow(getView().getWindowToken(), 0);
+        in.hideSoftInputFromWindow(mFragmentContent.getWindowToken(), 0);
+    }
+
+    /**
+     * Updates the state of this fragment.
+     */
+    void setRootState(@NonNull MediaBrowserViewModel.BrowseState state,
+            @Nullable MediaSource mediaSource) {
+        mHandler.removeCallbacks(mLoadingIndicatorRunnable);
+        update(state, mediaSource);
+    }
+
+    private void update(@NonNull MediaBrowserViewModel.BrowseState state,
+            @Nullable MediaSource mediaSource) {
+        switch (state) {
+            case LOADING:
+                // Display the indicator after a certain time, to avoid flashing the indicator
+                // constantly, even when performance is acceptable.
+                startLoadingIndicator();
+                ViewUtils.hideViewAnimated(mErrorIcon, 0);
+                ViewUtils.hideViewAnimated(mMessage, 0);
+                break;
+            case ERROR:
+                ViewUtils.showViewAnimated(mErrorIcon, 0);
+                ViewUtils.showViewAnimated(mMessage, 0);
+                mMessage.setText(getActivity().getString(
+                        R.string.cannot_connect_to_app,
+                        mediaSource != null
+                                ? mediaSource.getDisplayName()
+                                : getActivity().getString(
+                                        R.string.unknown_media_provider_name)));
+                break;
+            case EMPTY:
+                ViewUtils.hideViewAnimated(mErrorIcon, 0);
+                ViewUtils.showViewAnimated(mMessage, 0);
+                mMessage.setText(getActivity().getString(R.string.nothing_to_play));
+                break;
+            case LOADED:
+                Log.d(TAG, "Updated with LOADED state, ignoring.");
+                // Do nothing.
+                break;
+            default:
+                // Fail fast on any other state.
+                throw new IllegalStateException("Invalid state for this fragment: " + state);
+        }
     }
 }
