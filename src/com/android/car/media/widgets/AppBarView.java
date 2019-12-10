@@ -130,8 +130,11 @@ public class AppBarView extends Toolbar {
         registerToolbarHeightChangeListener(height -> mListener.onHeightChanged(height));
         mSearch = MenuItem.Builder.createSearch(context, v -> mListener.onSearchSelection());
         mSettings = MenuItem.Builder.createSettings(context, v -> mListener.onSettingsSelection());
-        mEqualizer = MenuItem.Builder.createSoundSettings(context,
-                v -> mListener.onEqualizerSelection());
+        mEqualizer = new MenuItem.Builder(context)
+                .setTitle(R.string.menu_item_sound_settings_title)
+                .setIcon(R.drawable.ic_equalizer)
+                .setOnClickListener(v -> mListener.onEqualizerSelection())
+                .build();
         mAppSelector = new MenuItem.Builder(context)
                 .setIcon(R.drawable.ic_app_switch)
                 .setOnClickListener(m -> mListener.onAppSwitch())
