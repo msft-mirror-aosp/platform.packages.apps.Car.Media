@@ -35,6 +35,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -100,6 +101,8 @@ public class PlaybackFragment extends Fragment {
     private boolean mShowLinearProgressBar;
 
     private int mFadeDuration;
+
+    private MediaActivity.ViewModel mViewModel;
 
     /**
      * PlaybackFragment listener
@@ -343,6 +346,8 @@ public class PlaybackFragment extends Fragment {
                 logoView.setImageBitmap(mediaSource != null
                         ? mediaSource.getRoundPackageIcon() : null));
 
+        mViewModel = ViewModelProviders.of(requireActivity()).get(MediaActivity.ViewModel.class);
+
         getPlaybackViewModel().getPlaybackController().observe(getViewLifecycleOwner(),
                 controller -> mController = controller);
         initPlaybackControls(view.findViewById(R.id.playback_controls));
@@ -453,10 +458,8 @@ public class PlaybackFragment extends Fragment {
 
         getPlaybackViewModel().hasQueue().observe(getViewLifecycleOwner(), hasQueue -> {
             boolean enableQueue = (hasQueue != null) && hasQueue;
+            mQueueIsVisible = mViewModel.getQueueVisible();
             setHasQueue(enableQueue);
-            if (mQueueIsVisible && !enableQueue) {
-                toggleQueueVisibility();
-            }
         });
         getPlaybackViewModel().getProgress().observe(getViewLifecycleOwner(),
                 playbackProgress ->
@@ -490,10 +493,21 @@ public class PlaybackFragment extends Fragment {
     }
 
     /**
-     * Hides or shows the playback queue.
+     * Hides or shows the playback queue when the user clicks the queue button.
      */
     private void toggleQueueVisibility() {
-        mQueueIsVisible = !mQueueIsVisible;
+        boolean updatedQueueVisibility = !mQueueIsVisible;
+        setQueueVisible(updatedQueueVisibility);
+
+        // When the visibility of queue is changed by the user, save the visibility into ViewModel
+        // so that we can restore PlaybackFragment properly when needed. If it's changed by media
+        // source change (media source changes -> hasQueue becomes false -> queue is hidden), don't
+        // save it.
+        mViewModel.setQueueVisible(updatedQueueVisibility);
+    }
+
+    private void setQueueVisible(boolean visible) {
+        mQueueIsVisible = visible;
         mQueueButton.setActivated(mQueueIsVisible);
         mQueueButton.setSelected(mQueueIsVisible);
         if (mQueueIsVisible) {
@@ -512,11 +526,8 @@ public class PlaybackFragment extends Fragment {
     /** Sets whether the source has a queue. */
     private void setHasQueue(boolean hasQueue) {
         mHasQueue = hasQueue;
-        updateQueueVisibility();
-    }
-
-    private void updateQueueVisibility() {
         mQueueButton.setVisibility(mHasQueue ? View.VISIBLE : View.GONE);
+        setQueueVisible(hasQueue && mQueueIsVisible);
     }
 
     private void onQueueItemClicked(MediaItemMetadata item) {
