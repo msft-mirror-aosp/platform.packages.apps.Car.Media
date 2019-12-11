@@ -51,6 +51,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.android.car.apps.common.CarUxRestrictionsUtil;
+import com.android.car.apps.common.util.CarPackageManagerUtils;
 import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.media.common.MediaConstants;
 import com.android.car.media.common.MediaItemMetadata;
@@ -115,6 +116,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     @Nullable
     private List<MediaItemMetadata> mTopItems;
 
+    private CarPackageManagerUtils mCarPackageManagerUtils;
     private CarUxRestrictionsUtil mCarUxRestrictionsUtil;
     private CarUxRestrictions mActiveCarUxRestrictions;
     @CarUxRestrictions.CarUxRestrictionsInfo
@@ -317,6 +319,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         playbackViewModel.getPlaybackStateWrapper().observe(this,
                 state -> handlePlaybackState(state, true));
 
+        mCarPackageManagerUtils = CarPackageManagerUtils.getInstance(this);
         mCarUxRestrictionsUtil = CarUxRestrictionsUtil.getInstance(this);
         mRestrictions = CarUxRestrictions.UX_RESTRICTIONS_NO_SETUP;
         mCarUxRestrictionsUtil.register(mListener);
@@ -327,8 +330,10 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         mAppBarView.setAppLauncherSupported(mAppSelectorIntent != null);
 
         localViewModel.getMiniControlsVisible().observe(this, visible -> {
-            mBrowseFragment.onPlaybackControlsChanged(visible);
-            mSearchFragment.onPlaybackControlsChanged(visible);
+            int topMargin = mAppBarView.getHeight();
+            int bottomMargin = visible ? mMiniPlaybackControls.getHeight() : 0;
+            mBrowseFragment.onPlaybackControlsChanged(visible, topMargin, bottomMargin);
+            mSearchFragment.onPlaybackControlsChanged(visible, topMargin, bottomMargin);
         } );
     }
 
@@ -518,6 +523,8 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             if (info != null && info.activityInfo != null && info.activityInfo.exported) {
                 mCurrentSourcePreferences = new Intent(prefsIntent.getAction())
                         .setClassName(info.activityInfo.packageName, info.activityInfo.name);
+                mAppBarView.setSettingsDistractionOptimized(
+                        mCarPackageManagerUtils.isDistractionOptimized(info.activityInfo));
             }
         }
         mAppBarView.setHasSettings(mCurrentSourcePreferences != null);
