@@ -69,6 +69,7 @@ public class BrowseFragment {
     private final View mFragmentContent;
 
     private RecyclerView mBrowseList;
+    private ViewGroup mBrowseState;
     private ImageView mErrorIcon;
     private TextView mMessage;
     private BrowseAdapter mBrowseAdapter;
@@ -223,6 +224,7 @@ public class BrowseFragment {
         mLoadingIndicatorDelay = mFragmentContent.getContext().getResources()
                 .getInteger(R.integer.progress_indicator_delay);
         mBrowseList = mFragmentContent.findViewById(R.id.browse_list);
+        mBrowseState = mFragmentContent.findViewById(R.id.browse_state);
         mErrorIcon = mFragmentContent.findViewById(R.id.error_icon);
         mMessage = mFragmentContent.findViewById(R.id.error_message);
         mFadeDuration = mFragmentContent.getContext().getResources().getInteger(
@@ -339,7 +341,13 @@ public class BrowseFragment {
                 mBrowseList.getPaddingRight(), mBrowseList.getPaddingBottom());
     }
 
-    void onPlaybackControlsChanged(boolean visible) {
+    void onPlaybackControlsChanged(boolean visible, int browseStateTopMargin,
+            int browseStateBottomMargin) {
+        ViewGroup.MarginLayoutParams params =
+                (ViewGroup.MarginLayoutParams) mBrowseState.getLayoutParams();
+        params.topMargin = browseStateTopMargin;
+        params.bottomMargin = browseStateBottomMargin;
+
         if (mBrowseList == null) {
             return;
         }

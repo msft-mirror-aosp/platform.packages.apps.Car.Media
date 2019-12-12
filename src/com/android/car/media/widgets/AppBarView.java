@@ -2,15 +2,14 @@ package com.android.car.media.widgets;
 
 import android.annotation.Nullable;
 import android.annotation.NonNull;
+import android.car.drivingstate.CarUxRestrictions;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.View;
 
 import com.android.car.media.R;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.ui.toolbar.MenuItem;
-import com.android.car.ui.toolbar.TabLayout;
 import com.android.car.ui.toolbar.Toolbar;
 
 import java.util.Arrays;
@@ -24,6 +23,11 @@ import java.util.Objects;
  * bar can be seen at {@link Toolbar.State}.
  */
 public class AppBarView extends Toolbar {
+
+    private static final int MEDIA_UX_RESTRICTION_DEFAULT =
+            CarUxRestrictions.UX_RESTRICTIONS_NO_SETUP;
+    private static final int MEDIA_UX_RESTRICTION_NONE = CarUxRestrictions.UX_RESTRICTIONS_BASELINE;
+
     private int mMaxTabs;
 
     @NonNull
@@ -129,7 +133,11 @@ public class AppBarView extends Toolbar {
         registerOnSearchListener(query -> mListener.onSearch(query));
         registerToolbarHeightChangeListener(height -> mListener.onHeightChanged(height));
         mSearch = MenuItem.Builder.createSearch(context, v -> mListener.onSearchSelection());
-        mSettings = MenuItem.Builder.createSettings(context, v -> mListener.onSettingsSelection());
+        mSettings = new MenuItem.Builder(context)
+                .setToSettings()
+                .setUxRestrictions(MEDIA_UX_RESTRICTION_DEFAULT)
+                .setOnClickListener(v -> mListener.onSettingsSelection())
+                .build();
         mEqualizer = new MenuItem.Builder(context)
                 .setTitle(R.string.menu_item_sound_settings_title)
                 .setIcon(R.drawable.ic_equalizer)
@@ -174,6 +182,13 @@ public class AppBarView extends Toolbar {
     /** Sets whether the source has settings (not all screens show it). */
     public void setHasSettings(boolean hasSettings) {
         mSettings.setVisible(hasSettings);
+    }
+
+    /** Sets whether the source's settings is distraction optimized. */
+    public void setSettingsDistractionOptimized(boolean isDistractionOptimized) {
+        mSettings.setUxRestrictions(isDistractionOptimized
+                ? MEDIA_UX_RESTRICTION_NONE
+                : MEDIA_UX_RESTRICTION_DEFAULT);
     }
 
     /** Sets whether the source has equalizer support. */

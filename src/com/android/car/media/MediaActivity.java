@@ -27,6 +27,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.media.audiofx.AudioEffect;
 import android.os.Bundle;
 import android.support.v4.media.session.PlaybackStateCompat;
@@ -51,6 +52,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.android.car.apps.common.CarUxRestrictionsUtil;
+import com.android.car.apps.common.util.CarPackageManagerUtils;
 import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.media.common.MediaConstants;
 import com.android.car.media.common.MediaItemMetadata;
@@ -115,6 +117,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     @Nullable
     private List<MediaItemMetadata> mTopItems;
 
+    private CarPackageManagerUtils mCarPackageManagerUtils;
     private CarUxRestrictionsUtil mCarUxRestrictionsUtil;
     private CarUxRestrictions mActiveCarUxRestrictions;
     @CarUxRestrictions.CarUxRestrictionsInfo
@@ -317,6 +320,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         playbackViewModel.getPlaybackStateWrapper().observe(this,
                 state -> handlePlaybackState(state, true));
 
+        mCarPackageManagerUtils = CarPackageManagerUtils.getInstance(this);
         mCarUxRestrictionsUtil = CarUxRestrictionsUtil.getInstance(this);
         mRestrictions = CarUxRestrictions.UX_RESTRICTIONS_NO_SETUP;
         mCarUxRestrictionsUtil.register(mListener);
@@ -327,8 +331,10 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         mAppBarView.setAppLauncherSupported(mAppSelectorIntent != null);
 
         localViewModel.getMiniControlsVisible().observe(this, visible -> {
-            mBrowseFragment.onPlaybackControlsChanged(visible);
-            mSearchFragment.onPlaybackControlsChanged(visible);
+            int topMargin = mAppBarView.getHeight();
+            int bottomMargin = visible ? mMiniPlaybackControls.getHeight() : 0;
+            mBrowseFragment.onPlaybackControlsChanged(visible, topMargin, bottomMargin);
+            mSearchFragment.onPlaybackControlsChanged(visible, topMargin, bottomMargin);
         } );
     }
 
@@ -488,14 +494,16 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         mCurrentPlaybackStateWrapper = null;
         maybeCancelToast();
         maybeCancelDialog();
-        updateAppBarTitle();
-        mAppBarView.setLogo(mediaSource != null
+        Drawable icon = mediaSource != null
                 ? new BitmapDrawable(getResources(), mediaSource.getRoundPackageIcon())
-                : null);
+                : null;
+        mAppBarView.setLogo(icon);
+        mAppBarView.setSearchIcon(icon);
         if (mediaSource != null) {
             if (Log.isLoggable(TAG, Log.INFO)) {
                 Log.i(TAG, "Browsing: " + mediaSource.getDisplayName());
             }
+            updateTabs(null);
             Mode mediaSourceMode = getInnerViewModel().getSavedMode();
             // Changes the mode regardless of its previous value so that the views can be updated.
             changeModeInternal(mediaSourceMode, false);
@@ -518,6 +526,8 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             if (info != null && info.activityInfo != null && info.activityInfo.exported) {
                 mCurrentSourcePreferences = new Intent(prefsIntent.getAction())
                         .setClassName(info.activityInfo.packageName, info.activityInfo.name);
+                mAppBarView.setSettingsDistractionOptimized(
+                        mCarPackageManagerUtils.isDistractionOptimized(info.activityInfo));
             }
         }
         mAppBarView.setHasSettings(mCurrentSourcePreferences != null);
@@ -535,7 +545,9 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
      *              items couldn't be loaded.
      */
     private void updateTabs(@Nullable List<MediaItemMetadata> items) {
-        List<MediaItemMetadata> browsableTopLevel = (items == null) ? new ArrayList<>() :
+        // Keep mTopItems null when the items are being loaded so that updateAppBarTitle() can
+        // handle that case specifically.
+        List<MediaItemMetadata> browsableTopLevel = (items == null) ? null :
                 items.stream().filter(MediaItemMetadata::isBrowsable).collect(Collectors.toList());
 
         if (Objects.equals(mTopItems, browsableTopLevel)) {
@@ -546,7 +558,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         }
         mTopItems = browsableTopLevel;
 
-        if (mTopItems.isEmpty()) {
+        if (mTopItems == null || mTopItems.isEmpty()) {
             mAppBarView.setItems(null);
             mAppBarView.setActiveItem(null);
             if (items != null) {
@@ -675,7 +687,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             // If we finished loading tabs and there is only one, use that as title.
             title = mTopItems.get(0).getTitle();
         } else {
-            // Otherwise, show the current media source title (in case there are no tabs).
+            // Otherwise (no tabs or more than 1 tabs), show the current media source title.
             MediaSourceViewModel mediaSourceViewModel = getMediaSourceViewModel();
             MediaSource mediaSource = mediaSourceViewModel.getPrimaryMediaSource().getValue();
             title = (mediaSource != null) ? mediaSource.getDisplayName()
