@@ -1,6 +1,7 @@
 package com.android.car.media;
 
 import android.app.PendingIntent;
+import android.car.drivingstate.CarUxRestrictions;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,6 +13,7 @@ import androidx.fragment.app.Fragment;
 
 import com.android.car.apps.common.UxrButton;
 import com.android.car.apps.common.UxrTextView;
+import com.android.car.apps.common.util.CarPackageManagerUtils;
 
 /**
  * A {@link Fragment} that displays the playback state error.
@@ -71,6 +73,14 @@ public class ErrorFragment extends Fragment {
         // have these elements omitted.
         if (mErrorLabel != null && mPendingIntent != null) {
             mErrorButton.setText(mErrorLabel);
+
+            boolean isDistractionOptimized = CarPackageManagerUtils.getInstance(getActivity())
+                    .isDistractionOptimized(getActivity().getPackageManager(),
+                            mPendingIntent.getIntent());
+            mErrorButton.setUxRestrictions(isDistractionOptimized
+                    ? CarUxRestrictions.UX_RESTRICTIONS_BASELINE
+                    : CarUxRestrictions.UX_RESTRICTIONS_NO_SETUP);
+
             mErrorButton.setOnClickListener(v -> {
                 try {
                     mPendingIntent.send();
