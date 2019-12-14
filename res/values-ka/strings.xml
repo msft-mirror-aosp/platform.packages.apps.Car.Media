@@ -39,4 +39,5 @@
     <string name="error_code_action_aborted" msgid="3889734248905737169">"დასრულება ვერ მოხერხდა. ცადეთ ხელახლა."</string>
     <string name="error_code_end_of_queue" msgid="2842652212154074468">"რიგში აღარაფერია"</string>
     <string name="service_notification_title" msgid="8085444675783592744">"მიმდინარეობს მედიასთან დაკავშირება"</string>
+    <string name="menu_item_sound_settings_title" msgid="58887078120809669">"ხმის პარამეტრები"</string>
 </resources>
