@@ -135,6 +135,16 @@ public class BrowseFragment {
         return result;
     }
 
+    void reopenSearch() {
+        if (mIsSearchFragment) {
+            mBrowseStack.clear();
+            getParent().onBackStackChanged();
+            mShowSearchResults.setValue(true);
+        } else {
+            Log.e(TAG, "reopenSearch called on browse fragment");
+        }
+    }
+
     @NonNull
     private Callbacks getParent() {
         return mCallbacks;

@@ -5,7 +5,6 @@ import android.annotation.NonNull;
 import android.car.drivingstate.CarUxRestrictions;
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 
 import com.android.car.media.R;
 import com.android.car.media.common.MediaItemMetadata;
@@ -36,6 +35,9 @@ public class AppBarView extends Toolbar {
     private MenuItem mSettings;
     private MenuItem mEqualizer;
     private MenuItem mAppSelector;
+
+    private boolean mSearchSupported;
+    private boolean mShowSearchIfSupported;
 
     /**
      * Application bar listener
@@ -197,10 +199,21 @@ public class AppBarView extends Toolbar {
     }
 
     /**
-     * Sets whether the search box should be shown
+     * Sets whether search is supported
      */
     public void setSearchSupported(boolean supported) {
-        mSearch.setVisible(supported);
+        mSearchSupported = supported;
+        updateSearchVisibility();
+    }
+
+    /** Sets whether to show the search MenuItem if supported */
+    public void showSearchIfSupported(boolean show) {
+        mShowSearchIfSupported = show;
+        updateSearchVisibility();
+    }
+
+    private void updateSearchVisibility() {
+        mSearch.setVisible(mShowSearchIfSupported && mSearchSupported);
     }
 
     /**
