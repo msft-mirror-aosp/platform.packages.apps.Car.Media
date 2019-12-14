@@ -39,4 +39,5 @@
     <string name="error_code_action_aborted" msgid="3889734248905737169">"Die Aktion konnte nicht abgeschlossen werden. Versuch es noch mal."</string>
     <string name="error_code_end_of_queue" msgid="2842652212154074468">"Es ist sonst nichts in der Warteschlange"</string>
     <string name="service_notification_title" msgid="8085444675783592744">"Verbindung zu Medien wird hergestellt"</string>
+    <string name="menu_item_sound_settings_title" msgid="58887078120809669">"Toneinstellungen"</string>
 </resources>
