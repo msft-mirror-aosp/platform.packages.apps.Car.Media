@@ -20,6 +20,7 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="@dimen/media_browse_list_item_height"
+    android:paddingLeft="@dimen/media_browse_list_item_icon_margin_start"
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground">
     <com.android.car.media.common.FixedRatioImageView

@@ -5,7 +5,6 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.fragment.app.FragmentActivity;
 
@@ -51,7 +50,7 @@ public class MediaDispatcherActivity extends FragmentActivity {
         }
 
         Intent newIntent = null;
-        if (mediaSrc != null && mediaSrc.isCustom()) {
+        if (mediaSrc != null && isCustom(mediaSrc)) {
             // Launch custom app (e.g. Radio)
             String srcPackage = mediaSrc.getPackageName();
             newIntent = getPackageManager().getLaunchIntentForPackage(srcPackage);
@@ -68,5 +67,15 @@ public class MediaDispatcherActivity extends FragmentActivity {
         newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(newIntent);
         finish();
+    }
+
+    private boolean isCustom(MediaSource mediaSource) {
+        for (String customSource : getResources().getStringArray(R.array.custom_media_packages)) {
+            ComponentName componentName = ComponentName.unflattenFromString(customSource);
+            if (componentName.equals(mediaSource.getBrowseServiceComponentName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -59,4 +59,6 @@
     <string name="error_code_action_aborted">Couldn’t finish. Try again.</string>
     <!-- Error message set when the playback navigation (previous, next) is not possible because the queue was exhausted. [CHAR LIMIT=100] -->
     <string name="error_code_end_of_queue">Nothing else is queued up</string>
+    <!-- Title string for the service used to bind to the current media source -->
+    <string name="service_notification_title">Connecting to media</string>
 </resources>
