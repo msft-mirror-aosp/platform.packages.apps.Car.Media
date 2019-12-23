@@ -1,6 +1,7 @@
 package com.android.car.media;
 
 import android.car.Car;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -31,13 +32,16 @@ public class MediaDispatcherActivity extends FragmentActivity {
         MediaSource mediaSrc = null;
 
         if (Car.CAR_INTENT_ACTION_MEDIA_TEMPLATE.equals(action)) {
-            String packageName = intent.getStringExtra(Car.CAR_EXTRA_MEDIA_PACKAGE);
-            if (packageName != null) {
-                mediaSrc = new MediaSource(this, packageName);
-                mediaSrcVM.setPrimaryMediaSource(mediaSrc);
-            }
-            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                Log.d(TAG, "onCreate packageName : " + packageName);
+            String componentName = intent.getStringExtra(Car.CAR_EXTRA_MEDIA_COMPONENT);
+            if (componentName != null) {
+                ComponentName component = ComponentName.unflattenFromString(componentName);
+                mediaSrc = MediaSource.create(this, component);
+                if (mediaSrc != null) {
+                    mediaSrcVM.setPrimaryMediaSource(mediaSrc);
+                    if (Log.isLoggable(TAG, Log.DEBUG)) {
+                        Log.d(TAG, "onCreate componentName : " + componentName);
+                    }
+                }
             }
         }
 
@@ -45,12 +49,17 @@ public class MediaDispatcherActivity extends FragmentActivity {
             mediaSrc = mediaSrcVM.getPrimaryMediaSource().getValue();
         }
 
-        Intent newIntent;
-        if ((mediaSrc != null) && (!mediaSrc.isBrowsable() || mediaSrc.isCustom())) {
+        Intent newIntent = null;
+        if (mediaSrc != null && isCustom(mediaSrc)) {
             // Launch custom app (e.g. Radio)
             String srcPackage = mediaSrc.getPackageName();
             newIntent = getPackageManager().getLaunchIntentForPackage(srcPackage);
-        } else {
+            if (Log.isLoggable(TAG, Log.DEBUG)) {
+                Log.d(TAG, "Getting launch intent for package : " + srcPackage + (newIntent != null
+                        ? " succeeded" : " failed"));
+            }
+        }
+        if (newIntent == null) {
             // Launch media center
             newIntent = new Intent(this, MediaActivity.class);
         }
@@ -58,5 +67,15 @@ public class MediaDispatcherActivity extends FragmentActivity {
         newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(newIntent);
         finish();
+    }
+
+    private boolean isCustom(MediaSource mediaSource) {
+        for (String customSource : getResources().getStringArray(R.array.custom_media_packages)) {
+            ComponentName componentName = ComponentName.unflattenFromString(customSource);
+            if (componentName.equals(mediaSource.getBrowseServiceComponentName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

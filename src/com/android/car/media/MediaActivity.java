@@ -30,6 +30,7 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
 import android.transition.Fade;
 import android.util.Log;
+import android.util.Size;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -61,7 +62,10 @@ import com.android.car.media.common.source.MediaSourceViewModel;
 import com.android.car.media.widgets.AppBarView;
 import com.android.car.media.widgets.SearchBar;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -95,13 +99,14 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     private ViewGroup mSearchContainer;
 
     private Toast mToast;
+    private AlertDialog mDialog;
 
     /** Current state */
     private Mode mMode;
     private Intent mCurrentSourcePreferences;
     private boolean mCanShowMiniPlaybackControls;
-    private boolean mIsBrowseTreeReady;
-    private Integer mCurrentPlaybackState;
+    private boolean mBrowseTreeHasChildren;
+    private PlaybackViewModel.PlaybackStateWrapper mCurrentPlaybackStateWrapper;
     private List<MediaItemMetadata> mTopItems;
 
     private CarUxRestrictionsUtil mCarUxRestrictionsUtil;
@@ -172,8 +177,33 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         PLAYBACK,
         /** The user is searching within a media source */
         SEARCHING,
-        /** There's no browse tree and playback doesn't work.*/
+        /** There's no browse tree and playback doesn't work. */
         FATAL_ERROR
+    }
+
+    private static final Map<Integer, Integer> ERROR_CODE_MESSAGES_MAP;
+
+    static {
+        Map<Integer, Integer> map = new HashMap<>();
+        map.put(PlaybackStateCompat.ERROR_CODE_APP_ERROR, R.string.error_code_app_error);
+        map.put(PlaybackStateCompat.ERROR_CODE_NOT_SUPPORTED, R.string.error_code_not_supported);
+        map.put(PlaybackStateCompat.ERROR_CODE_AUTHENTICATION_EXPIRED,
+                R.string.error_code_authentication_expired);
+        map.put(PlaybackStateCompat.ERROR_CODE_PREMIUM_ACCOUNT_REQUIRED,
+                R.string.error_code_premium_account_required);
+        map.put(PlaybackStateCompat.ERROR_CODE_CONCURRENT_STREAM_LIMIT,
+                R.string.error_code_concurrent_stream_limit);
+        map.put(PlaybackStateCompat.ERROR_CODE_PARENTAL_CONTROL_RESTRICTED,
+                R.string.error_code_parental_control_restricted);
+        map.put(PlaybackStateCompat.ERROR_CODE_NOT_AVAILABLE_IN_REGION,
+                R.string.error_code_not_available_in_region);
+        map.put(PlaybackStateCompat.ERROR_CODE_CONTENT_ALREADY_PLAYING,
+                R.string.error_code_content_already_playing);
+        map.put(PlaybackStateCompat.ERROR_CODE_SKIP_LIMIT_REACHED,
+                R.string.error_code_skip_limit_reached);
+        map.put(PlaybackStateCompat.ERROR_CODE_ACTION_ABORTED, R.string.error_code_action_aborted);
+        map.put(PlaybackStateCompat.ERROR_CODE_END_OF_QUEUE, R.string.error_code_end_of_queue);
+        ERROR_CODE_MESSAGES_MAP = Collections.unmodifiableMap(map);
     }
 
     @Override
@@ -213,13 +243,24 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                             mediaSourceViewModel.getPrimaryMediaSource().getValue());
                 });
         mediaBrowserViewModel.getBrowsedMediaItems().observe(this, futureData -> {
-            if (!futureData.isLoading()) {
-                if (futureData.getData() != null) {
-                    mIsBrowseTreeReady = true;
-                    handlePlaybackState(playbackViewModel.getPlaybackStateWrapper().getValue());
+            if (futureData.isLoading()) {
+                if (Log.isLoggable(TAG, Log.INFO)) {
+                    Log.i(TAG, "Loading browse tree...");
                 }
-                updateTabs(futureData.getData());
+                mBrowseTreeHasChildren = false;
+                return;
             }
+            final boolean browseTreeHasChildren =
+                    futureData.getData() != null && !futureData.getData().isEmpty();
+            if (Log.isLoggable(TAG, Log.INFO)) {
+                Log.i(TAG, "Browse tree loaded, status (has children or not) changed: "
+                        + mBrowseTreeHasChildren + " -> " + browseTreeHasChildren);
+            }
+            mBrowseTreeHasChildren = browseTreeHasChildren;
+            handlePlaybackState(playbackViewModel.getPlaybackStateWrapper().getValue(), false);
+
+            mAppBarView.setDataLoaded(true);
+            updateTabs(futureData.getData());
         });
         mediaBrowserViewModel.supportsSearch().observe(this,
                 mAppBarView::setSearchSupported);
@@ -232,9 +273,10 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         mAppSelectionFragment.setEnterTransition(new Fade().setDuration(fadeDuration));
         mAppSelectionFragment.setExitTransition(new Fade().setDuration(fadeDuration));
 
+        Size maxArtSize = MediaAppConfig.getMediaItemsBitmapMaxSize(this);
         MinimizedPlaybackControlBar browsePlaybackControls =
                 findViewById(R.id.minimized_playback_controls);
-        browsePlaybackControls.setModel(playbackViewModel, this);
+        browsePlaybackControls.setModel(playbackViewModel, this, maxArtSize);
 
         mMiniPlaybackControls = findViewById(R.id.minimized_playback_controls);
         mMiniPlaybackControls.setOnClickListener(view -> changeMode(Mode.PLAYBACK));
@@ -257,7 +299,8 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                     mPlaybackController = playbackController;
                 });
 
-        playbackViewModel.getPlaybackStateWrapper().observe(this, this::handlePlaybackState);
+        playbackViewModel.getPlaybackStateWrapper().observe(this,
+                state -> handlePlaybackState(state, true));
 
         mCarUxRestrictionsUtil = CarUxRestrictionsUtil.getInstance(this);
         mRestrictions = CarUxRestrictions.UX_RESTRICTIONS_NO_SETUP;
@@ -276,7 +319,16 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         return CarUxRestrictionsUtil.isRestricted(mRestrictions, mActiveCarUxRestrictions);
     }
 
-    private void handlePlaybackState(PlaybackViewModel.PlaybackStateWrapper state) {
+    private void handlePlaybackState(PlaybackViewModel.PlaybackStateWrapper state,
+            boolean ignoreSameState) {
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Log.d(TAG,
+                    "handlePlaybackState(); state change: " + (mCurrentPlaybackStateWrapper != null
+                            ? mCurrentPlaybackStateWrapper.getState() : null) + " -> " + (
+                            state != null ? state.getState() : null));
+
+        }
+
         // TODO(arnaudberry) rethink interactions between customized layouts and dynamic visibility.
         mCanShowMiniPlaybackControls = (state != null) && state.shouldDisplay();
 
@@ -285,34 +337,38 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             getInnerViewModel().setMiniControlsVisible(mCanShowMiniPlaybackControls);
         }
         if (state == null) {
+            mCurrentPlaybackStateWrapper = null;
             return;
         }
-        if (mCurrentPlaybackState == null || mCurrentPlaybackState != state.getState()) {
-            mCurrentPlaybackState = state.getState();
-            if (Log.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "handlePlaybackState(); state change: " + mCurrentPlaybackState);
-            }
+
+        String displayedMessage = getDisplayedMessage(state);
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Log.d(TAG, "Displayed error message: [" + displayedMessage + "]");
         }
+        if (ignoreSameState && mCurrentPlaybackStateWrapper != null
+                && mCurrentPlaybackStateWrapper.getState() == state.getState()
+                && TextUtils.equals(displayedMessage,
+                getDisplayedMessage(mCurrentPlaybackStateWrapper))) {
+            if (Log.isLoggable(TAG, Log.DEBUG)) {
+                Log.d(TAG, "Ignore same playback state.");
+            }
+            return;
+        }
+
+        mCurrentPlaybackStateWrapper = state;
+
+        maybeCancelToast();
+        maybeCancelDialog();
 
         Bundle extras = state.getExtras();
         PendingIntent intent = extras == null ? null : extras.getParcelable(
                 MediaConstants.ERROR_RESOLUTION_ACTION_INTENT);
-
         String label = extras == null ? null : extras.getString(
                 MediaConstants.ERROR_RESOLUTION_ACTION_LABEL);
 
-        String displayedMessage = null;
-        if (!TextUtils.isEmpty(state.getErrorMessage())) {
-            displayedMessage = state.getErrorMessage().toString();
-        } else if (state.getErrorCode() != PlaybackStateCompat.ERROR_CODE_UNKNOWN_ERROR) {
-            // TODO(b/131601881): convert the error codes to prebuilt error messages
-            displayedMessage = getString(R.string.default_error_message);
-        } else if (state.getState() == PlaybackStateCompat.STATE_ERROR) {
-            displayedMessage = getString(R.string.default_error_message);
-        }
-
+        boolean isFatalError = false;
         if (!TextUtils.isEmpty(displayedMessage)) {
-            if (mIsBrowseTreeReady) {
+            if (mBrowseTreeHasChildren) {
                 if (intent != null && !isUxRestricted()) {
                     showDialog(intent, displayedMessage, label, getString(android.R.string.cancel));
                 } else {
@@ -321,15 +377,39 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
             } else {
                 mErrorFragment = ErrorFragment.newInstance(displayedMessage, label, intent);
                 setErrorFragment(mErrorFragment);
-                changeMode(Mode.FATAL_ERROR);
+                isFatalError = true;
             }
         }
+        if (isFatalError) {
+            changeMode(Mode.FATAL_ERROR);
+        } else if (mMode == Mode.FATAL_ERROR) {
+            changeMode(Mode.BROWSING);
+        }
+    }
+
+    private String getDisplayedMessage(@Nullable PlaybackViewModel.PlaybackStateWrapper state) {
+        if (state == null) {
+            return null;
+        }
+        if (!TextUtils.isEmpty(state.getErrorMessage())) {
+            return state.getErrorMessage().toString();
+        }
+        // ERROR_CODE_UNKNOWN_ERROR means there is no error in PlaybackState.
+        if (state.getErrorCode() != PlaybackStateCompat.ERROR_CODE_UNKNOWN_ERROR) {
+            Integer messageId = ERROR_CODE_MESSAGES_MAP.get(state.getErrorCode());
+            return messageId != null ? getString(messageId) : getString(
+                    R.string.default_error_message);
+        }
+        if (state.getState() == PlaybackStateCompat.STATE_ERROR) {
+            return getString(R.string.default_error_message);
+        }
+        return null;
     }
 
     private void showDialog(PendingIntent intent, String message, String positiveBtnText,
             String negativeButtonText) {
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        dialog.setMessage(message)
+        mDialog = dialog.setMessage(message)
                 .setNegativeButton(negativeButtonText, null)
                 .setPositiveButton(positiveBtnText, (dialogInterface, i) -> {
                     try {
@@ -343,8 +423,14 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                 .show();
     }
 
+    private void maybeCancelDialog() {
+        if (mDialog != null) {
+            mDialog.cancel();
+            mDialog = null;
+        }
+    }
+
     private void showToast(String message) {
-        maybeCancelToast();
         mToast = Toast.makeText(this, message, Toast.LENGTH_LONG);
         mToast.show();
     }
@@ -379,17 +465,25 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
      * @param mediaSource the new media source we are going to try to browse
      */
     private void onMediaSourceChanged(@Nullable MediaSource mediaSource) {
-        mIsBrowseTreeReady = false;
+        if (Log.isLoggable(TAG, Log.INFO)) {
+            Log.i(TAG, "MediaSource changed to " + mediaSource);
+        }
+
+        mBrowseTreeHasChildren = false;
+        mCurrentPlaybackStateWrapper = null;
+        mAppBarView.setDataLoaded(false);
         maybeCancelToast();
+        maybeCancelDialog();
         if (mediaSource != null) {
             if (Log.isLoggable(TAG, Log.INFO)) {
-                Log.i(TAG, "Browsing: " + mediaSource.getName());
+                Log.i(TAG, "Browsing: " + mediaSource.getDisplayName());
             }
-            mAppBarView.setMediaAppTitle(mediaSource.getName());
+            mAppBarView.setMediaAppTitle(mediaSource.getDisplayName());
             mAppBarView.setTitle(null);
             updateTabs(null);
             mSearchFragment.resetSearchState();
-            changeMode(Mode.BROWSING);
+            // Changes the mode regardless of its previous value so that the views can be updated.
+            changeModeInternal(Mode.BROWSING);
             String packageName = mediaSource.getPackageName();
             updateSourcePreferences(packageName);
 
@@ -403,13 +497,14 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         }
     }
 
+    // TODO(b/136274938): display the preference screen for each media service.
     private void updateSourcePreferences(@Nullable String packageName) {
         mCurrentSourcePreferences = null;
         if (packageName != null) {
             Intent prefsIntent = new Intent(Intent.ACTION_APPLICATION_PREFERENCES);
             prefsIntent.setPackage(packageName);
             ResolveInfo info = getPackageManager().resolveActivity(prefsIntent, 0);
-            if (info != null) {
+            if (info != null && info.activityInfo != null && info.activityInfo.exported) {
                 mCurrentSourcePreferences = new Intent(prefsIntent.getAction())
                         .setClassName(info.activityInfo.packageName, info.activityInfo.name);
             }
@@ -482,10 +577,18 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     }
 
     private void changeMode(Mode mode) {
-        if (mMode == mode) return;
+        if (mMode == mode) {
+            if (Log.isLoggable(TAG, Log.INFO)) {
+                Log.i(TAG, "Mode " + mMode + " change is ignored");
+            }
+            return;
+        }
+        changeModeInternal(mode);
+    }
 
+    private void changeModeInternal(Mode mode) {
         if (Log.isLoggable(TAG, Log.INFO)) {
-            Log.i(TAG, "Changing mode from: " + mMode+ " to: " + mode);
+            Log.i(TAG, "Changing mode from: " + mMode + " to: " + mode);
         }
 
         Mode oldMode = mMode;
@@ -572,7 +675,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
     @Override
     public void onPlayableItemClicked(MediaItemMetadata item) {
         mPlaybackController.stop();
-        mPlaybackController.playItem(item.getId());
+        mPlaybackController.playItem(item);
         boolean switchToPlayback = getResources().getBoolean(
                 R.bool.switch_to_playback_view_when_playable_item_is_clicked);
         if (switchToPlayback) {
