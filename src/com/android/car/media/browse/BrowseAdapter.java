@@ -182,6 +182,18 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
     }
 
     @Override
+    public void onViewAttachedToWindow(@NonNull BrowseViewHolder holder) {
+        super.onViewAttachedToWindow(holder);
+        holder.onViewAttachedToWindow(mContext);
+    }
+
+    @Override
+    public void onViewDetachedFromWindow(@NonNull BrowseViewHolder holder) {
+        super.onViewDetachedFromWindow(holder);
+        holder.onViewDetachedFromWindow(mContext);
+    }
+
+    @Override
     public int getItemViewType(int position) {
         return getItem(position).mViewType.ordinal();
     }
