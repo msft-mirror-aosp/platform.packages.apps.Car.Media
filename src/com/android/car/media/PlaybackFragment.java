@@ -180,6 +180,20 @@ public class PlaybackFragment extends Fragment {
 
             return active;
         }
+
+        void onViewAttachedToWindow() {
+            if (mShowThumbnailForQueueItem) {
+                Context context = mView.getContext();
+                mThumbnailBinder.maybeRestartLoading(context);
+            }
+        }
+
+        void onViewDetachedFromWindow() {
+            if (mShowThumbnailForQueueItem) {
+                Context context = mView.getContext();
+                mThumbnailBinder.maybeCancelLoading(context);
+            }
+        }
     }
 
 
@@ -246,6 +260,18 @@ public class PlaybackFragment extends Fragment {
             } else {
                 Log.e(TAG, "onBindViewHolder invalid position " + position + " of " + size);
             }
+        }
+
+        @Override
+        public void onViewAttachedToWindow(@NonNull QueueViewHolder holder) {
+            super.onViewAttachedToWindow(holder);
+            holder.onViewAttachedToWindow();
+        }
+
+        @Override
+        public void onViewDetachedFromWindow(@NonNull QueueViewHolder holder) {
+            super.onViewDetachedFromWindow(holder);
+            holder.onViewDetachedFromWindow();
         }
 
         @Override
