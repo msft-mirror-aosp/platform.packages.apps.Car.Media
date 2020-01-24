@@ -4,10 +4,12 @@ import android.annotation.Nullable;
 import android.annotation.NonNull;
 import android.car.drivingstate.CarUxRestrictions;
 import android.content.Context;
+import android.content.Intent;
 import android.util.AttributeSet;
 
 import com.android.car.media.R;
 import com.android.car.media.common.MediaItemMetadata;
+import com.android.car.media.common.source.MediaSource;
 import com.android.car.ui.toolbar.MenuItem;
 import com.android.car.ui.toolbar.Toolbar;
 
@@ -30,7 +32,7 @@ public class AppBarView extends Toolbar {
     private int mMaxTabs;
 
     @NonNull
-    private AppBarListener mListener = DEFAULT_APPBAR_LISTENER;
+    private AppBarListener mListener = new AppBarListener();
     private MenuItem mSearch;
     private MenuItem mSettings;
     private MenuItem mEqualizer;
@@ -39,76 +41,47 @@ public class AppBarView extends Toolbar {
     private boolean mSearchSupported;
     private boolean mShowSearchIfSupported;
 
+    private Intent mAppSelectorIntent;
+
     /**
      * Application bar listener
      */
-    public interface AppBarListener {
+    public static class AppBarListener {
         /**
          * Invoked when the user selects an item from the tabs
          */
-        void onTabSelected(MediaItemMetadata item);
+        protected void onTabSelected(MediaItemMetadata item) {}
 
         /**
          * Invoked when the user clicks on the back button
          */
-        void onBack();
+        protected void onBack() {}
 
         /**
          * Invoked when the user clicks on the settings button.
          */
-        void onSettingsSelection();
+        protected void onSettingsSelection() {}
 
         /**
          * Invoked when the user clicks on the equalizer button.
          */
-        void onEqualizerSelection();
+        protected void onEqualizerSelection() {}
 
         /**
          * Invoked when the user submits a search query.
          */
-        void onSearch(String query);
+        protected void onSearch(String query) {}
 
         /**
          * Invoked when the user clicks on the search button
          */
-        void onSearchSelection();
-
-        /**
-         * Invoked when the user clicks on the app switch button
-         */
-        void onAppSwitch();
+        protected void onSearchSelection() {}
 
         /**
          * Invoked when the height of the toolbar changes
          */
-        void onHeightChanged(int height);
+        protected void onHeightChanged(int height) {}
     }
-
-    private static final AppBarListener DEFAULT_APPBAR_LISTENER = new AppBarListener() {
-        @Override
-        public void onTabSelected(MediaItemMetadata item) {}
-
-        @Override
-        public void onBack() {}
-
-        @Override
-        public void onSettingsSelection() {}
-
-        @Override
-        public void onEqualizerSelection() {}
-
-        @Override
-        public void onSearch(String query) {}
-
-        @Override
-        public void onSearchSelection() {}
-
-        @Override
-        public void onAppSwitch() {}
-
-        @Override
-        public void onHeightChanged(int height) {}
-    };
 
     public AppBarView(Context context) {
         this(context, null);
@@ -125,6 +98,8 @@ public class AppBarView extends Toolbar {
 
     private void init(Context context) {
         mMaxTabs = context.getResources().getInteger(R.integer.max_tabs);
+
+        mAppSelectorIntent = MediaSource.getSourceSelectorIntent(context, false);
 
         registerOnTabSelectedListener(tab ->
                 mListener.onTabSelected(((MediaItemTab) tab).getItem()));
@@ -147,9 +122,11 @@ public class AppBarView extends Toolbar {
                 .build();
         mAppSelector = new MenuItem.Builder(context)
                 .setIcon(R.drawable.ic_app_switch)
-                .setOnClickListener(m -> mListener.onAppSwitch())
+                .setOnClickListener(m -> getContext().startActivity(mAppSelectorIntent))
                 .build();
         setMenuItems(Arrays.asList(mSearch, mEqualizer, mSettings, mAppSelector));
+
+        setAppLauncherSupported(mAppSelectorIntent != null);
     }
 
     /**
@@ -219,7 +196,7 @@ public class AppBarView extends Toolbar {
     /**
      * Sets whether launching app selector is supported
      */
-    public void setAppLauncherSupported(boolean supported) {
+    private void setAppLauncherSupported(boolean supported) {
         mAppSelector.setVisible(supported);
     }
 
