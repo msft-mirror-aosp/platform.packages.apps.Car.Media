@@ -146,7 +146,7 @@ public class PlaybackFragment extends Fragment {
             mThumbnailBinder = new ImageViewBinder<>(maxArtSize, mThumbnail);
         }
 
-        boolean bind(MediaItemMetadata item) {
+        void bind(MediaItemMetadata item) {
             mView.setOnClickListener(v -> onQueueItemClicked(item));
 
             ViewUtils.setVisible(mThumbnailContainer, mShowThumbnailForQueueItem);
@@ -177,8 +177,6 @@ public class PlaybackFragment extends Fragment {
             if (mShowSubtitleForQueueItem) {
                 mSubtitle.setText(item.getSubtitle());
             }
-
-            return active;
         }
 
         void onViewAttachedToWindow() {
@@ -199,9 +197,9 @@ public class PlaybackFragment extends Fragment {
 
     private class QueueItemsAdapter extends RecyclerView.Adapter<QueueViewHolder> {
 
-        private List<MediaItemMetadata> mQueueItems;
-        private String mCurrentTimeText;
-        private String mMaxTimeText;
+        private List<MediaItemMetadata> mQueueItems = Collections.emptyList();
+        private String mCurrentTimeText = "";
+        private String mMaxTimeText = "";
         private Integer mActiveItemPos;
         private boolean mTimeVisible;
 
@@ -212,27 +210,62 @@ public class PlaybackFragment extends Fragment {
                 return;
             }
             mQueueItems = newQueueItems;
+            updateActiveItem();
             notifyDataSetChanged();
         }
 
+        // Updates mActiveItemPos, then scrolls the queue to mActiveItemPos.
+        // It should be called when the active item (mActiveQueueItemId) changed or
+        // the queue items (mQueueItems) changed.
+        void updateActiveItem() {
+            if (mQueueItems == null || mActiveQueueItemId == null) {
+                mActiveItemPos = null;
+                return;
+            }
+            Integer activeItemPos = null;
+            for (int i = 0; i < mQueueItems.size(); i++) {
+                if (mQueueItems.get(i).getQueueId() == mActiveQueueItemId) {
+                    activeItemPos = i;
+                    break;
+                }
+            }
+
+            if (mActiveItemPos != activeItemPos) {
+                if (mActiveItemPos != null) {
+                    notifyItemChanged(mActiveItemPos.intValue());
+                }
+                mActiveItemPos = activeItemPos;
+                if (mActiveItemPos != null) {
+                    mQueue.scrollToPosition(mActiveItemPos.intValue());
+                    notifyItemChanged(mActiveItemPos.intValue());
+                }
+            }
+        }
+
         void setCurrentTime(String currentTime) {
-            mCurrentTimeText = currentTime;
-            if (mActiveItemPos != null) {
-                notifyItemChanged(mActiveItemPos.intValue());
+            if (!mCurrentTimeText.equals(currentTime)) {
+                mCurrentTimeText = currentTime;
+                if (mActiveItemPos != null) {
+                    notifyItemChanged(mActiveItemPos.intValue());
+                }
             }
         }
 
         void setMaxTime(String maxTime) {
-            mMaxTimeText = maxTime;
-            if (mActiveItemPos != null) {
-                notifyItemChanged(mActiveItemPos.intValue());
+            if (!mMaxTimeText.equals(maxTime)) {
+                mMaxTimeText = maxTime;
+                if (mActiveItemPos != null) {
+                    notifyItemChanged(mActiveItemPos.intValue());
+                }
             }
         }
 
         void setTimeVisible(boolean visible) {
-            mTimeVisible = visible;
-            if (mActiveItemPos != null) {
-                notifyItemChanged(mActiveItemPos.intValue());
+            if (mTimeVisible != visible) {
+                mTimeVisible = visible;
+                if (mActiveItemPos != null) {
+                    notifyItemChanged(mActiveItemPos.intValue());
+                }
             }
         }
 
@@ -258,10 +291,7 @@ public class PlaybackFragment extends Fragment {
         public void onBindViewHolder(QueueViewHolder holder, int position) {
             int size = mQueueItems.size();
             if (0 <= position && position < size) {
-                boolean active = holder.bind(mQueueItems.get(position));
-                if (active) {
-                    mActiveItemPos = position;
-                }
+                holder.bind(mQueueItems.get(position));
             } else {
                 Log.e(TAG, "onBindViewHolder invalid position " + position + " of " + size);
             }
@@ -475,7 +505,7 @@ public class PlaybackFragment extends Fragment {
                     Long itemId = (state != null) ? state.getActiveQueueItemId() : null;
                     if (!Objects.equals(mActiveQueueItemId, itemId)) {
                         mActiveQueueItemId = itemId;
-                        mQueueAdapter.refresh();
+                        mQueueAdapter.updateActiveItem();
                     }
                 });
         mQueue.setAdapter(mQueueAdapter);
