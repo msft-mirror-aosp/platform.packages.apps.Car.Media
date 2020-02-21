@@ -11,6 +11,9 @@ import androidx.fragment.app.FragmentActivity;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.common.source.MediaSourceViewModel;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A trampoline activity that handles the {@link Car#CAR_INTENT_ACTION_MEDIA_TEMPLATE} implicit
@@ -21,9 +24,14 @@ public class MediaDispatcherActivity extends FragmentActivity {
 
     private static final String TAG = "MediaDispatcherActivity";
 
+    private final Set<String> mCustomMediaComponents = new HashSet<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mCustomMediaComponents.addAll(
+                Arrays.asList(getResources().getStringArray(R.array.custom_media_packages)));
 
         Intent intent = getIntent();
         String action = intent != null ? intent.getAction() : null;
@@ -50,7 +58,9 @@ public class MediaDispatcherActivity extends FragmentActivity {
         }
 
         Intent newIntent = null;
-        if (mediaSrc != null && isCustom(mediaSrc)) {
+        if (mediaSrc != null
+            && mCustomMediaComponents.contains(
+                mediaSrc.getBrowseServiceComponentName().flattenToString())) {
             // Launch custom app (e.g. Radio)
             String srcPackage = mediaSrc.getPackageName();
             newIntent = getPackageManager().getLaunchIntentForPackage(srcPackage);
@@ -67,15 +77,5 @@ public class MediaDispatcherActivity extends FragmentActivity {
         newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(newIntent);
         finish();
-    }
-
-    private boolean isCustom(MediaSource mediaSource) {
-        for (String customSource : getResources().getStringArray(R.array.custom_media_packages)) {
-            ComponentName componentName = ComponentName.unflattenFromString(customSource);
-            if (componentName.equals(mediaSource.getBrowseServiceComponentName())) {
-                return true;
-            }
-        }
-        return false;
     }
 }
