@@ -642,6 +642,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                 ViewUtils.hideViewAnimated(mSearchContainer, fadeOutDuration);
                 mAppBarView.setState(Toolbar.State.HOME);
                 mAppBarView.showSearchIfSupported(false);
+                ViewUtils.showViewAnimated(mAppBarView, mFadeDuration);
                 break;
             case PLAYBACK:
                 mPlaybackContainer.setY(0);
