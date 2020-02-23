@@ -54,8 +54,7 @@ public class ErrorViewController extends ViewControllerBase {
             mErrorButton.setText(label);
 
             boolean isDistractionOptimized = CarPackageManagerUtils.getInstance(mActivity)
-                    .isDistractionOptimized(mActivity.getPackageManager(),
-                            pendingIntent.getIntent());
+                    .isDistractionOptimized(pendingIntent);
             mErrorButton.setUxRestrictions(isDistractionOptimized
                     ? CarUxRestrictions.UX_RESTRICTIONS_BASELINE
                     : CarUxRestrictions.UX_RESTRICTIONS_NO_SETUP);
