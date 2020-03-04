@@ -23,6 +23,14 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
+    <!-- To connect to media browser services in other apps, media browser clients
+    that target Android 11 need to add the following in their manifest -->
+    <queries>
+        <intent>
+            <action android:name="android.media.browse.MediaBrowserService" />
+        </intent>
+    </queries>
+
     <application
         android:label="Media Center"
         android:theme="@style/Theme.Media"
