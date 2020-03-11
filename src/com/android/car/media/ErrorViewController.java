@@ -1,12 +1,12 @@
 package com.android.car.media;
 
-import android.annotation.Nullable;
 import android.app.PendingIntent;
 import android.car.drivingstate.CarUxRestrictions;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 
 import com.android.car.apps.common.UxrButton;

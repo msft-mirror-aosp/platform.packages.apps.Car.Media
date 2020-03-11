@@ -1,11 +1,12 @@
 package com.android.car.media.widgets;
 
-import android.annotation.Nullable;
-import android.annotation.NonNull;
 import android.car.drivingstate.CarUxRestrictions;
 import android.content.Context;
 import android.content.Intent;
 import android.util.AttributeSet;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.android.car.media.R;
 import com.android.car.media.common.MediaItemMetadata;
