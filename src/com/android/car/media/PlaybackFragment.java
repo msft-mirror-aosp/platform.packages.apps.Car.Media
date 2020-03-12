@@ -16,11 +16,11 @@
 
 package com.android.car.media;
 
-import android.annotation.Nullable;
+import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
+
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
-import android.content.res.TypedArray;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Log;
@@ -33,11 +33,10 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.car.apps.common.BackgroundImageView;
@@ -608,12 +607,13 @@ public class PlaybackFragment extends Fragment {
         mPlaybackControls.close();
     }
 
+    // TODO(b/151174811): Use appropriate modes, instead of just MEDIA_SOURCE_MODE_BROWSE
     private PlaybackViewModel getPlaybackViewModel() {
-        return PlaybackViewModel.get(getActivity().getApplication());
+        return PlaybackViewModel.get(getActivity().getApplication(), MEDIA_SOURCE_MODE_BROWSE);
     }
 
     private MediaSourceViewModel getMediaSourceViewModel() {
-        return MediaSourceViewModel.get(getActivity().getApplication());
+        return MediaSourceViewModel.get(getActivity().getApplication(), MEDIA_SOURCE_MODE_BROWSE);
     }
 
     /**

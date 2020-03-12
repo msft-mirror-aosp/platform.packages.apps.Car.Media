@@ -18,8 +18,6 @@ package com.android.car.media;
 
 import static com.android.car.arch.common.LiveDataFunctions.ifThenElse;
 
-import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Handler;
@@ -30,6 +28,8 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;

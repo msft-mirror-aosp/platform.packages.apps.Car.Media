@@ -16,10 +16,11 @@
 
 package com.android.car.media.widgets;
 
-import android.annotation.NonNull;
 import android.content.Context;
 import android.util.Size;
 import android.widget.ImageView;
+
+import androidx.annotation.NonNull;
 
 import com.android.car.apps.common.imaging.ImageBinder.PlaceholderType;
 import com.android.car.apps.common.imaging.ImageViewBinder;
