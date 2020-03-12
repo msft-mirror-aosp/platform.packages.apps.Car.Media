@@ -16,6 +16,8 @@
 
 package com.android.car.media.service;
 
+import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -66,7 +68,8 @@ public class MediaConnectorService extends LifecycleService {
         super.onStartCommand(intent, flags, startId);
 
         final boolean autoplay = intent.getBooleanExtra(EXTRA_AUTOPLAY, false);
-        PlaybackViewModel playbackViewModel = PlaybackViewModel.get(getApplication());
+        PlaybackViewModel playbackViewModel = PlaybackViewModel.get(getApplication(),
+                MEDIA_SOURCE_MODE_PLAYBACK);
         // Listen to playback state updates to determine which actions are supported;
         // relevant actions here are prepare() and play()
         // If we should autoplay the source, we wait until play() is available before we
