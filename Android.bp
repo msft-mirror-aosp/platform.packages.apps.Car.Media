@@ -44,6 +44,7 @@ android_app {
         "androidx-constraintlayout_constraintlayout",
         "car-apps-common",
         "car-media-common",
+        "car-ui-lib",
     ],
 
     product_variables: {

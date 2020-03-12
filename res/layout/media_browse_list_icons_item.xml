@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Copyright 2018, The Android Open Source Project
+  Copyright 2019, The Android Open Source Project
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -20,16 +20,20 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="@dimen/media_browse_list_item_height"
-    android:paddingLeft="@dimen/media_browse_list_item_icon_margin_start"
+    android:paddingStart="@dimen/media_browse_list_item_icon_margin_start"
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground">
-    <com.android.car.media.common.FixedRatioImageView
+    <ImageView
         android:id="@+id/thumbnail"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
+        android:layout_width="@dimen/media_browse_list_icons_item_art_size"
+        android:layout_height="@dimen/media_browse_list_icons_item_art_size"
         android:scaleType="centerCrop"
         android:layout_marginBottom="@dimen/media_browse_list_item_thumbnail_margin_bottom"
-        app:aspect_ratio="1"/>
+        android:layout_marginStart="@dimen/media_browse_list_icons_item_art_margin_start"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+    />
 
     <!-- This guideline is necessary because there are icons preceding the text which typically have
       visibility GONE, which prevents margins applied to the leftmost view from applying to the
@@ -39,7 +43,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_begin="@dimen/media_browse_list_item_text_margin_x"/>
+        app:layout_constraintGuide_begin="@dimen/media_browse_list_icons_item_text_margin_x"/>
 
     <ImageView
         android:id="@+id/download_icon_with_title"
@@ -111,7 +115,7 @@
 
     <ImageView
         android:id="@+id/right_arrow"
-        style="@style/BrowseListItemRightArrowStyle"
+        android:src="@drawable/ic_chevron_right"
         android:layout_width="@dimen/media_browse_list_item_arrow_size"
         android:layout_height="@dimen/media_browse_list_item_arrow_size"
         android:layout_marginTop="@dimen/media_browse_subtitle_margin_top"
