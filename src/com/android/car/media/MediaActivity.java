@@ -15,6 +15,8 @@
  */
 package com.android.car.media;
 
+import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
+
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Application;
@@ -149,6 +151,7 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
         setContentView(R.layout.media_activity);
 
         MediaSourceViewModel mediaSourceViewModel = getMediaSourceViewModel();
+        // TODO(b/151174811): Use appropriate modes, instead of just MEDIA_SOURCE_MODE_BROWSE
         PlaybackViewModel playbackViewModel = getPlaybackViewModel();
         ViewModel localViewModel = getInnerViewModel();
         // We can't rely on savedInstanceState to determine whether the model has been initialized
@@ -489,11 +492,11 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
     }
 
     private MediaSourceViewModel getMediaSourceViewModel() {
-        return MediaSourceViewModel.get(getApplication());
+        return MediaSourceViewModel.get(getApplication(), MEDIA_SOURCE_MODE_BROWSE);
     }
 
     private PlaybackViewModel getPlaybackViewModel() {
-        return PlaybackViewModel.get(getApplication());
+        return PlaybackViewModel.get(getApplication(), MEDIA_SOURCE_MODE_BROWSE);
     }
 
     private ViewModel getInnerViewModel() {

@@ -1,5 +1,7 @@
 package com.android.car.media;
 
+import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
+
 import android.car.Car;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -36,7 +38,8 @@ public class MediaDispatcherActivity extends FragmentActivity {
         Intent intent = getIntent();
         String action = intent != null ? intent.getAction() : null;
 
-        MediaSourceViewModel mediaSrcVM = MediaSourceViewModel.get(getApplication());
+        MediaSourceViewModel mediaSrcVM = MediaSourceViewModel.get(getApplication(),
+                MEDIA_SOURCE_MODE_BROWSE);
         MediaSource mediaSrc = null;
 
         if (Car.CAR_INTENT_ACTION_MEDIA_TEMPLATE.equals(action)) {
@@ -45,7 +48,7 @@ public class MediaDispatcherActivity extends FragmentActivity {
                 ComponentName component = ComponentName.unflattenFromString(componentName);
                 mediaSrc = MediaSource.create(this, component);
                 if (mediaSrc != null) {
-                    mediaSrcVM.setPrimaryMediaSource(mediaSrc);
+                    mediaSrcVM.setPrimaryMediaSource(mediaSrc, MEDIA_SOURCE_MODE_BROWSE);
                     if (Log.isLoggable(TAG, Log.DEBUG)) {
                         Log.d(TAG, "onCreate componentName : " + componentName);
                     }

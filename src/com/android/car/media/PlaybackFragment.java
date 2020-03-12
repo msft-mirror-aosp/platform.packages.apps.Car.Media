@@ -16,6 +16,8 @@
 
 package com.android.car.media;
 
+import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
+
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
@@ -605,12 +607,13 @@ public class PlaybackFragment extends Fragment {
         mPlaybackControls.close();
     }
 
+    // TODO(b/151174811): Use appropriate modes, instead of just MEDIA_SOURCE_MODE_BROWSE
     private PlaybackViewModel getPlaybackViewModel() {
-        return PlaybackViewModel.get(getActivity().getApplication());
+        return PlaybackViewModel.get(getActivity().getApplication(), MEDIA_SOURCE_MODE_BROWSE);
     }
 
     private MediaSourceViewModel getMediaSourceViewModel() {
-        return MediaSourceViewModel.get(getActivity().getApplication());
+        return MediaSourceViewModel.get(getActivity().getApplication(), MEDIA_SOURCE_MODE_BROWSE);
     }
 
     /**

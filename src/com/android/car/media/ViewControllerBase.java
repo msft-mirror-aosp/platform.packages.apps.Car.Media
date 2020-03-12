@@ -17,6 +17,8 @@
 package com.android.car.media;
 
 
+import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
+
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
@@ -74,7 +76,8 @@ abstract class ViewControllerBase {
 
         container.addView(mContent);
 
-        mMediaSourceVM = MediaSourceViewModel.get(activity.getApplication());
+        mMediaSourceVM = MediaSourceViewModel.get(activity.getApplication(),
+                MEDIA_SOURCE_MODE_BROWSE);
     }
 
     CharSequence getAppBarDefaultTitle(@Nullable MediaSource mediaSource) {
