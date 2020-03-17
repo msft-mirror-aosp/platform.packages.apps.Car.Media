@@ -25,7 +25,7 @@
     <string name="media_browse_more" msgid="6330295386693311592">"ច្រើនទៀត…"</string>
     <string name="media_app_title" msgid="94717597743776797">"មេឌៀ"</string>
     <string name="search_hint" msgid="5401750426238148416">"ស្វែងរក​ចម្រៀង សិល្បករ និងអ្វីៗជាច្រើនទៀត..."</string>
-    <string name="fragment_playback_title" msgid="5014481549024607614">"Now Playing"</string>
+    <string name="fragment_playback_title" msgid="5014481549024607614">"ឥឡូវកំពុងចាក់"</string>
     <string name="default_error_message" msgid="6365377134388091079">"មានអ្វីមួយ​ខុស​ប្រក្រតី។ សូមព្យាយាម​នៅពេលក្រោយ។"</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"មិនអាច​ធ្វើតាមសំណើនោះ​ឥឡូវនេះ​បានទេ"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"កម្មវិធីនេះ​មិនអាចធ្វើ​តាមសំណើនោះ​បានទេ"</string>
