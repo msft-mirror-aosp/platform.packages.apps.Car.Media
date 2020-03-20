@@ -21,17 +21,16 @@ import android.content.Context;
 import android.util.Size;
 import android.widget.ImageView;
 
-import com.android.car.apps.common.imaging.ImageBinder;
 import com.android.car.apps.common.imaging.ImageBinder.PlaceholderType;
 import com.android.car.apps.common.imaging.ImageViewBinder;
-import com.android.car.apps.common.widget.CarTabLayout;
 import com.android.car.media.MediaAppConfig;
 import com.android.car.media.common.MediaItemMetadata;
+import com.android.car.ui.toolbar.TabLayout;
 
 /**
  * An entity representing a media item to be included in the tab bar at the top of the UI.
  */
-public class MediaItemTab extends CarTabLayout.CarTab {
+public class MediaItemTab extends TabLayout.Tab {
     private final MediaItemMetadata mItem;
 
     @SuppressWarnings("FieldCanBeLocal")

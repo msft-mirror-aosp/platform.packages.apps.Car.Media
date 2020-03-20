@@ -31,7 +31,8 @@ public class MediaAppConfig {
 
     /** Returns the maximum size in pixels bitmaps should have in the app. */
     public static Size getMediaItemsBitmapMaxSize(Context context) {
-        int max = context.getResources().getInteger(R.integer.media_items_bitmap_max_size_px);
+        int max = context.getResources().getInteger(
+                com.android.car.media.common.R.integer.media_items_bitmap_max_size_px);
         return new Size(max, max);
     }
 }

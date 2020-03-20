@@ -16,12 +16,14 @@
   -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.android.car.media">
 
     <uses-permission android:name="android.permission.MEDIA_CONTENT_CONTROL"/>
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.GET_INTENT_SENDER_INTENT"/>
 
     <application
         android:label="Media Center"
@@ -43,6 +45,7 @@
         <!-- The Media center entry point that trampolines into MediaActivity or the radio app. -->
         <activity
             android:name=".MediaDispatcherActivity"
+            android:theme="@android:style/Theme.NoDisplay"
             android:launchMode="singleTask">
             <meta-data android:name="distractionOptimized" android:value="true"/>
             <intent-filter>
@@ -61,5 +64,13 @@
                 <action android:name="com.android.car.media.MEDIA_CONNECTION"/>
             </intent-filter>
         </service>
+
+        <!-- Workaround for b/113294940 -->
+        <provider
+            android:name="androidx.lifecycle.ProcessLifecycleOwnerInitializer"
+            tools:replace="android:authorities"
+            android:authorities="${applicationId}.lifecycle"
+            android:exported="false"
+            android:multiprocess="true" />
     </application>
 </manifest>
