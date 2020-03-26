@@ -20,7 +20,7 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="@dimen/media_browse_list_item_height"
-    android:paddingStart="@dimen/media_browse_list_item_icon_margin_start"
+    android:paddingLeft="@dimen/media_browse_list_item_icon_margin_start"
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground">
     <com.android.car.media.common.FixedRatioImageView
@@ -28,7 +28,6 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
-        app:layout_constraintStart_toStartOf="parent"
         android:layout_marginBottom="@dimen/media_browse_list_item_thumbnail_margin_bottom"
         app:aspect_ratio="1"/>
 

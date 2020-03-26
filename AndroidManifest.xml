@@ -28,8 +28,7 @@
     <application
         android:label="Media Center"
         android:theme="@style/Theme.Media"
-        android:icon="@drawable/ic_music"
-        android:supportsRtl="true">
+        android:icon="@drawable/ic_music">
 
         <meta-data
             android:name="android.car.application"
