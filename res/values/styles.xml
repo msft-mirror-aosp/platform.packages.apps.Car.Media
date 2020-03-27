@@ -46,12 +46,9 @@
         <item name="android:fontFamily">sans-serif-medium</item>
         <item name="android:textDirection">locale</item>
     </style>
-    <style name="BrowseListTitleStyle" parent="TextAppearance.Body1">
-        <item name="android:textDirection">locale</item>
-    </style>
+    <style name="BrowseListTitleStyle" parent="TextAppearance.Body1"/>
     <style name="BrowseListSubtitleStyle" parent="TextAppearance.Body3">
         <item name="android:textColor">@color/secondary_text_color</item>
-        <item name="android:textDirection">locale</item>
     </style>
     <style name="BrowseGridTitleStyle" parent="TextAppearance.Body2">
         <item name="android:textDirection">locale</item>
