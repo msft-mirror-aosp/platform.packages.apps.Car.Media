@@ -46,6 +46,7 @@
         <activity
             android:name=".MediaDispatcherActivity"
             android:theme="@android:style/Theme.NoDisplay"
+            android:exported="true"
             android:launchMode="singleTask">
             <meta-data android:name="distractionOptimized" android:value="true"/>
             <intent-filter>
@@ -59,7 +60,8 @@
         </activity>
 
         <service
-            android:name=".service.MediaConnectorService">
+            android:name=".service.MediaConnectorService"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.android.car.media.MEDIA_CONNECTION"/>
             </intent-filter>
