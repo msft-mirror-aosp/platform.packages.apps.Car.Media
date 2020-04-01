@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Copyright 2018, The Android Open Source Project
+  Copyright 2019, The Android Open Source Project
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -19,27 +19,21 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/container"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/media_browse_list_item_height"
-    android:paddingLeft="@dimen/media_browse_list_item_icon_margin_start"
+    android:layout_height="wrap_content"
     android:focusable="true"
-    android:foreground="?android:attr/selectableItemBackground">
-    <com.android.car.media.common.FixedRatioImageView
-        android:id="@+id/thumbnail"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:scaleType="centerCrop"
-        android:layout_marginBottom="@dimen/media_browse_list_item_thumbnail_margin_bottom"
-        app:aspect_ratio="1"/>
+    android:clickable="true"
+    android:foreground="@drawable/grid_item_background"
+    android:padding="@dimen/media_browse_grid_item_padding"
+    android:layout_marginBottom="@dimen/media_browse_grid_item_margin_bottom">
 
-    <!-- This guideline is necessary because there are icons preceding the text which typically have
-      visibility GONE, which prevents margins applied to the leftmost view from applying to the
-      TextViews constrained to that chain -->
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/text_start_guideline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_begin="@dimen/media_browse_list_item_text_margin_x"/>
+    <ImageView
+        android:id="@+id/thumbnail"
+        android:layout_width="@dimen/media_browse_grid_icons_item_art_size"
+        android:layout_height="@dimen/media_browse_grid_icons_item_art_size"
+        android:scaleType="centerCrop"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <ImageView
         android:id="@+id/download_icon_with_title"
@@ -47,10 +41,10 @@
         android:layout_height="@dimen/media_browse_indicator_size"
         android:src="@drawable/ic_file_download_done_black"
         android:tint="@color/icon_tint"
-        app:layout_constraintStart_toEndOf="@+id/text_start_guideline"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/explicit_icon_with_title"
-        app:layout_constraintTop_toTopOf="@+id/title"
-        app:layout_constraintBottom_toBottomOf="@+id/title"/>
+        app:layout_constraintBottom_toBottomOf="@+id/title"
+        app:layout_constraintTop_toTopOf="@+id/title"/>
 
     <ImageView
         android:id="@+id/explicit_icon_with_title"
@@ -58,23 +52,24 @@
         android:layout_height="@dimen/media_browse_indicator_size"
         android:src="@drawable/ic_explicit_black"
         android:tint="@color/icon_tint"
-        app:layout_constraintStart_toEndOf="@+id/download_icon_with_title"
-        app:layout_constraintEnd_toStartOf="@+id/title"
+        app:layout_constraintBottom_toBottomOf="@+id/title"
         app:layout_constraintTop_toTopOf="@+id/title"
-        app:layout_constraintBottom_toBottomOf="@+id/title"/>
+        app:layout_constraintStart_toEndOf="@+id/download_icon_with_title"
+        app:layout_constraintEnd_toStartOf="@+id/title"/>
 
     <TextView
         android:id="@+id/title"
-        style="@style/BrowseListTitleStyle"
+        style="@style/BrowseGridTitleStyle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginTop="@dimen/media_browse_grid_item_text_margin_top"
         android:singleLine="true"
         android:includeFontPadding="false"
-        app:layout_constraintVertical_chainStyle="packed"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/subtitle"
+        android:duplicateParentState="true"
         app:layout_constraintStart_toEndOf="@+id/explicit_icon_with_title"
-        app:layout_constraintEnd_toStartOf="@+id/right_arrow"/>
+        app:layout_constraintTop_toBottomOf="@+id/thumbnail"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <ImageView
         android:id="@+id/download_icon_with_subtitle"
@@ -82,10 +77,10 @@
         android:layout_height="@dimen/media_browse_indicator_size"
         android:src="@drawable/ic_file_download_done_black"
         android:tint="@color/icon_tint"
-        app:layout_constraintStart_toStartOf="@+id/download_icon_with_title"
-        app:layout_constraintEnd_toStartOf="@+id/explicit_icon_with_subtitle"
+        app:layout_constraintBottom_toBottomOf="@+id/subtitle"
         app:layout_constraintTop_toTopOf="@+id/subtitle"
-        app:layout_constraintBottom_toBottomOf="@+id/subtitle"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/explicit_icon_with_subtitle"/>
 
     <ImageView
         android:id="@+id/explicit_icon_with_subtitle"
@@ -93,34 +88,22 @@
         android:layout_height="@dimen/media_browse_indicator_size"
         android:src="@drawable/ic_explicit_black"
         android:tint="@color/icon_tint"
-        app:layout_constraintStart_toEndOf="@+id/download_icon_with_subtitle"
-        app:layout_constraintEnd_toStartOf="@+id/subtitle"
+        app:layout_constraintBottom_toBottomOf="@+id/subtitle"
         app:layout_constraintTop_toTopOf="@+id/subtitle"
-        app:layout_constraintBottom_toBottomOf="@+id/subtitle"/>
+        app:layout_constraintStart_toEndOf="@+id/download_icon_with_subtitle"/>
 
     <TextView
         android:id="@+id/subtitle"
-        style="@style/BrowseListSubtitleStyle"
+        style="@style/BrowseGridSubtitleStyle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:singleLine="true"
-        app:layout_constraintTop_toBottomOf="@+id/title"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/explicit_icon_with_subtitle"
-        app:layout_constraintEnd_toStartOf="@+id/right_arrow"/>
-
-    <ImageView
-        android:id="@+id/right_arrow"
-        style="@style/BrowseListItemRightArrowStyle"
-        android:layout_width="@dimen/media_browse_list_item_arrow_size"
-        android:layout_height="@dimen/media_browse_list_item_arrow_size"
-        android:layout_marginTop="@dimen/media_browse_subtitle_margin_top"
-        android:layout_gravity="center_vertical"
-        android:scaleType="centerCrop"
         android:includeFontPadding="false"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/title"/>
+        android:duplicateParentState="true"
+        android:layout_marginTop="@dimen/media_browse_subtitle_margin_top"
+        app:layout_constraintTop_toBottomOf="@+id/title"
+        app:layout_constraintStart_toEndOf="@+id/explicit_icon_with_subtitle"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
