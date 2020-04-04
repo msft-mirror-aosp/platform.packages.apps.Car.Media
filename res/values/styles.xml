@@ -17,14 +17,14 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
     <style name="TextAppearance.NoContent" parent="android:TextAppearance.Medium">
         <item name="android:fontFamily">sans-serif-condensed</item>
-        <item name="android:textSize">@*android:dimen/car_body3_size</item>
+        <item name="android:textSize">@dimen/car_ui_body3_size</item>
         <item name="android:textColor">@color/no_content_text_color</item>
     </style>
 
     <style name="MetadataPlaybackTitleStyle" parent="TextAppearance.Display2">
         <item name="android:maxLines">2</item>
         <item name="android:ellipsize">end</item>
-        <item name="android:lineSpacingExtra">@*android:dimen/car_padding_1</item>
+        <item name="android:lineSpacingExtra">@dimen/car_ui_padding_1</item>
         <item name="android:includeFontPadding">false</item>
         <item name="android:textDirection">locale</item>
     </style>
