@@ -21,15 +21,14 @@ android_app {
 
     resource_dirs: ["res"],
 
-    platform_apis: true,
-
     required: ["privapp_whitelist_com.android.car.media"],
 
     certificate: "platform",
 
     privileged: true,
 
-    libs: ["android.car"],
+    libs: ["android.car-system-stubs"],
+    sdk_version: "system_current",
 
     optimize: {
         enabled: false,
