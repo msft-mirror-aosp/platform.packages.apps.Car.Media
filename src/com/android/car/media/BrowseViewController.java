@@ -303,10 +303,7 @@ public class BrowseViewController extends ViewControllerBase {
 
         @Override
         public void onBack() {
-            boolean success = navigateBack();
-            if (!success && (mIsSearchController)) {
-                mCallbacks.changeMode(MediaActivity.Mode.BROWSING);
-            }
+            onBackPressed();
         }
 
         @Override
@@ -341,6 +338,15 @@ public class BrowseViewController extends ViewControllerBase {
             ViewUtils.showViewAnimated(mMessage, mFadeDuration);
         }
     };
+
+    boolean onBackPressed() {
+        boolean success = navigateBack();
+        if (!success && (mIsSearchController)) {
+            mCallbacks.changeMode(MediaActivity.Mode.BROWSING);
+            return true;
+        }
+        return success;
+    }
 
     boolean browseTreeHasChildren() {
         return mBrowseTreeHasChildren;

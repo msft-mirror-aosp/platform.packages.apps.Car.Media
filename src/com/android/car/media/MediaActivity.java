@@ -350,7 +350,21 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
+        switch (mMode) {
+            case PLAYBACK:
+                changeMode(Mode.BROWSING);
+                break;
+            case SEARCHING:
+                mSearchController.onBackPressed();
+                break;
+            case BROWSING:
+                boolean handled = mBrowseController.onBackPressed();
+                if (handled) return;
+                // Fall through.
+            case FATAL_ERROR:
+            default:
+                super.onBackPressed();
+        }
     }
 
     /**
