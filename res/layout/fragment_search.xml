@@ -16,13 +16,14 @@
 -->
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/browse_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <include layout="@layout/browse_state"/>
 
-    <com.android.car.apps.common.widget.PagedRecyclerView
+    <com.android.car.ui.recyclerview.CarUiRecyclerView
         android:id="@+id/browse_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -31,6 +32,9 @@
         android:paddingTop="@dimen/search_fragment_top_padding"
         android:paddingBottom="@dimen/search_fragment_bottom_padding"
         android:clipToPadding="false"
-        android:visibility="gone" />
+        android:visibility="gone"
+        app:layoutStyle="grid"
+        app:numOfColumns="@integer/num_browse_columns"
+    />
 
 </RelativeLayout>

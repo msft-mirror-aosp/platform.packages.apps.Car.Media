@@ -35,6 +35,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -44,11 +45,11 @@ import com.android.car.apps.common.imaging.ImageBinder;
 import com.android.car.apps.common.imaging.ImageBinder.PlaceholderType;
 import com.android.car.apps.common.imaging.ImageViewBinder;
 import com.android.car.apps.common.util.ViewUtils;
-import com.android.car.media.common.MediaAppSelectorWidget;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.MetadataController;
 import com.android.car.media.common.PlaybackControlsActionBar;
 import com.android.car.media.common.playback.PlaybackViewModel;
+import com.android.car.media.common.source.MediaSourceViewModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -101,6 +102,8 @@ public class PlaybackFragment extends Fragment {
 
     private int mFadeDuration;
 
+    private MediaActivity.ViewModel mViewModel;
+
     /**
      * PlaybackFragment listener
      */
@@ -143,7 +146,7 @@ public class PlaybackFragment extends Fragment {
             mThumbnailBinder = new ImageViewBinder<>(maxArtSize, mThumbnail);
         }
 
-        boolean bind(MediaItemMetadata item) {
+        void bind(MediaItemMetadata item) {
             mView.setOnClickListener(v -> onQueueItemClicked(item));
 
             ViewUtils.setVisible(mThumbnailContainer, mShowThumbnailForQueueItem);
@@ -174,43 +177,95 @@ public class PlaybackFragment extends Fragment {
             if (mShowSubtitleForQueueItem) {
                 mSubtitle.setText(item.getSubtitle());
             }
+        }
 
-            return active;
+        void onViewAttachedToWindow() {
+            if (mShowThumbnailForQueueItem) {
+                Context context = mView.getContext();
+                mThumbnailBinder.maybeRestartLoading(context);
+            }
+        }
+
+        void onViewDetachedFromWindow() {
+            if (mShowThumbnailForQueueItem) {
+                Context context = mView.getContext();
+                mThumbnailBinder.maybeCancelLoading(context);
+            }
         }
     }
 
 
     private class QueueItemsAdapter extends RecyclerView.Adapter<QueueViewHolder> {
 
-        private List<MediaItemMetadata> mQueueItems;
-        private String mCurrentTimeText;
-        private String mMaxTimeText;
+        private List<MediaItemMetadata> mQueueItems = Collections.emptyList();
+        private String mCurrentTimeText = "";
+        private String mMaxTimeText = "";
         private Integer mActiveItemPos;
         private boolean mTimeVisible;
 
         void setItems(@Nullable List<MediaItemMetadata> items) {
-            mQueueItems = new ArrayList<>(items != null ? items : Collections.emptyList());
+            List<MediaItemMetadata> newQueueItems =
+                new ArrayList<>(items != null ? items : Collections.emptyList());
+            if (newQueueItems.equals(mQueueItems)) {
+                return;
+            }
+            mQueueItems = newQueueItems;
+            updateActiveItem();
             notifyDataSetChanged();
         }
 
+        // Updates mActiveItemPos, then scrolls the queue to mActiveItemPos.
+        // It should be called when the active item (mActiveQueueItemId) changed or
+        // the queue items (mQueueItems) changed.
+        void updateActiveItem() {
+            if (mQueueItems == null || mActiveQueueItemId == null) {
+                mActiveItemPos = null;
+                return;
+            }
+            Integer activeItemPos = null;
+            for (int i = 0; i < mQueueItems.size(); i++) {
+                if (mQueueItems.get(i).getQueueId() == mActiveQueueItemId) {
+                    activeItemPos = i;
+                    break;
+                }
+            }
+
+            if (mActiveItemPos != activeItemPos) {
+                if (mActiveItemPos != null) {
+                    notifyItemChanged(mActiveItemPos.intValue());
+                }
+                mActiveItemPos = activeItemPos;
+                if (mActiveItemPos != null) {
+                    mQueue.scrollToPosition(mActiveItemPos.intValue());
+                    notifyItemChanged(mActiveItemPos.intValue());
+                }
+            }
+        }
+
         void setCurrentTime(String currentTime) {
-            mCurrentTimeText = currentTime;
-            if (mActiveItemPos != null) {
-                notifyItemChanged(mActiveItemPos.intValue());
+            if (!mCurrentTimeText.equals(currentTime)) {
+                mCurrentTimeText = currentTime;
+                if (mActiveItemPos != null) {
+                    notifyItemChanged(mActiveItemPos.intValue());
+                }
             }
         }
 
         void setMaxTime(String maxTime) {
-            mMaxTimeText = maxTime;
-            if (mActiveItemPos != null) {
-                notifyItemChanged(mActiveItemPos.intValue());
+            if (!mMaxTimeText.equals(maxTime)) {
+                mMaxTimeText = maxTime;
+                if (mActiveItemPos != null) {
+                    notifyItemChanged(mActiveItemPos.intValue());
+                }
             }
         }
 
         void setTimeVisible(boolean visible) {
-            mTimeVisible = visible;
-            if (mActiveItemPos != null) {
-                notifyItemChanged(mActiveItemPos.intValue());
+            if (mTimeVisible != visible) {
+                mTimeVisible = visible;
+                if (mActiveItemPos != null) {
+                    notifyItemChanged(mActiveItemPos.intValue());
+                }
             }
         }
 
@@ -236,13 +291,22 @@ public class PlaybackFragment extends Fragment {
         public void onBindViewHolder(QueueViewHolder holder, int position) {
             int size = mQueueItems.size();
             if (0 <= position && position < size) {
-                boolean active = holder.bind(mQueueItems.get(position));
-                if (active) {
-                    mActiveItemPos = position;
-                }
+                holder.bind(mQueueItems.get(position));
             } else {
                 Log.e(TAG, "onBindViewHolder invalid position " + position + " of " + size);
             }
+        }
+
+        @Override
+        public void onViewAttachedToWindow(@NonNull QueueViewHolder holder) {
+            super.onViewAttachedToWindow(holder);
+            holder.onViewAttachedToWindow();
+        }
+
+        @Override
+        public void onViewDetachedFromWindow(@NonNull QueueViewHolder holder) {
+            super.onViewDetachedFromWindow(holder);
+            holder.onViewDetachedFromWindow();
         }
 
         @Override
@@ -337,8 +401,13 @@ public class PlaybackFragment extends Fragment {
             }
         }
 
-        MediaAppSelectorWidget appIcon = view.findViewById(R.id.app_icon_container);
-        appIcon.setFragmentActivity(getActivity());
+        ImageView logoView = view.findViewById(R.id.car_ui_toolbar_title_logo);
+        MediaSourceViewModel mediaSourceViewModel = getMediaSourceViewModel();
+        mediaSourceViewModel.getPrimaryMediaSource().observe(this, mediaSource ->
+                logoView.setImageBitmap(mediaSource != null
+                        ? mediaSource.getRoundPackageIcon() : null));
+
+        mViewModel = ViewModelProviders.of(requireActivity()).get(MediaActivity.ViewModel.class);
 
         getPlaybackViewModel().getPlaybackController().observe(getViewLifecycleOwner(),
                 controller -> mController = controller);
@@ -436,11 +505,10 @@ public class PlaybackFragment extends Fragment {
                     Long itemId = (state != null) ? state.getActiveQueueItemId() : null;
                     if (!Objects.equals(mActiveQueueItemId, itemId)) {
                         mActiveQueueItemId = itemId;
-                        mQueueAdapter.refresh();
+                        mQueueAdapter.updateActiveItem();
                     }
                 });
         mQueue.setAdapter(mQueueAdapter);
-        mQueue.setLayoutManager(new LinearLayoutManager(getContext()));
 
         // Disable item changed animation.
         mItemAnimator = new DefaultItemAnimator();
@@ -451,10 +519,8 @@ public class PlaybackFragment extends Fragment {
 
         getPlaybackViewModel().hasQueue().observe(getViewLifecycleOwner(), hasQueue -> {
             boolean enableQueue = (hasQueue != null) && hasQueue;
+            mQueueIsVisible = mViewModel.getQueueVisible();
             setHasQueue(enableQueue);
-            if (mQueueIsVisible && !enableQueue) {
-                toggleQueueVisibility();
-            }
         });
         getPlaybackViewModel().getProgress().observe(getViewLifecycleOwner(),
                 playbackProgress ->
@@ -467,7 +533,6 @@ public class PlaybackFragment extends Fragment {
 
     private void setQueue(List<MediaItemMetadata> queueItems) {
         mQueueAdapter.setItems(queueItems);
-        mQueueAdapter.refresh();
     }
 
     private void initMetadataController(View view) {
@@ -488,10 +553,21 @@ public class PlaybackFragment extends Fragment {
     }
 
     /**
-     * Hides or shows the playback queue.
+     * Hides or shows the playback queue when the user clicks the queue button.
      */
     private void toggleQueueVisibility() {
-        mQueueIsVisible = !mQueueIsVisible;
+        boolean updatedQueueVisibility = !mQueueIsVisible;
+        setQueueVisible(updatedQueueVisibility);
+
+        // When the visibility of queue is changed by the user, save the visibility into ViewModel
+        // so that we can restore PlaybackFragment properly when needed. If it's changed by media
+        // source change (media source changes -> hasQueue becomes false -> queue is hidden), don't
+        // save it.
+        mViewModel.setQueueVisible(updatedQueueVisibility);
+    }
+
+    private void setQueueVisible(boolean visible) {
+        mQueueIsVisible = visible;
         mQueueButton.setActivated(mQueueIsVisible);
         mQueueButton.setSelected(mQueueIsVisible);
         if (mQueueIsVisible) {
@@ -510,11 +586,8 @@ public class PlaybackFragment extends Fragment {
     /** Sets whether the source has a queue. */
     private void setHasQueue(boolean hasQueue) {
         mHasQueue = hasQueue;
-        updateQueueVisibility();
-    }
-
-    private void updateQueueVisibility() {
         mQueueButton.setVisibility(mHasQueue ? View.VISIBLE : View.GONE);
+        setQueueVisible(hasQueue && mQueueIsVisible);
     }
 
     private void onQueueItemClicked(MediaItemMetadata item) {
@@ -537,6 +610,10 @@ public class PlaybackFragment extends Fragment {
 
     private PlaybackViewModel getPlaybackViewModel() {
         return PlaybackViewModel.get(getActivity().getApplication());
+    }
+
+    private MediaSourceViewModel getMediaSourceViewModel() {
+        return MediaSourceViewModel.get(getActivity().getApplication());
     }
 
     /**

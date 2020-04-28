@@ -111,7 +111,7 @@
 
     <ImageView
         android:id="@+id/right_arrow"
-        android:src="@drawable/ic_chevron_right"
+        style="@style/BrowseListItemRightArrowStyle"
         android:layout_width="@dimen/media_browse_list_item_arrow_size"
         android:layout_height="@dimen/media_browse_list_item_arrow_size"
         android:layout_marginTop="@dimen/media_browse_subtitle_margin_top"
