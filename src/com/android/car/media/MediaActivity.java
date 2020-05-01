@@ -47,7 +47,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProviders;
 
-import com.android.car.apps.common.CarUxRestrictionsUtil;
 import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.media.common.MediaConstants;
 import com.android.car.media.common.MediaItemMetadata;
@@ -56,6 +55,7 @@ import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.common.source.MediaSourceViewModel;
 import com.android.car.ui.AlertDialogBuilder;
+import com.android.car.ui.utils.CarUxRestrictionsUtil;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -207,7 +207,7 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
         localViewModel.getMiniControlsVisible().observe(this, visible -> {
             mBrowseController.onPlaybackControlsChanged(visible);
             mSearchController.onPlaybackControlsChanged(visible);
-        } );
+        });
     }
 
     @Override
@@ -574,7 +574,8 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
             return getSavedState().mMode;
         }
 
-        @Nullable MediaItemMetadata getSelectedTab() {
+        @Nullable
+        MediaItemMetadata getSelectedTab() {
             Stack<MediaItemMetadata> stack = getSavedState().mBrowseStack;
             return (stack != null && !stack.empty()) ? stack.firstElement() : null;
         }
