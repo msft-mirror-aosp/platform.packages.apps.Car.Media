@@ -17,6 +17,8 @@ package com.android.car.media;
 
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
 
+import static com.android.car.apps.common.util.VectorMath.EPSILON;
+
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Application;
@@ -26,6 +28,7 @@ import android.car.drivingstate.CarUxRestrictions;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
@@ -47,6 +50,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.android.car.apps.common.util.VectorMath;
 import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.media.common.MediaConstants;
 import com.android.car.media.common.MediaItemMetadata;
@@ -94,6 +98,10 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
     private Mode mMode;
     private boolean mCanShowMiniPlaybackControls;
     private PlaybackViewModel.PlaybackStateWrapper mCurrentPlaybackStateWrapper;
+
+    private float mCloseVectorX;
+    private float mCloseVectorY;
+    private float mCloseVectorNorm;
 
     private CarUxRestrictionsUtil mCarUxRestrictionsUtil;
     private CarUxRestrictions mActiveCarUxRestrictions;
@@ -150,6 +158,12 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
         super.onCreate(savedInstanceState);
         setContentView(R.layout.media_activity);
 
+        Resources res = getResources();
+        mCloseVectorX = res.getFloat(R.dimen.media_activity_close_vector_x);
+        mCloseVectorY = res.getFloat(R.dimen.media_activity_close_vector_y);
+        mCloseVectorNorm = VectorMath.norm2(mCloseVectorX, mCloseVectorY);
+
+
         MediaSourceViewModel mediaSourceViewModel = getMediaSourceViewModel();
         // TODO(b/151174811): Use appropriate modes, instead of just MEDIA_SOURCE_MODE_BROWSE
         PlaybackViewModel playbackViewModel = getPlaybackViewModel();
@@ -177,7 +191,7 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
         mMiniPlaybackControls.setModel(playbackViewModel, this, maxArtSize);
         mMiniPlaybackControls.setOnClickListener(view -> changeMode(Mode.PLAYBACK));
 
-        mFadeDuration = getResources().getInteger(R.integer.new_album_art_fade_in_duration);
+        mFadeDuration = res.getInteger(R.integer.new_album_art_fade_in_duration);
         mBrowseContainer = findViewById(R.id.fragment_container);
         mErrorContainer = findViewById(R.id.error_container);
         mPlaybackContainer = findViewById(R.id.playback_container);
@@ -435,6 +449,7 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
                 ViewUtils.hideViewAnimated(mSearchContainer, fadeOutDuration);
                 break;
             case PLAYBACK:
+                mPlaybackContainer.setX(0);
                 mPlaybackContainer.setY(0);
                 mPlaybackContainer.setAlpha(0f);
                 ViewUtils.hideViewAnimated(mErrorContainer, fadeOutDuration);
@@ -447,11 +462,7 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
                     ViewUtils.hideViewAnimated(mErrorContainer, 0);
                     ViewUtils.showViewAnimated(mBrowseContainer, 0);
                     ViewUtils.hideViewAnimated(mSearchContainer, 0);
-                    mPlaybackContainer.animate()
-                            .translationY(mRootView.getHeight())
-                            .setDuration(fadeOutDuration)
-                            .setListener(ViewUtils.hideViewAfterAnimation(mPlaybackContainer))
-                            .start();
+                    animateOutPlaybackContainer(fadeOutDuration);
                 } else {
                     ViewUtils.hideViewAnimated(mErrorContainer, fadeOutDuration);
                     ViewUtils.hideViewAnimated(mPlaybackContainer, fadeOutDuration);
@@ -466,6 +477,46 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
                 ViewUtils.showViewAnimated(mSearchContainer, mFadeDuration);
                 break;
         }
+    }
+
+    private void animateOutPlaybackContainer(int fadeOutDuration) {
+        if (mCloseVectorNorm <= EPSILON) {
+            ViewUtils.hideViewAnimated(mPlaybackContainer, fadeOutDuration);
+            return;
+        }
+
+        // Assumption: mPlaybackContainer shares 1 edge with the side of the screen the
+        // slide animation brings it towards to. Since only vertical and horizontal translations
+        // are supported mPlaybackContainer only needs to move by its width or its height to be
+        // hidden.
+
+        // Use width and height with and extra pixel for safety.
+        float w = mPlaybackContainer.getWidth() + 1;
+        float h = mPlaybackContainer.getHeight() + 1;
+
+        float tX = 0.0f;
+        float tY = 0.0f;
+        if (Math.abs(mCloseVectorY) <= EPSILON) {
+            // Only moving horizontally
+            tX = mCloseVectorX * w / mCloseVectorNorm;
+        } else if (Math.abs(mCloseVectorX) <= EPSILON) {
+            // Only moving vertically
+            tY = mCloseVectorY * h / mCloseVectorNorm;
+        } else {
+            if (Log.isLoggable(TAG, Log.DEBUG)) {
+                Log.d(TAG, "The vector to close the playback container must be vertical or"
+                        + " horizontal");
+            }
+            ViewUtils.hideViewAnimated(mPlaybackContainer, fadeOutDuration);
+            return;
+        }
+
+        mPlaybackContainer.animate()
+                .translationX(tX)
+                .translationY(tY)
+                .setDuration(fadeOutDuration)
+                .setListener(ViewUtils.hideViewAfterAnimation(mPlaybackContainer))
+                .start();
     }
 
     private void updateMiniPlaybackControls(boolean hideViewAnimated) {
@@ -616,6 +667,8 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
     private class ClosePlaybackDetector extends GestureDetector.SimpleOnGestureListener
             implements View.OnTouchListener {
 
+        private static final float COS_30 = 0.866f;
+
         private final ViewConfiguration mViewConfig;
         private final GestureDetectorCompat mDetector;
 
@@ -633,17 +686,19 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
 
         @Override
         public boolean onDown(MotionEvent event) {
-            return (mMode == Mode.PLAYBACK);
+            return (mMode == Mode.PLAYBACK) && (mCloseVectorNorm > EPSILON);
         }
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float vX, float vY) {
-            float dY = e2.getY() - e1.getY();
-            if (dY > mViewConfig.getScaledTouchSlop() &&
-                    Math.abs(vY) > mViewConfig.getScaledMinimumFlingVelocity()) {
-                float dX = e2.getX() - e1.getX();
-                float tan = Math.abs(dX) / dY;
-                if (tan <= 0.58) { // Accept 30 degrees on each side of the down vector.
+            float moveX = e2.getX() - e1.getX();
+            float moveY = e2.getY() - e1.getY();
+            float moveVectorNorm = VectorMath.norm2(moveX, moveY);
+            if (moveVectorNorm > mViewConfig.getScaledTouchSlop() &&
+                    VectorMath.norm2(vX, vY) > mViewConfig.getScaledMinimumFlingVelocity()) {
+                float dot = VectorMath.dotProduct(mCloseVectorX, mCloseVectorY, moveX, moveY);
+                float cos = dot / (mCloseVectorNorm * moveVectorNorm);
+                if (cos >= COS_30) { // Accept 30 degrees on each side of the close vector.
                     changeMode(Mode.BROWSING);
                 }
             }
