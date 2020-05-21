@@ -81,6 +81,15 @@
     <dimen name="media_activity_controls_container_padding">@dimen/car_ui_padding_4</dimen>
     <dimen name="media_activity_controls_margin_start">@dimen/car_ui_padding_4</dimen>
 
+    <!--
+        The direction of the gesture needed to close the playback screen of the media activity.
+        One coordinate of the vector must be null as diagonal closure isn't supported.
+        If both coordinates are zero, then no gesture triggers the closure, and the icon triggers
+        a fadeout.
+    -->
+    <item name="media_activity_close_vector_x" format="float" type="dimen">0.0</item>
+    <item name="media_activity_close_vector_y" format="float" type="dimen">1.0</item>
+
     <!-- BrowseFragment.java -->
     <!-- Spacer used between the app bar and the top of the browse list/grid -->
     <dimen name="browse_spacer_height">@dimen/car_ui_padding_2</dimen>
