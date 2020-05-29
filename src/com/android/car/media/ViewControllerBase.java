@@ -120,8 +120,8 @@ abstract class ViewControllerBase {
         if (mediaSource != null) {
             // Drawables can't be shared due to the fact that the layout manager effects the
             // underlying Drawable causing artifacts when then are both "on screen"
-            icon = new BitmapDrawable(res, mediaSource.getRoundPackageIcon());
-            searchIcon = new BitmapDrawable(res, mediaSource.getRoundPackageIcon());
+            icon = new BitmapDrawable(res, mediaSource.getCroppedPackageIcon());
+            searchIcon = new BitmapDrawable(res, mediaSource.getCroppedPackageIcon());
             packageName = mediaSource.getPackageName();
         }
 

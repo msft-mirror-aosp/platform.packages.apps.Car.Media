@@ -404,7 +404,7 @@ public class PlaybackFragment extends Fragment {
         MediaSourceViewModel mediaSourceViewModel = getMediaSourceViewModel();
         mediaSourceViewModel.getPrimaryMediaSource().observe(this, mediaSource ->
                 logoView.setImageBitmap(mediaSource != null
-                        ? mediaSource.getRoundPackageIcon() : null));
+                        ? mediaSource.getCroppedPackageIcon() : null));
 
         mViewModel = ViewModelProviders.of(requireActivity()).get(MediaActivity.ViewModel.class);
 
