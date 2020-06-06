@@ -170,6 +170,8 @@ public class PlaybackFragment extends Fragment {
             ViewUtils.setVisible(mMaxTime, shouldShowTime);
             ViewUtils.setVisible(mTimeSeparator, shouldShowTime);
 
+            mView.setSelected(active);
+
             boolean shouldShowIcon = mShowIconForActiveQueueItem && active;
             ViewUtils.setVisible(mActiveIcon, shouldShowIcon);
 
