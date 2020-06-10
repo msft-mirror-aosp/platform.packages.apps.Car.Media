@@ -58,8 +58,6 @@
     <!-- End margin of playback queue button -->
     <dimen name="playback_queue_button_margin_end">@*android:dimen/car_padding_2</dimen>
 
-    <!-- Tab height -->
-    <dimen name="browse_tab_height">76dp</dimen>
     <!-- Tab max width -->
     <dimen name="browse_tab_width">134dp</dimen>
     <!-- Tab Padding -->
