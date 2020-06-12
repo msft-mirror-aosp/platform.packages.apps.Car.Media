@@ -122,6 +122,7 @@ public class AppBarView extends Toolbar {
                 .setOnClickListener(v -> mListener.onEqualizerSelection())
                 .build();
         mAppSelector = new MenuItem.Builder(context)
+                .setTitle(R.string.menu_item_app_selector_title)
                 .setIcon(R.drawable.ic_app_switch)
                 .setOnClickListener(m -> getContext().startActivity(mAppSelectorIntent))
                 .build();
