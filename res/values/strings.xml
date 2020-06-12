@@ -63,4 +63,6 @@
     <string name="service_notification_title">Connecting to media</string>
     <!-- Title of the sound settings menu item. Will be displayed if the button is in the overflow menu. [CHAR_LIMIT=50] -->
     <string name="menu_item_sound_settings_title">Sound Settings</string>
+    <!-- Title of the app selector menu item. Will be displayed if the button is in the overflow menu, and used as a content description. [CHAR_LIMIT=50] -->
+    <string name="menu_item_app_selector_title">Switch apps</string>
 </resources>
