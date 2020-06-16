@@ -40,4 +40,6 @@
     <string name="error_code_end_of_queue" msgid="2842652212154074468">"No hay nada más en la cola"</string>
     <string name="service_notification_title" msgid="8085444675783592744">"Conectando con la fuente de contenido multimedia"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"Ajustes de sonido"</string>
+    <!-- no translation found for menu_item_app_selector_title (4587248991114338595) -->
+    <skip />
 </resources>

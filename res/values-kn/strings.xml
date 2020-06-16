@@ -40,4 +40,6 @@
     <string name="error_code_end_of_queue" msgid="2842652212154074468">"ಸರದಿಯಲ್ಲಿ ಯಾವುದು ಬಾಕಿ ಉಳಿದಿಲ್ಲ"</string>
     <string name="service_notification_title" msgid="8085444675783592744">"ಮೀಡಿಯಾಕ್ಕೆ ಕನೆಕ್ಟ್ ಮಾಡಲಾಗುತ್ತಿದೆ"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"ಧ್ವನಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳು"</string>
+    <!-- no translation found for menu_item_app_selector_title (4587248991114338595) -->
+    <skip />
 </resources>
