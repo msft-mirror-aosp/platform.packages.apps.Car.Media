@@ -40,5 +40,5 @@
     <string name="error_code_end_of_queue" msgid="2842652212154074468">"Ništa više nije postavljeno u red čekanja"</string>
     <string name="service_notification_title" msgid="8085444675783592744">"Povezivanje s medijima"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"Postavke zvuka"</string>
-    <string name="menu_item_app_selector_title" msgid="4587248991114338595">"Promijeni aplikaciju"</string>
+    <string name="menu_item_app_selector_title" msgid="4587248991114338595">"Prebaci aplikacije"</string>
 </resources>
