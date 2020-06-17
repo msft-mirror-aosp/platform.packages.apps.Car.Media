@@ -40,4 +40,5 @@
     <string name="error_code_end_of_queue" msgid="2842652212154074468">"현재 재생목록이 비어있습니다."</string>
     <string name="service_notification_title" msgid="8085444675783592744">"미디어에 연결 중"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"소리 설정"</string>
+    <string name="menu_item_app_selector_title" msgid="4587248991114338595">"앱 전환"</string>
 </resources>
