@@ -1,6 +1,7 @@
 package com.android.car.media;
 
 import android.app.PendingIntent;
+import android.car.content.pm.CarPackageManager;
 import android.car.drivingstate.CarUxRestrictions;
 import android.util.Log;
 import android.view.View;
@@ -11,7 +12,6 @@ import androidx.fragment.app.FragmentActivity;
 
 import com.android.car.apps.common.UxrButton;
 import com.android.car.apps.common.UxrTextView;
-import com.android.car.apps.common.util.CarPackageManagerUtils;
 import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.media.common.source.MediaSource;
 
@@ -28,8 +28,9 @@ public class ErrorViewController extends ViewControllerBase {
     private final UxrButton mErrorButton;
 
 
-    ErrorViewController(FragmentActivity activity, ViewGroup container) {
-        super(activity, container, R.layout.fragment_error);
+    ErrorViewController(FragmentActivity activity,
+            CarPackageManager carPackageManager, ViewGroup container) {
+        super(activity, carPackageManager, container, R.layout.fragment_error);
 
         mErrorMessageView = mContent.findViewById(R.id.error_message);
         mErrorButton = mContent.findViewById(R.id.error_button);
@@ -46,15 +47,14 @@ public class ErrorViewController extends ViewControllerBase {
         ViewUtils.hideViewAnimated(mErrorButton, 0);
     }
 
-    public void setError(String message, String label, PendingIntent pendingIntent) {
+    public void setError(String message, String label, PendingIntent pendingIntent,
+            boolean isDistractionOptimized) {
         mErrorMessageView.setText(message);
 
         // Only show the error button if the error is actionable.
         if (label != null && pendingIntent != null) {
             mErrorButton.setText(label);
 
-            boolean isDistractionOptimized = CarPackageManagerUtils.getInstance(mActivity)
-                    .isDistractionOptimized(pendingIntent);
             mErrorButton.setUxRestrictions(isDistractionOptimized
                     ? CarUxRestrictions.UX_RESTRICTIONS_BASELINE
                     : CarUxRestrictions.UX_RESTRICTIONS_NO_SETUP);
