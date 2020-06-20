@@ -19,6 +19,7 @@ package com.android.car.media;
 
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
 
+import android.car.content.pm.CarPackageManager;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
@@ -49,7 +50,7 @@ abstract class ViewControllerBase {
     private static final String TAG = "ViewControllerBase";
 
     private final boolean mShouldShowSoundSettings;
-    private final CarPackageManagerUtils mCarPackageManagerUtils;
+    private final CarPackageManager mCarPackageManager;
 
     final FragmentActivity mActivity;
     final int mFadeDuration;
@@ -59,13 +60,12 @@ abstract class ViewControllerBase {
 
     private Intent mCurrentSourcePreferences;
 
-
-    ViewControllerBase(FragmentActivity activity, ViewGroup container, @LayoutRes int resource) {
+    ViewControllerBase(FragmentActivity activity, CarPackageManager carPackageManager,
+            ViewGroup container, @LayoutRes int resource) {
         mActivity = activity;
         Resources res = mActivity.getResources();
         mFadeDuration = res.getInteger(R.integer.new_album_art_fade_in_duration);
         mShouldShowSoundSettings = res.getBoolean(R.bool.show_sound_settings);
-        mCarPackageManagerUtils = CarPackageManagerUtils.getInstance(mActivity);
 
         LayoutInflater inflater = LayoutInflater.from(container.getContext());
         mContent = inflater.inflate(resource, container, false);
@@ -75,6 +75,8 @@ abstract class ViewControllerBase {
         mAppBarView.setHasEqualizer(false);
 
         container.addView(mContent);
+
+        mCarPackageManager = carPackageManager;
 
         mMediaSourceVM = MediaSourceViewModel.get(activity.getApplication(),
                 MEDIA_SOURCE_MODE_BROWSE);
@@ -141,7 +143,8 @@ abstract class ViewControllerBase {
                 mCurrentSourcePreferences = new Intent(prefsIntent.getAction())
                         .setClassName(info.activityInfo.packageName, info.activityInfo.name);
                 mAppBarView.setSettingsDistractionOptimized(
-                        mCarPackageManagerUtils.isDistractionOptimized(info.activityInfo));
+                        CarPackageManagerUtils.isDistractionOptimized(
+                                mCarPackageManager, info.activityInfo));
             }
         }
         mAppBarView.setHasSettings(mCurrentSourcePreferences != null);
