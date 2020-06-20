@@ -18,6 +18,7 @@ package com.android.car.media;
 
 import static com.android.car.arch.common.LiveDataFunctions.ifThenElse;
 
+import android.car.content.pm.CarPackageManager;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Handler;
@@ -185,9 +186,10 @@ public class BrowseViewController extends ViewControllerBase {
      * Creates a new instance of this controller meant to browse the root node.
      * @return a fully initialized {@link BrowseViewController}
      */
-    public static BrowseViewController newInstance(Callbacks callbacks, ViewGroup container) {
+    public static BrowseViewController newInstance(Callbacks callbacks,
+            CarPackageManager carPackageManager, ViewGroup container) {
         boolean isSearchController = false;
-        return new BrowseViewController(callbacks, container, isSearchController);
+        return new BrowseViewController(callbacks, carPackageManager, container, isSearchController);
     }
 
     /**
@@ -196,9 +198,10 @@ public class BrowseViewController extends ViewControllerBase {
      *
      * @return a fully initialized {@link BrowseViewController}
      */
-    static BrowseViewController newSearchInstance(Callbacks callbacks, ViewGroup container) {
+    static BrowseViewController newSearchInstance(Callbacks callbacks,
+            CarPackageManager carPackageManager, ViewGroup container) {
         boolean isSearchController = true;
-        return new BrowseViewController(callbacks, container, isSearchController);
+        return new BrowseViewController(callbacks, carPackageManager, container, isSearchController);
     }
 
     private void updateSearchQuery(@Nullable String query) {
@@ -236,8 +239,9 @@ public class BrowseViewController extends ViewControllerBase {
         updateAppBar();
     }
 
-    private BrowseViewController(Callbacks callbacks, ViewGroup container, boolean isSearchController) {
-        super(callbacks.getActivity(), container, R.layout.fragment_browse);
+    private BrowseViewController(Callbacks callbacks, CarPackageManager carPackageManager,
+            ViewGroup container, boolean isSearchController) {
+        super(callbacks.getActivity(), carPackageManager, container, R.layout.fragment_browse);
 
         mCallbacks = callbacks;
         mIsSearchController = isSearchController;

@@ -24,6 +24,7 @@ import android.app.AlertDialog;
 import android.app.Application;
 import android.app.PendingIntent;
 import android.car.Car;
+import android.car.content.pm.CarPackageManager;
 import android.car.drivingstate.CarUxRestrictions;
 import android.content.ComponentName;
 import android.content.Context;
@@ -51,6 +52,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.android.car.apps.common.util.VectorMath;
+import com.android.car.apps.common.util.CarPackageManagerUtils;
 import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.media.common.MediaConstants;
 import com.android.car.media.common.MediaItemMetadata;
@@ -98,6 +100,9 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
     private Mode mMode;
     private boolean mCanShowMiniPlaybackControls;
     private PlaybackViewModel.PlaybackStateWrapper mCurrentPlaybackStateWrapper;
+
+    private Car mCar;
+    private CarPackageManager mCarPackageManager;
 
     private float mCloseVectorX;
     private float mCloseVectorY;
@@ -200,8 +205,10 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
                 .replace(R.id.playback_container, mPlaybackFragment)
                 .commit();
 
-        mBrowseController = BrowseViewController.newInstance(this, mBrowseContainer);
-        mSearchController = BrowseViewController.newSearchInstance(this, mSearchContainer);
+        mBrowseController = BrowseViewController.newInstance(this,
+                mCarPackageManager, mBrowseContainer);
+        mSearchController = BrowseViewController.newSearchInstance(this,
+                mCarPackageManager, mSearchContainer);
 
         playbackViewModel.getPlaybackController().observe(this,
                 playbackController -> {
@@ -211,6 +218,9 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
 
         playbackViewModel.getPlaybackStateWrapper().observe(this,
                 state -> handlePlaybackState(state, true));
+
+        mCar = Car.createCar(this);
+        mCarPackageManager = (CarPackageManager) mCar.getCarManager(Car.PACKAGE_SERVICE);
 
         mCarUxRestrictionsUtil = CarUxRestrictionsUtil.getInstance(this);
         mRestrictions = CarUxRestrictions.UX_RESTRICTIONS_NO_SETUP;
@@ -227,6 +237,7 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
     @Override
     protected void onDestroy() {
         mCarUxRestrictionsUtil.unregister(mListener);
+        mCar.disconnect();
         super.onDestroy();
     }
 
@@ -287,7 +298,8 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
                     showToast(displayedMessage);
                 }
             } else {
-                getErrorController().setError(displayedMessage, label, intent);
+                getErrorController().setError(displayedMessage, label, intent,
+                        CarPackageManagerUtils.isDistractionOptimized(mCarPackageManager, intent));
                 isFatalError = true;
             }
         }
@@ -300,7 +312,7 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
 
     private ErrorViewController getErrorController() {
         if (mErrorController == null) {
-            mErrorController = new ErrorViewController(this, mErrorContainer);
+            mErrorController = new ErrorViewController(this, mCarPackageManager, mErrorContainer);
             MediaSource mediaSource = getMediaSourceViewModel().getPrimaryMediaSource().getValue();
             mErrorController.onMediaSourceChanged(mediaSource);
         }
