@@ -44,7 +44,7 @@
         <activity
             android:name=".MediaActivity"
             android:resizeableActivity="true"
-            android:windowSoftInputMode="stateUnchanged|adjustPan"
+            android:windowSoftInputMode="stateHidden|adjustPan"
             android:launchMode="singleTop">
             <meta-data android:name="distractionOptimized" android:value="true"/>
         </activity>
