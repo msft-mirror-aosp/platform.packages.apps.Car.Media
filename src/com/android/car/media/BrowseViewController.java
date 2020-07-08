@@ -44,7 +44,7 @@ import com.android.car.media.common.GridSpacingItemDecoration;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.browse.MediaBrowserViewModel;
 import com.android.car.media.common.source.MediaSource;
-import com.android.car.media.widgets.AppBarView;
+import com.android.car.media.widgets.AppBarController;
 import com.android.car.ui.toolbar.Toolbar;
 
 import java.util.ArrayList;
@@ -220,7 +220,7 @@ public class BrowseViewController extends ViewControllerBase {
 
         if (mIsSearchController) {
             updateSearchQuery(mViewModel.getSearchQuery());
-            mAppBarView.setSearchQuery(mSearchQuery);
+            mAppBarController.setSearchQuery(mSearchQuery);
             mBrowseStack = mViewModel.getSearchStack();
             mShowSearchResults.setValue(isAtTopStack());
         } else {
@@ -249,7 +249,7 @@ public class BrowseViewController extends ViewControllerBase {
         mLoadingIndicatorDelay = mContent.getContext().getResources()
                 .getInteger(R.integer.progress_indicator_delay);
 
-        mAppBarView.setListener(mAppBarListener);
+        mAppBarController.setListener(mAppBarListener);
         mBrowseList = mContent.findViewById(R.id.browse_list);
         mErrorIcon = mContent.findViewById(R.id.error_icon);
         mMessage = mContent.findViewById(R.id.error_message);
@@ -268,7 +268,7 @@ public class BrowseViewController extends ViewControllerBase {
                 .observe(activity, futureData -> onItemsUpdate(/* forRoot */ true, futureData));
 
         mRootMediaBrowserViewModel.supportsSearch().observe(activity,
-                mAppBarView::setSearchSupported);
+                mAppBarController::setSearchSupported);
 
 
         // Browse logic for current node
@@ -297,7 +297,7 @@ public class BrowseViewController extends ViewControllerBase {
         updateAppBar();
     }
 
-    private AppBarView.AppBarListener mAppBarListener = new BasicAppBarListener() {
+    private AppBarController.AppBarListener mAppBarListener = new BasicAppBarListener() {
         @Override
         public void onTabSelected(MediaItemMetadata item) {
             if (mAcceptTabSelection) {
@@ -450,8 +450,8 @@ public class BrowseViewController extends ViewControllerBase {
         mTopItems = items;
 
         if (mTopItems == null || mTopItems.isEmpty()) {
-            mAppBarView.setItems(null);
-            mAppBarView.setActiveItem(null);
+            mAppBarController.setItems(null);
+            mAppBarController.setActiveItem(null);
             if (items != null) {
                 // Only do this when not loading the tabs or we loose the saved one.
                 showTopItem(null);
@@ -463,11 +463,11 @@ public class BrowseViewController extends ViewControllerBase {
         MediaItemMetadata oldTab = mViewModel.getSelectedTab();
         try {
             mAcceptTabSelection = false;
-            mAppBarView.setItems(mTopItems.size() == 1 ? null : mTopItems);
+            mAppBarController.setItems(mTopItems.size() == 1 ? null : mTopItems);
             updateAppBar();
 
             if (items.contains(oldTab)) {
-                mAppBarView.setActiveItem(oldTab);
+                mAppBarController.setActiveItem(oldTab);
             } else {
                 showTopItem(items.get(0));
             }
@@ -495,7 +495,7 @@ public class BrowseViewController extends ViewControllerBase {
             title = getAppBarDefaultTitle(mediaSource);
         }
 
-        mAppBarView.setTitle(title);
+        mAppBarController.setTitle(title);
     }
 
     /**
@@ -509,8 +509,8 @@ public class BrowseViewController extends ViewControllerBase {
         Toolbar.State unstackedState =
                 mIsSearchController ? Toolbar.State.SEARCH : Toolbar.State.HOME;
         updateAppBarTitle();
-        mAppBarView.setState(isStacked ? Toolbar.State.SUBPAGE : unstackedState);
-        mAppBarView.showSearchIfSupported(!mIsSearchController || isStacked);
+        mAppBarController.setState(isStacked ? Toolbar.State.SUBPAGE : unstackedState);
+        mAppBarController.showSearchIfSupported(!mIsSearchController || isStacked);
     }
 
     private String getErrorMessage(boolean forRoot) {
