@@ -501,8 +501,13 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
         Drawable icon = mediaSource != null
                 ? new BitmapDrawable(getResources(), mediaSource.getRoundPackageIcon())
                 : null;
+        Drawable searchIcon = mediaSource != null
+                ? new BitmapDrawable(getResources(), mediaSource.getRoundPackageIcon())
+                : null;
+        // The Drawables can't be shared as the layout manager scales the underlying drawable object
+        // when performing the layout thus can cause inconsistencies.
         mAppBarView.setLogo(icon);
-        mAppBarView.setSearchIcon(icon);
+        mAppBarView.setSearchIcon(searchIcon);
         if (mediaSource != null) {
             if (Log.isLoggable(TAG, Log.INFO)) {
                 Log.i(TAG, "Browsing: " + mediaSource.getDisplayName());
@@ -637,6 +642,7 @@ public class MediaActivity extends FragmentActivity implements BrowseFragment.Ca
                 ViewUtils.hideViewAnimated(mSearchContainer, fadeOutDuration);
                 mAppBarView.setState(Toolbar.State.HOME);
                 mAppBarView.showSearchIfSupported(false);
+                ViewUtils.showViewAnimated(mAppBarView, mFadeDuration);
                 break;
             case PLAYBACK:
                 mPlaybackContainer.setY(0);
