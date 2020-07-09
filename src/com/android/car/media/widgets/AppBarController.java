@@ -3,7 +3,7 @@ package com.android.car.media.widgets;
 import android.car.drivingstate.CarUxRestrictions;
 import android.content.Context;
 import android.content.Intent;
-import android.util.AttributeSet;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -13,6 +13,7 @@ import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.ui.toolbar.MenuItem;
 import com.android.car.ui.toolbar.Toolbar;
+import com.android.car.ui.toolbar.ToolbarControllerImpl;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,13 +25,14 @@ import java.util.Objects;
  * views via {@link #setState}. A detailed explanation of all possible states of this application
  * bar can be seen at {@link Toolbar.State}.
  */
-public class AppBarView extends Toolbar {
+public class AppBarController extends ToolbarControllerImpl {
 
     private static final int MEDIA_UX_RESTRICTION_DEFAULT =
             CarUxRestrictions.UX_RESTRICTIONS_NO_SETUP;
     private static final int MEDIA_UX_RESTRICTION_NONE = CarUxRestrictions.UX_RESTRICTIONS_BASELINE;
 
     private int mMaxTabs;
+    private final Context mContext;
 
     @NonNull
     private AppBarListener mListener = new AppBarListener();
@@ -84,23 +86,12 @@ public class AppBarView extends Toolbar {
         protected void onHeightChanged(int height) {}
     }
 
-    public AppBarView(Context context) {
-        this(context, null);
-    }
+    public AppBarController(View view) {
+        super(view);
+        mContext = view.getContext();
+        mMaxTabs = mContext.getResources().getInteger(R.integer.max_tabs);
 
-    public AppBarView(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
-    }
-
-    public AppBarView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        init(context);
-    }
-
-    private void init(Context context) {
-        mMaxTabs = context.getResources().getInteger(R.integer.max_tabs);
-
-        mAppSelectorIntent = MediaSource.getSourceSelectorIntent(context, false);
+        mAppSelectorIntent = MediaSource.getSourceSelectorIntent(mContext, false);
 
         registerOnTabSelectedListener(tab ->
                 mListener.onTabSelected(((MediaItemTab) tab).getItem()));
@@ -110,21 +101,21 @@ public class AppBarView extends Toolbar {
         });
         registerOnSearchListener(query -> mListener.onSearch(query));
         registerToolbarHeightChangeListener(height -> mListener.onHeightChanged(height));
-        mSearch = MenuItem.Builder.createSearch(context, v -> mListener.onSearchSelection());
-        mSettings = new MenuItem.Builder(context)
+        mSearch = MenuItem.Builder.createSearch(mContext, v -> mListener.onSearchSelection());
+        mSettings = new MenuItem.Builder(mContext)
                 .setToSettings()
                 .setUxRestrictions(MEDIA_UX_RESTRICTION_DEFAULT)
                 .setOnClickListener(v -> mListener.onSettingsSelection())
                 .build();
-        mEqualizer = new MenuItem.Builder(context)
+        mEqualizer = new MenuItem.Builder(mContext)
                 .setTitle(R.string.menu_item_sound_settings_title)
                 .setIcon(R.drawable.ic_equalizer)
                 .setOnClickListener(v -> mListener.onEqualizerSelection())
                 .build();
-        mAppSelector = new MenuItem.Builder(context)
+        mAppSelector = new MenuItem.Builder(mContext)
                 .setTitle(R.string.menu_item_app_selector_title)
                 .setIcon(R.drawable.ic_app_switch)
-                .setOnClickListener(m -> getContext().startActivity(mAppSelectorIntent))
+                .setOnClickListener(m -> mContext.startActivity(mAppSelectorIntent))
                 .build();
         setMenuItems(Arrays.asList(mSearch, mEqualizer, mSettings, mAppSelector));
 

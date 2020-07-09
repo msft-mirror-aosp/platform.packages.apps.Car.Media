@@ -40,8 +40,8 @@ public class ErrorViewController extends ViewControllerBase {
     void onMediaSourceChanged(@Nullable MediaSource mediaSource) {
         super.onMediaSourceChanged(mediaSource);
 
-        mAppBarView.setListener(new BasicAppBarListener());
-        mAppBarView.setTitle(getAppBarDefaultTitle(mediaSource));
+        mAppBarController.setListener(new BasicAppBarListener());
+        mAppBarController.setTitle(getAppBarDefaultTitle(mediaSource));
 
         ViewUtils.hideViewAnimated(mErrorMessageView, 0);
         ViewUtils.hideViewAnimated(mErrorButton, 0);
