@@ -21,12 +21,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/app_bar_guideline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_begin="@dimen/car_ui_toolbar_first_row_height"/>
+    <include layout="@layout/ui_guides"/>
 
     <Space
         android:id="@+id/control_bar_first_row_guideline"
@@ -50,13 +45,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <com.android.car.ui.toolbar.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:title="@string/fragment_playback_title"
-        app:layout_constraintTop_toTopOf="parent"
-        app:car_ui_state="subpage"/>
+    <include layout="@layout/car_ui_base_layout_toolbar"/>
 
     <include
         style="@style/MetadataContainerStyle"
@@ -64,7 +53,7 @@
         layout="@layout/metadata_normal"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/app_bar_guideline"
+        app:layout_constraintTop_toBottomOf="@id/ui_content_top_guideline"
         app:layout_constraintBottom_toTopOf="@+id/control_bar_first_row_guideline"/>
 
     <!-- @id/seek_bar should be hidden when @id/control_bar_scrim is expanded, and shown when the
@@ -102,7 +91,7 @@
         android:id="@+id/queue_list_top_constraint"
         android:layout_width="match_parent"
         android:layout_height="@dimen/fragment_playback_queue_overlap_top"
-        app:layout_constraintBottom_toBottomOf="@+id/app_bar_guideline"/>
+        app:layout_constraintBottom_toBottomOf="@+id/ui_content_top_guideline"/>
 
     <Space
         android:id="@+id/queue_list_bottom_constraint"

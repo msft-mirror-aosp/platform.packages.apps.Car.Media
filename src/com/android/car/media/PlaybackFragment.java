@@ -21,7 +21,6 @@ import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
@@ -51,6 +50,7 @@ import com.android.car.media.common.MetadataController;
 import com.android.car.media.common.PlaybackControlsActionBar;
 import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaSourceViewModel;
+import com.android.car.media.widgets.AppBarController;
 import com.android.car.ui.toolbar.MenuItem;
 import com.android.car.ui.toolbar.Toolbar;
 
@@ -69,6 +69,7 @@ public class PlaybackFragment extends Fragment {
     private static final String TAG = "PlaybackFragment";
 
     private ImageBinder<MediaItemMetadata.ArtworkRef> mAlbumArtBinder;
+    private AppBarController mAppBarController;
     private BackgroundImageView mAlbumBackground;
     private View mBackgroundScrim;
     private View mControlBarScrim;
@@ -77,7 +78,6 @@ public class PlaybackFragment extends Fragment {
     private RecyclerView mQueue;
     private ViewGroup mSeekBarContainer;
     private SeekBar mSeekBar;
-    private Toolbar mToolbar;
     private List<View> mViewsToHideForCustomActions;
     private List<View> mViewsToHideWhenQueueIsVisible;
     private List<View> mViewsToShowWhenQueueIsVisible;
@@ -357,26 +357,27 @@ public class PlaybackFragment extends Fragment {
         mQueue = view.findViewById(R.id.queue_list);
         mSeekBarContainer = view.findViewById(R.id.seek_bar_container);
         mSeekBar = view.findViewById(R.id.seek_bar);
-        mToolbar = view.findViewById(R.id.toolbar);
-        if (mToolbar != null) {
-            mToolbar.setBackgroundShown(false);
-            mToolbar.setNavButtonMode(Toolbar.NavButtonMode.DOWN);
+        mAppBarController = new AppBarController(view);
 
-            // Notify listeners when toolbar's down button is pressed.
-            mToolbar.registerOnBackListener(() -> {
-                if (mListener != null) {
-                    mListener.onCollapse();
-                }
-                return true;
-            });
+        mAppBarController.setTitle(R.string.fragment_playback_title);
+        mAppBarController.setBackgroundShown(false);
+        mAppBarController.setNavButtonMode(Toolbar.NavButtonMode.DOWN);
 
-            // Update toolbar's logo
-            MediaSourceViewModel mediaSourceViewModel = getMediaSourceViewModel();
-            mediaSourceViewModel.getPrimaryMediaSource().observe(this, mediaSource ->
-                mToolbar.setLogo(mediaSource != null
-                        ? new BitmapDrawable(getResources(), mediaSource.getCroppedPackageIcon())
-                        : null));
-        }
+        // Notify listeners when toolbar's down button is pressed.
+        mAppBarController.registerOnBackListener(() -> {
+            if (mListener != null) {
+                mListener.onCollapse();
+            }
+            return true;
+        });
+
+        // Update toolbar's logo
+        MediaSourceViewModel mediaSourceViewModel = getMediaSourceViewModel();
+        mediaSourceViewModel.getPrimaryMediaSource().observe(this, mediaSource ->
+                mAppBarController.setLogo(mediaSource != null
+                    ? new BitmapDrawable(getResources(), mediaSource.getCroppedPackageIcon())
+                    : null));
+
         mBackgroundScrim = view.findViewById(R.id.background_scrim);
         ViewUtils.setVisible(mBackgroundScrim, false);
         mControlBarScrim = view.findViewById(R.id.control_bar_scrim);
@@ -453,6 +454,7 @@ public class PlaybackFragment extends Fragment {
                 item -> mAlbumArtBinder.setImage(PlaybackFragment.this.getContext(),
                         item != null ? item.getArtworkKey() : null));
 
+        new GuidelinesUpdater(requireActivity(), view);
         return view;
     }
 
@@ -583,17 +585,15 @@ public class PlaybackFragment extends Fragment {
     private void setQueueVisible(boolean visible) {
         mQueueIsVisible = visible;
 
-        if (mToolbar != null) {
-            if (mHasQueue) {
-                MenuItem queueMenuItem = MenuItem.builder(getContext())
-                        .setIcon(R.drawable.ic_queue_button)
-                        .setActivated(mQueueIsVisible)
-                        .setOnClickListener(button -> toggleQueueVisibility())
-                        .build();
-                mToolbar.setMenuItems(Collections.singletonList(queueMenuItem));
-            } else {
-                mToolbar.setMenuItems(Collections.emptyList());
-            }
+        if (mHasQueue) {
+            MenuItem queueMenuItem = MenuItem.builder(getContext())
+                    .setIcon(R.drawable.ic_queue_button)
+                    .setActivated(mQueueIsVisible)
+                    .setOnClickListener(button -> toggleQueueVisibility())
+                    .build();
+            mAppBarController.setMenuItems(Collections.singletonList(queueMenuItem));
+        } else {
+            mAppBarController.setMenuItems(Collections.emptyList());
         }
 
         if (mQueueIsVisible) {

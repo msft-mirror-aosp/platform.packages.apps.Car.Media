@@ -40,7 +40,7 @@ import androidx.fragment.app.FragmentActivity;
 import com.android.car.apps.common.util.CarPackageManagerUtils;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.common.source.MediaSourceViewModel;
-import com.android.car.media.widgets.AppBarView;
+import com.android.car.media.widgets.AppBarController;
 
 /**
  * Functionality common to content view controllers. It mainly handles the AppBar view,
@@ -55,7 +55,7 @@ abstract class ViewControllerBase {
     final FragmentActivity mActivity;
     final int mFadeDuration;
     final View mContent;
-    final AppBarView mAppBarView;
+    final AppBarController mAppBarController;
     final MediaSourceViewModel mMediaSourceVM;
 
     private Intent mCurrentSourcePreferences;
@@ -70,9 +70,9 @@ abstract class ViewControllerBase {
         LayoutInflater inflater = LayoutInflater.from(container.getContext());
         mContent = inflater.inflate(resource, container, false);
 
-        mAppBarView = mContent.findViewById(R.id.app_bar);
-        mAppBarView.setSearchSupported(false);
-        mAppBarView.setHasEqualizer(false);
+        mAppBarController = new AppBarController(mContent);
+        mAppBarController.setSearchSupported(false);
+        mAppBarController.setHasEqualizer(false);
 
         container.addView(mContent);
 
@@ -80,6 +80,8 @@ abstract class ViewControllerBase {
 
         mMediaSourceVM = MediaSourceViewModel.get(activity.getApplication(),
                 MEDIA_SOURCE_MODE_BROWSE);
+
+        new GuidelinesUpdater(activity, mContent);
     }
 
     CharSequence getAppBarDefaultTitle(@Nullable MediaSource mediaSource) {
@@ -87,7 +89,7 @@ abstract class ViewControllerBase {
                 : mActivity.getResources().getString(R.string.media_app_title);
     }
 
-    class BasicAppBarListener extends AppBarView.AppBarListener {
+    class BasicAppBarListener extends AppBarController.AppBarListener {
         @Override
         protected void onSettingsSelection() {
             if (Log.isLoggable(TAG, Log.DEBUG)) {
@@ -127,8 +129,8 @@ abstract class ViewControllerBase {
             packageName = mediaSource.getPackageName();
         }
 
-        mAppBarView.setLogo(icon);
-        mAppBarView.setSearchIcon(searchIcon);
+        mAppBarController.setLogo(icon);
+        mAppBarController.setSearchIcon(searchIcon);
         updateSourcePreferences(packageName);
     }
 
@@ -142,13 +144,13 @@ abstract class ViewControllerBase {
             if (info != null && info.activityInfo != null && info.activityInfo.exported) {
                 mCurrentSourcePreferences = new Intent(prefsIntent.getAction())
                         .setClassName(info.activityInfo.packageName, info.activityInfo.name);
-                mAppBarView.setSettingsDistractionOptimized(
+                mAppBarController.setSettingsDistractionOptimized(
                         CarPackageManagerUtils.isDistractionOptimized(
                                 mCarPackageManager, info.activityInfo));
             }
         }
-        mAppBarView.setHasSettings(mCurrentSourcePreferences != null);
-        mAppBarView.setHasEqualizer(mShouldShowSoundSettings);
+        mAppBarController.setHasSettings(mCurrentSourcePreferences != null);
+        mAppBarController.setHasEqualizer(mShouldShowSoundSettings);
     }
 
 
