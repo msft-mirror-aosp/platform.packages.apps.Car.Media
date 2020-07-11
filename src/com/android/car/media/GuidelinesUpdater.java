@@ -38,9 +38,9 @@ class GuidelinesUpdater implements InsetsChangedListener {
     public GuidelinesUpdater(Activity activity, View guidedView) {
         mGuidedView = guidedView;
 
-        View baseLayout = mGuidedView.findViewWithTag("CarUiBaseLayoutToolbar");
-        View content = CarUiUtils.requireViewByRefId(baseLayout, R.id.content);
-        InsetsUpdater insetsUpdater = new InsetsUpdater(activity, baseLayout, content, this);
+        View content = CarUiUtils.requireViewByRefId(mGuidedView,
+                R.id.car_ui_base_layout_content_container);
+        InsetsUpdater insetsUpdater = new InsetsUpdater(activity, mGuidedView, content, this);
     }
 
     // Read the results of the base layout measurements and adjust the guidelines to match
