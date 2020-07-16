@@ -25,7 +25,6 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import com.android.car.ui.baselayout.Insets;
 import com.android.car.ui.baselayout.InsetsChangedListener;
 import com.android.car.ui.core.BaseLayoutController;
-import com.android.car.ui.utils.CarUiUtils;
 
 /**
  * Applies the insets computed by the car-ui-lib to the spacer views in ui_guides.xml. This allows
@@ -38,9 +37,10 @@ class GuidelinesUpdater implements InsetsChangedListener {
     public GuidelinesUpdater(Activity activity, View guidedView) {
         mGuidedView = guidedView;
 
-        View content = CarUiUtils.requireViewByRefId(mGuidedView,
-                R.id.car_ui_base_layout_content_container);
-        InsetsUpdater insetsUpdater = new InsetsUpdater(activity, mGuidedView, content, this);
+        BaseLayoutController.InsetsUpdater insetsUpdater =
+                new BaseLayoutController.InsetsUpdater(activity, mGuidedView, mGuidedView);
+        insetsUpdater.replaceInsetsChangedListenerWith(this);
+        insetsUpdater.installListeners();
     }
 
     // Read the results of the base layout measurements and adjust the guidelines to match
@@ -66,26 +66,5 @@ class GuidelinesUpdater implements InsetsChangedListener {
                 (ConstraintLayout.LayoutParams)bottomPad.getLayoutParams();
         bottom.setMargins(0, 0, 0, insets.getBottom());
         bottomPad.setLayoutParams(bottom);
-    }
-
-
-
-    private static class InsetsUpdater extends BaseLayoutController.InsetsUpdater {
-
-        private final View mContentView;
-
-        InsetsUpdater(Activity activity, View baseLayout, View contentView,
-                InsetsChangedListener listener) {
-            super(activity, baseLayout, contentView);
-            replaceInsetsChangedListenerWith(listener);
-            mContentView = contentView;
-
-            installListeners();
-        }
-
-        @Override
-        protected View getContentView() {
-            return mContentView;
-        }
     }
 }
