@@ -40,4 +40,5 @@
     <string name="error_code_end_of_queue" msgid="2842652212154074468">"Δεν υπάρχει κάτι άλλο στην ουρά."</string>
     <string name="service_notification_title" msgid="8085444675783592744">"Σύνδεση σε πολυμέσα"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"Ρυθμίσεις ήχου"</string>
+    <string name="menu_item_app_selector_title" msgid="4587248991114338595">"Να γίνει εναλλαγή μεταξύ εφαρμογών"</string>
 </resources>

@@ -25,7 +25,7 @@
     <string name="media_browse_more" msgid="6330295386693311592">"Дагы…"</string>
     <string name="media_app_title" msgid="94717597743776797">"Медиа"</string>
     <string name="search_hint" msgid="5401750426238148416">"Ырларды, аткаруучуларды издөө ж.б..."</string>
-    <string name="fragment_playback_title" msgid="5014481549024607614">"Азыр эмне ойноп жатат?"</string>
+    <string name="fragment_playback_title" msgid="5014481549024607614">"Эмне ойноп жатат?"</string>
     <string name="default_error_message" msgid="6365377134388091079">"Бир жерден ката кетти. Бир аздан кийин кайталап көрүңүз."</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"Аны азыр аткаруу мүмкүн эмес"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"Бул колдонмо аны аткара албайт"</string>
@@ -40,4 +40,5 @@
     <string name="error_code_end_of_queue" msgid="2842652212154074468">"Кезекте эч нерсе жок"</string>
     <string name="service_notification_title" msgid="8085444675783592744">"Медиа булагына туташууда"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"Добуштун жөндөөлөрү"</string>
+    <string name="menu_item_app_selector_title" msgid="4587248991114338595">"Колдонмолорду которуштуруу"</string>
 </resources>

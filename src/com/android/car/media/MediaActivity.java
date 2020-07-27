@@ -298,8 +298,11 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
                     showToast(displayedMessage);
                 }
             } else {
+                boolean isDistractionOptimized = intent == null
+                        ? false
+                        : CarPackageManagerUtils.isDistractionOptimized(mCarPackageManager, intent);
                 getErrorController().setError(displayedMessage, label, intent,
-                        CarPackageManagerUtils.isDistractionOptimized(mCarPackageManager, intent));
+                        isDistractionOptimized);
                 isFatalError = true;
             }
         }

@@ -40,4 +40,5 @@
     <string name="error_code_end_of_queue" msgid="2842652212154074468">"Không có nội dung nào khác trong hàng đợi"</string>
     <string name="service_notification_title" msgid="8085444675783592744">"Đang kết nối với nội dung nghe nhìn"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"Cài đặt âm thanh"</string>
+    <string name="menu_item_app_selector_title" msgid="4587248991114338595">"Chuyển đổi ứng dụng"</string>
 </resources>

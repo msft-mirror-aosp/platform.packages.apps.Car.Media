@@ -40,4 +40,5 @@
     <string name="error_code_end_of_queue" msgid="2842652212154074468">"Ништа друго није стављено у ред"</string>
     <string name="service_notification_title" msgid="8085444675783592744">"Повезује се са медијима"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"Подешавања звука"</string>
+    <string name="menu_item_app_selector_title" msgid="4587248991114338595">"Пређи на другу апликацију"</string>
 </resources>
