@@ -45,6 +45,7 @@ import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.browse.MediaBrowserViewModel;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.widgets.AppBarController;
+import com.android.car.ui.FocusArea;
 import com.android.car.ui.toolbar.Toolbar;
 
 import java.util.ArrayList;
@@ -70,6 +71,7 @@ public class BrowseViewController extends ViewControllerBase {
 
     private final Callbacks mCallbacks;
 
+    private final FocusArea mFocusArea;
     private final RecyclerView mBrowseList;
     private final ImageView mErrorIcon;
     private final TextView mMessage;
@@ -78,6 +80,7 @@ public class BrowseViewController extends ViewControllerBase {
     private final int mFadeDuration;
     private final int mLoadingIndicatorDelay;
     private final boolean mIsSearchController;
+    private final boolean mSetFocusAreaHighlightBottom;
     private final MutableLiveData<Boolean> mShowSearchResults = new MutableLiveData<>();
     private final Handler mHandler = new Handler();
     /**
@@ -248,8 +251,11 @@ public class BrowseViewController extends ViewControllerBase {
 
         mLoadingIndicatorDelay = mContent.getContext().getResources()
                 .getInteger(R.integer.progress_indicator_delay);
+        mSetFocusAreaHighlightBottom = mContent.getContext().getResources().getBoolean(
+                R.bool.set_browse_list_focus_area_highlight_above_minimized_control_bar);
 
         mAppBarController.setListener(mAppBarListener);
+        mFocusArea = mContent.findViewById(R.id.focus_area);
         mBrowseList = mContent.findViewById(R.id.browse_list);
         mErrorIcon = mContent.findViewById(R.id.error_icon);
         mMessage = mContent.findViewById(R.id.error_message);
@@ -394,25 +400,24 @@ public class BrowseViewController extends ViewControllerBase {
     }
 
     private void onAppBarHeightChanged(int height) {
-        if (mBrowseList == null) {
-            return;
-        }
-
-        mBrowseList.setPadding(mBrowseList.getPaddingLeft(), height,
-                mBrowseList.getPaddingRight(), mBrowseList.getPaddingBottom());
+        int leftPadding = mBrowseList.getPaddingLeft();
+        int rightPadding = mBrowseList.getPaddingRight();
+        int bottomPadding = mBrowseList.getPaddingBottom();
+        mBrowseList.setPadding(leftPadding, height, rightPadding, bottomPadding);
+        mFocusArea.setHighlightPadding(leftPadding, height, rightPadding, bottomPadding);
     }
 
     void onPlaybackControlsChanged(boolean visible) {
-        if (mBrowseList == null) {
-            return;
-        }
-
-        Resources res = getActivity().getResources();
+        int leftPadding = mBrowseList.getPaddingLeft();
+        int topPadding = mBrowseList.getPaddingTop();
+        int rightPadding = mBrowseList.getPaddingRight();
         int bottomPadding = visible
-                ? res.getDimensionPixelOffset(R.dimen.browse_fragment_bottom_padding)
+                ? getActivity().getResources().getDimensionPixelOffset(
+                        R.dimen.browse_fragment_bottom_padding)
                 : 0;
-        mBrowseList.setPadding(mBrowseList.getPaddingLeft(), mBrowseList.getPaddingTop(),
-                mBrowseList.getPaddingRight(), bottomPadding);
+        mBrowseList.setPadding(leftPadding, topPadding, rightPadding, bottomPadding);
+        mFocusArea.setHighlightPadding(leftPadding, topPadding, rightPadding,
+                mSetFocusAreaHighlightBottom ? bottomPadding : 0);
 
         ViewGroup.MarginLayoutParams messageLayout =
                 (ViewGroup.MarginLayoutParams) mMessage.getLayoutParams();
