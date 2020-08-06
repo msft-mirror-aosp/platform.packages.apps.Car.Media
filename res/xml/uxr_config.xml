@@ -21,4 +21,10 @@
         app:id="@+id/playback_fragment_now_playing_list_uxr_config"
         app:maxLength="-1"
     />
+
+    <!-- We use a default value of -1 to denote UNLIMITED -->
+    <ListConfig
+        app:id="@+id/browse_list_uxr_config"
+        app:maxLength="-1"
+    />
 </Mapping>
