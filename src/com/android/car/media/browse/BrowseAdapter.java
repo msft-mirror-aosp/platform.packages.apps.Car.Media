@@ -59,7 +59,6 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
     private CharSequence mTitle;
     @Nullable
     private MediaItemMetadata mParentMediaItem;
-    private int mMaxSpanSize = 1;
 
     private BrowseItemViewType mRootBrowsableViewType = BrowseItemViewType.LIST_ITEM;
     private BrowseItemViewType mRootPlayableViewType = BrowseItemViewType.LIST_ITEM;
@@ -133,16 +132,6 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
         mObservers.remove(observer);
     }
 
-    /**
-     * Sets the number of columns that items can take. This method only needs to be used if the
-     * attached {@link RecyclerView} is NOT using a {@link GridLayoutManager}. This class will
-     * automatically determine this value on {@link #onAttachedToRecyclerView(RecyclerView)}
-     * otherwise.
-     */
-    public void setMaxSpanSize(int maxSpanSize) {
-        mMaxSpanSize = maxSpanSize;
-    }
-
     public void setRootBrowsableViewType(int hintValue) {
         mRootBrowsableViewType = fromMediaHint(hintValue);
     }
@@ -151,20 +140,9 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
         mRootPlayableViewType = fromMediaHint(hintValue);
     }
 
-    /**
-     * @return a {@link GridLayoutManager.SpanSizeLookup} that can be used to obtain the span size
-     * of each item in this adapter. This method is only needed if the {@link RecyclerView} is NOT
-     * using a {@link GridLayoutManager}. This class will automatically use it on\ {@link
-     * #onAttachedToRecyclerView(RecyclerView)} otherwise.
-     */
-    private GridLayoutManager.SpanSizeLookup getSpanSizeLookup() {
-        return new GridLayoutManager.SpanSizeLookup() {
-            @Override
-            public int getSpanSize(int position) {
-                BrowseItemViewType viewType = getItem(position).mViewType;
-                return viewType.getSpanSize(mMaxSpanSize);
-            }
-        };
+    public int getSpanSize(int position, int maxSpanSize) {
+        BrowseItemViewType viewType = getItem(position).mViewType;
+        return viewType.getSpanSize(maxSpanSize);
     }
 
     @NonNull
@@ -211,15 +189,6 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
     private void notify(Consumer<Observer> notification) {
         for (Observer observer : mObservers) {
             notification.accept(observer);
-        }
-    }
-
-    @Override
-    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
-        if (recyclerView.getLayoutManager() instanceof GridLayoutManager) {
-            GridLayoutManager manager = (GridLayoutManager) recyclerView.getLayoutManager();
-            mMaxSpanSize = manager.getSpanCount();
-            manager.setSpanSizeLookup(getSpanSizeLookup());
         }
     }
 

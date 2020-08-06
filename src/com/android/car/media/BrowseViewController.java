@@ -35,6 +35,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.car.apps.common.util.ViewUtils;
@@ -45,7 +46,11 @@ import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.browse.MediaBrowserViewModel;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.widgets.AppBarController;
+import com.android.car.ui.FocusArea;
+import com.android.car.ui.recyclerview.DelegatingContentLimitingAdapter;
 import com.android.car.ui.toolbar.Toolbar;
+import com.android.car.uxr.LifeCycleObserverUxrContentLimiter;
+import com.android.car.uxr.UxrContentLimiterImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,15 +74,19 @@ public class BrowseViewController extends ViewControllerBase {
             = "com.android.car.media.search_browser_view_model";
 
     private final Callbacks mCallbacks;
-
+    private final FocusArea mFocusArea;
+    private final LifeCycleObserverUxrContentLimiter mUxrContentLimiter;
     private final RecyclerView mBrowseList;
     private final ImageView mErrorIcon;
     private final TextView mMessage;
+    private final DelegatingContentLimitingAdapter mLimitedBrowseAdapter;
     private final BrowseAdapter mBrowseAdapter;
+    private int mMaxSpanSize = 1;
     private String mSearchQuery;
     private final int mFadeDuration;
     private final int mLoadingIndicatorDelay;
     private final boolean mIsSearchController;
+    private final boolean mSetFocusAreaHighlightBottom;
     private final MutableLiveData<Boolean> mShowSearchResults = new MutableLiveData<>();
     private final Handler mHandler = new Handler();
     /**
@@ -248,8 +257,11 @@ public class BrowseViewController extends ViewControllerBase {
 
         mLoadingIndicatorDelay = mContent.getContext().getResources()
                 .getInteger(R.integer.progress_indicator_delay);
+        mSetFocusAreaHighlightBottom = mContent.getContext().getResources().getBoolean(
+                R.bool.set_browse_list_focus_area_highlight_above_minimized_control_bar);
 
         mAppBarController.setListener(mAppBarListener);
+        mFocusArea = mContent.findViewById(R.id.focus_area);
         mBrowseList = mContent.findViewById(R.id.browse_list);
         mErrorIcon = mContent.findViewById(R.id.error_icon);
         mMessage = mContent.findViewById(R.id.error_message);
@@ -281,8 +293,20 @@ public class BrowseViewController extends ViewControllerBase {
                 activity.getResources().getDimensionPixelSize(R.dimen.grid_item_spacing)));
 
         mBrowseAdapter = new BrowseAdapter(mBrowseList.getContext());
-        mBrowseList.setAdapter(mBrowseAdapter);
         mBrowseAdapter.registerObserver(mBrowseAdapterObserver);
+        mLimitedBrowseAdapter = new DelegatingContentLimitingAdapter(mBrowseAdapter,
+                R.id.browse_list_uxr_config);
+        mBrowseList.setAdapter(mLimitedBrowseAdapter);
+
+        GridLayoutManager manager = (GridLayoutManager) mBrowseList.getLayoutManager();
+        mMaxSpanSize = manager.getSpanCount();
+        manager.setSpanSizeLookup(mSpanSizeLookup);
+
+
+        mUxrContentLimiter = new LifeCycleObserverUxrContentLimiter(
+                new UxrContentLimiterImpl(activity, R.xml.uxr_config));
+        mUxrContentLimiter.setAdapter(mLimitedBrowseAdapter);
+        activity.getLifecycle().addObserver(mUxrContentLimiter);
 
         mMediaBrowserViewModel.rootBrowsableHint().observe(activity,
                 mBrowseAdapter::setRootBrowsableViewType);
@@ -343,6 +367,19 @@ public class BrowseViewController extends ViewControllerBase {
         }
     };
 
+    private final GridLayoutManager.SpanSizeLookup mSpanSizeLookup =
+            new GridLayoutManager.SpanSizeLookup() {
+        @Override
+        public int getSpanSize(int position) {
+            if (mLimitedBrowseAdapter.getItemViewType(position) ==
+                    mLimitedBrowseAdapter.getScrollingLimitedMessageViewType()) {
+                return mMaxSpanSize;
+            }
+
+            return mBrowseAdapter.getSpanSize(position, mMaxSpanSize);
+        }
+    };
+
     boolean onBackPressed() {
         boolean success = navigateBack();
         if (!success && (mIsSearchController)) {
@@ -394,25 +431,24 @@ public class BrowseViewController extends ViewControllerBase {
     }
 
     private void onAppBarHeightChanged(int height) {
-        if (mBrowseList == null) {
-            return;
-        }
-
-        mBrowseList.setPadding(mBrowseList.getPaddingLeft(), height,
-                mBrowseList.getPaddingRight(), mBrowseList.getPaddingBottom());
+        int leftPadding = mBrowseList.getPaddingLeft();
+        int rightPadding = mBrowseList.getPaddingRight();
+        int bottomPadding = mBrowseList.getPaddingBottom();
+        mBrowseList.setPadding(leftPadding, height, rightPadding, bottomPadding);
+        mFocusArea.setHighlightPadding(leftPadding, height, rightPadding, bottomPadding);
     }
 
     void onPlaybackControlsChanged(boolean visible) {
-        if (mBrowseList == null) {
-            return;
-        }
-
-        Resources res = getActivity().getResources();
+        int leftPadding = mBrowseList.getPaddingLeft();
+        int topPadding = mBrowseList.getPaddingTop();
+        int rightPadding = mBrowseList.getPaddingRight();
         int bottomPadding = visible
-                ? res.getDimensionPixelOffset(R.dimen.browse_fragment_bottom_padding)
+                ? getActivity().getResources().getDimensionPixelOffset(
+                        R.dimen.browse_fragment_bottom_padding)
                 : 0;
-        mBrowseList.setPadding(mBrowseList.getPaddingLeft(), mBrowseList.getPaddingTop(),
-                mBrowseList.getPaddingRight(), bottomPadding);
+        mBrowseList.setPadding(leftPadding, topPadding, rightPadding, bottomPadding);
+        mFocusArea.setHighlightPadding(leftPadding, topPadding, rightPadding,
+                mSetFocusAreaHighlightBottom ? bottomPadding : 0);
 
         ViewGroup.MarginLayoutParams messageLayout =
                 (ViewGroup.MarginLayoutParams) mMessage.getLayoutParams();
