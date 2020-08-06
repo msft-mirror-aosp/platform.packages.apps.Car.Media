@@ -15,10 +15,10 @@
   limitations under the License.
 -->
 <androidx.constraintlayout.widget.ConstraintLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <include layout="@layout/ui_guides"/>
 
@@ -47,23 +47,26 @@
         app:layout_constraintEnd_toEndOf="@+id/ui_content_end_guideline"
         android:maxLines="3"
         android:text="@string/nothing_to_play"
-        android:visibility="gone" />
+        android:visibility="gone"/>
 
-    <com.android.car.ui.recyclerview.CarUiRecyclerView
-        android:id="@+id/browse_list"
+    <com.android.car.ui.FocusArea
+        android:id="@+id/focus_area"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintStart_toStartOf="@+id/ui_content_start_guideline"
         app:layout_constraintEnd_toEndOf="@+id/ui_content_end_guideline"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/ui_content_bottom_guideline"
-        android:clickable="true"
-        android:focusable="true"
-        android:clipToPadding="false"
-        android:visibility="gone"
-        app:layoutStyle="grid"
-        app:numOfColumns="@integer/num_browse_columns"
-    />
+        app:layout_constraintBottom_toTopOf="@+id/ui_content_bottom_guideline">
+        <com.android.car.ui.recyclerview.CarUiRecyclerView
+            android:id="@+id/browse_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clickable="true"
+            android:clipToPadding="false"
+            android:visibility="gone"
+            app:layoutStyle="grid"
+            app:numOfColumns="@integer/num_browse_columns"/>
+    </com.android.car.ui.FocusArea>
 
     <include layout="@layout/car_ui_base_layout_toolbar"/>
 
