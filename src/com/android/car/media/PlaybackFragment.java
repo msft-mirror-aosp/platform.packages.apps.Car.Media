@@ -51,8 +51,12 @@ import com.android.car.media.common.PlaybackControlsActionBar;
 import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaSourceViewModel;
 import com.android.car.media.widgets.AppBarController;
+import com.android.car.ui.recyclerview.ContentLimiting;
+import com.android.car.ui.recyclerview.ScrollingLimitedViewHolder;
 import com.android.car.ui.toolbar.MenuItem;
 import com.android.car.ui.toolbar.Toolbar;
+import com.android.car.uxr.LifeCycleObserverUxrContentLimiter;
+import com.android.car.uxr.UxrContentLimiterImpl;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,6 +72,7 @@ import java.util.Objects;
 public class PlaybackFragment extends Fragment {
     private static final String TAG = "PlaybackFragment";
 
+    private LifeCycleObserverUxrContentLimiter mUxrContentLimiter;
     private ImageBinder<MediaItemMetadata.ArtworkRef> mAlbumArtBinder;
     private AppBarController mAppBarController;
     private BackgroundImageView mAlbumBackground;
@@ -199,13 +204,47 @@ public class PlaybackFragment extends Fragment {
     }
 
 
-    private class QueueItemsAdapter extends RecyclerView.Adapter<QueueViewHolder> {
+    private class QueueItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
+            implements ContentLimiting {
 
+        private static final int CLAMPED_MESSAGE_VIEW_TYPE = -1;
+        private static final int QUEUE_ITEM_VIEW_TYPE = 0;
+
+        private UxrPivotFilter mUxrPivotFilter;
         private List<MediaItemMetadata> mQueueItems = Collections.emptyList();
         private String mCurrentTimeText = "";
         private String mMaxTimeText = "";
-        private Integer mActiveItemPos;
+        /** Index in {@link #mQueueItems}. */
+        private Integer mActiveItemIndex;
         private boolean mTimeVisible;
+        private Integer mScrollingLimitedMessageResId;
+
+        QueueItemsAdapter() {
+            mUxrPivotFilter = UxrPivotFilter.PASS_THROUGH;
+        }
+
+        @Override
+        public void setMaxItems(int maxItems) {
+            if (maxItems >= 0) {
+                mUxrPivotFilter = new UxrPivotFilterImpl(this, maxItems);
+            } else {
+                mUxrPivotFilter = UxrPivotFilter.PASS_THROUGH;
+            }
+            applyFilterToQueue();
+        }
+
+        @Override
+        public void setScrollingLimitedMessageResId(int resId) {
+            if (mScrollingLimitedMessageResId == null || mScrollingLimitedMessageResId != resId) {
+                mScrollingLimitedMessageResId = resId;
+                mUxrPivotFilter.invalidateMessagePositions();
+            }
+        }
+
+        @Override
+        public int getConfigurationId() {
+            return R.id.playback_fragment_now_playing_list_uxr_config;
+        }
 
         void setItems(@Nullable List<MediaItemMetadata> items) {
             List<MediaItemMetadata> newQueueItems =
@@ -214,62 +253,97 @@ public class PlaybackFragment extends Fragment {
                 return;
             }
             mQueueItems = newQueueItems;
-            updateActiveItem();
+            updateActiveItem(/* listIsNew */ true);
+        }
+
+        private int getActiveItemIndex() {
+            return mActiveItemIndex != null ? mActiveItemIndex : 0;
+        }
+
+        private int getQueueSize() {
+            return (mQueueItems != null) ? mQueueItems.size() : 0;
+        }
+
+
+        /**
+         * Returns the position of the active item if there is one, otherwise returns
+         * @link UxrPivotFilter#INVALID_POSITION}.
+         */
+        private int getActiveItemPosition() {
+            if (mActiveItemIndex == null) {
+                return UxrPivotFilter.INVALID_POSITION;
+            }
+            return mUxrPivotFilter.indexToPosition(mActiveItemIndex);
+        }
+
+        private void invalidateActiveItemPosition() {
+            int position = getActiveItemPosition();
+            if (position != UxrPivotFilterImpl.INVALID_POSITION) {
+                notifyItemChanged(position);
+            }
+        }
+
+        private void scrollToActiveItemPosition() {
+            int position = getActiveItemPosition();
+            if (position != UxrPivotFilterImpl.INVALID_POSITION) {
+                mQueue.scrollToPosition(position);
+            }
+        }
+
+        private void applyFilterToQueue() {
+            mUxrPivotFilter.recompute(getQueueSize(), getActiveItemIndex());
             notifyDataSetChanged();
         }
 
         // Updates mActiveItemPos, then scrolls the queue to mActiveItemPos.
         // It should be called when the active item (mActiveQueueItemId) changed or
         // the queue items (mQueueItems) changed.
-        void updateActiveItem() {
+        void updateActiveItem(boolean listIsNew) {
             if (mQueueItems == null || mActiveQueueItemId == null) {
-                mActiveItemPos = null;
+                mActiveItemIndex = null;
+                applyFilterToQueue();
                 return;
             }
             Integer activeItemPos = null;
             for (int i = 0; i < mQueueItems.size(); i++) {
-                if (mQueueItems.get(i).getQueueId() == mActiveQueueItemId) {
+                if (Objects.equals(mQueueItems.get(i).getQueueId(), mActiveQueueItemId)) {
                     activeItemPos = i;
                     break;
                 }
             }
 
-            if (mActiveItemPos != activeItemPos) {
-                if (mActiveItemPos != null) {
-                    notifyItemChanged(mActiveItemPos.intValue());
-                }
-                mActiveItemPos = activeItemPos;
-                if (mActiveItemPos != null) {
-                    mQueue.scrollToPosition(mActiveItemPos.intValue());
-                    notifyItemChanged(mActiveItemPos.intValue());
-                }
+            // Invalidate the previous active item so it gets redrawn as a normal one.
+            invalidateActiveItemPosition();
+
+            mActiveItemIndex = activeItemPos;
+            if (listIsNew) {
+                applyFilterToQueue();
+            } else {
+                mUxrPivotFilter.updatePivotIndex(getActiveItemIndex());
             }
+
+            scrollToActiveItemPosition();
+            invalidateActiveItemPosition();
         }
 
         void setCurrentTime(String currentTime) {
             if (!mCurrentTimeText.equals(currentTime)) {
                 mCurrentTimeText = currentTime;
-                if (mActiveItemPos != null) {
-                    notifyItemChanged(mActiveItemPos.intValue());
-                }
+                invalidateActiveItemPosition();
             }
         }
 
         void setMaxTime(String maxTime) {
             if (!mMaxTimeText.equals(maxTime)) {
                 mMaxTimeText = maxTime;
-                if (mActiveItemPos != null) {
-                    notifyItemChanged(mActiveItemPos.intValue());
-                }
+                invalidateActiveItemPosition();
             }
         }
 
         void setTimeVisible(boolean visible) {
             if (mTimeVisible != visible) {
                 mTimeVisible = visible;
-                if (mActiveItemPos != null) {
-                    notifyItemChanged(mActiveItemPos.intValue());
-                }
+                invalidateActiveItemPosition();
             }
         }
 
@@ -286,51 +360,83 @@ public class PlaybackFragment extends Fragment {
         }
 
         @Override
-        public QueueViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public final int getItemViewType(int position) {
+            if (mUxrPivotFilter.positionToIndex(position) == UxrPivotFilterImpl.INVALID_INDEX) {
+                return CLAMPED_MESSAGE_VIEW_TYPE;
+            } else {
+                return QUEUE_ITEM_VIEW_TYPE;
+            }
+        }
+
+        @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            if (viewType == CLAMPED_MESSAGE_VIEW_TYPE) {
+                return ScrollingLimitedViewHolder.create(parent);
+            }
             LayoutInflater inflater = LayoutInflater.from(parent.getContext());
             return new QueueViewHolder(inflater.inflate(R.layout.queue_list_item, parent, false));
         }
 
         @Override
-        public void onBindViewHolder(QueueViewHolder holder, int position) {
-            int size = mQueueItems.size();
-            if (0 <= position && position < size) {
-                holder.bind(mQueueItems.get(position));
+        public void onBindViewHolder(RecyclerView.ViewHolder vh, int position) {
+            if (vh instanceof QueueViewHolder) {
+                int index = mUxrPivotFilter.positionToIndex(position);
+                if (index != UxrPivotFilterImpl.INVALID_INDEX) {
+                    int size = mQueueItems.size();
+                    if (0 <= index && index < size) {
+                        QueueViewHolder holder = (QueueViewHolder) vh;
+                        holder.bind(mQueueItems.get(index));
+                    } else {
+                        Log.e(TAG, "onBindViewHolder pos: " + position + " gave index: " + index +
+                                " out of bounds size: " + size + " " + mUxrPivotFilter.toString());
+                    }
+                } else {
+                    Log.e(TAG, "onBindViewHolder invalid position " + position + " " +
+                            mUxrPivotFilter.toString());
+                }
+            } else if (vh instanceof ScrollingLimitedViewHolder) {
+                ScrollingLimitedViewHolder holder = (ScrollingLimitedViewHolder) vh;
+                holder.bind(mScrollingLimitedMessageResId);
             } else {
-                Log.e(TAG, "onBindViewHolder invalid position " + position + " of " + size);
+                throw new IllegalArgumentException("unknown holder class " + vh.getClass());
             }
         }
 
         @Override
-        public void onViewAttachedToWindow(@NonNull QueueViewHolder holder) {
-            super.onViewAttachedToWindow(holder);
-            holder.onViewAttachedToWindow();
+        public void onViewAttachedToWindow(@NonNull RecyclerView.ViewHolder vh) {
+            super.onViewAttachedToWindow(vh);
+            if (vh instanceof QueueViewHolder) {
+                QueueViewHolder holder = (QueueViewHolder) vh;
+                holder.onViewAttachedToWindow();
+            }
         }
 
         @Override
-        public void onViewDetachedFromWindow(@NonNull QueueViewHolder holder) {
-            super.onViewDetachedFromWindow(holder);
-            holder.onViewDetachedFromWindow();
+        public void onViewDetachedFromWindow(@NonNull RecyclerView.ViewHolder vh) {
+            super.onViewDetachedFromWindow(vh);
+            if (vh instanceof QueueViewHolder) {
+                QueueViewHolder holder = (QueueViewHolder) vh;
+                holder.onViewDetachedFromWindow();
+            }
         }
 
         @Override
         public int getItemCount() {
-            return mQueueItems.size();
-        }
-
-        void refresh() {
-            // TODO: Perform a diff between current and new content and trigger the proper
-            // RecyclerView updates.
-            this.notifyDataSetChanged();
+            return mUxrPivotFilter.getFilteredCount();
         }
 
         @Override
         public long getItemId(int position) {
-            return mQueueItems.get(position).getQueueId();
+            int index = mUxrPivotFilter.positionToIndex(position);
+            if (index != UxrPivotFilterImpl.INVALID_INDEX) {
+                return mQueueItems.get(position).getQueueId();
+            } else {
+                return RecyclerView.NO_ID;
+            }
         }
     }
 
-    private class QueueTopItemDecoration extends RecyclerView.ItemDecoration {
+    private static class QueueTopItemDecoration extends RecyclerView.ItemDecoration {
         int mHeight;
         int mDecorationPosition;
 
@@ -460,6 +566,12 @@ public class PlaybackFragment extends Fragment {
                         item != null ? item.getArtworkKey() : null));
 
         new GuidelinesUpdater(requireActivity(), view);
+
+        mUxrContentLimiter = new LifeCycleObserverUxrContentLimiter(
+                new UxrContentLimiterImpl(getContext(), R.xml.uxr_config));
+        mUxrContentLimiter.setAdapter(mQueueAdapter);
+        getLifecycle().addObserver(mUxrContentLimiter);
+
         return view;
     }
 
@@ -526,7 +638,7 @@ public class PlaybackFragment extends Fragment {
                     Long itemId = (state != null) ? state.getActiveQueueItemId() : null;
                     if (!Objects.equals(mActiveQueueItemId, itemId)) {
                         mActiveQueueItemId = itemId;
-                        mQueueAdapter.updateActiveItem();
+                        mQueueAdapter.updateActiveItem(/* listIsNew */ false);
                     }
                 });
         mQueue.setAdapter(mQueueAdapter);
