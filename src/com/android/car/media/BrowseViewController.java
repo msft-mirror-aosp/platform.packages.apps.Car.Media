@@ -35,6 +35,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.car.apps.common.util.ViewUtils;
@@ -46,7 +47,10 @@ import com.android.car.media.common.browse.MediaBrowserViewModel;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.widgets.AppBarController;
 import com.android.car.ui.FocusArea;
+import com.android.car.ui.recyclerview.DelegatingContentLimitingAdapter;
 import com.android.car.ui.toolbar.Toolbar;
+import com.android.car.uxr.LifeCycleObserverUxrContentLimiter;
+import com.android.car.uxr.UxrContentLimiterImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,12 +74,14 @@ public class BrowseViewController extends ViewControllerBase {
             = "com.android.car.media.search_browser_view_model";
 
     private final Callbacks mCallbacks;
-
     private final FocusArea mFocusArea;
+    private final LifeCycleObserverUxrContentLimiter mUxrContentLimiter;
     private final RecyclerView mBrowseList;
     private final ImageView mErrorIcon;
     private final TextView mMessage;
+    private final DelegatingContentLimitingAdapter mLimitedBrowseAdapter;
     private final BrowseAdapter mBrowseAdapter;
+    private int mMaxSpanSize = 1;
     private String mSearchQuery;
     private final int mFadeDuration;
     private final int mLoadingIndicatorDelay;
@@ -287,8 +293,20 @@ public class BrowseViewController extends ViewControllerBase {
                 activity.getResources().getDimensionPixelSize(R.dimen.grid_item_spacing)));
 
         mBrowseAdapter = new BrowseAdapter(mBrowseList.getContext());
-        mBrowseList.setAdapter(mBrowseAdapter);
         mBrowseAdapter.registerObserver(mBrowseAdapterObserver);
+        mLimitedBrowseAdapter = new DelegatingContentLimitingAdapter(mBrowseAdapter,
+                R.id.browse_list_uxr_config);
+        mBrowseList.setAdapter(mLimitedBrowseAdapter);
+
+        GridLayoutManager manager = (GridLayoutManager) mBrowseList.getLayoutManager();
+        mMaxSpanSize = manager.getSpanCount();
+        manager.setSpanSizeLookup(mSpanSizeLookup);
+
+
+        mUxrContentLimiter = new LifeCycleObserverUxrContentLimiter(
+                new UxrContentLimiterImpl(activity, R.xml.uxr_config));
+        mUxrContentLimiter.setAdapter(mLimitedBrowseAdapter);
+        activity.getLifecycle().addObserver(mUxrContentLimiter);
 
         mMediaBrowserViewModel.rootBrowsableHint().observe(activity,
                 mBrowseAdapter::setRootBrowsableViewType);
@@ -346,6 +364,19 @@ public class BrowseViewController extends ViewControllerBase {
         public void run() {
             mMessage.setText(R.string.browser_loading);
             ViewUtils.showViewAnimated(mMessage, mFadeDuration);
+        }
+    };
+
+    private final GridLayoutManager.SpanSizeLookup mSpanSizeLookup =
+            new GridLayoutManager.SpanSizeLookup() {
+        @Override
+        public int getSpanSize(int position) {
+            if (mLimitedBrowseAdapter.getItemViewType(position) ==
+                    mLimitedBrowseAdapter.getScrollingLimitedMessageViewType()) {
+                return mMaxSpanSize;
+            }
+
+            return mBrowseAdapter.getSpanSize(position, mMaxSpanSize);
         }
     };
 
