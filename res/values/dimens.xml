@@ -40,6 +40,10 @@
     <!-- Size of the thumb in the playback seekbar -->
     <dimen name="playback_seekbar_thumb_height">16dp</dimen>
     <dimen name="playback_seekbar_thumb_width">16dp</dimen>
+    <dimen name="playback_seekbar_thumb_inner_ring_inner_radius">8dp</dimen>
+    <dimen name="playback_seekbar_thumb_inner_ring_thickness">8dp</dimen>
+    <dimen name="playback_seekbar_thumb_outer_ring_inner_radius">16dp</dimen>
+    <dimen name="playback_seekbar_thumb_outer_ring_thickness">8dp</dimen>
     <dimen name="playback_seekbar_thumb_offset">0px</dimen>
     <!-- Paddings of playback seekbar -->
     <dimen name="playback_seekbar_padding_x">0dp</dimen>

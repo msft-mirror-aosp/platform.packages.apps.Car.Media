@@ -21,8 +21,11 @@ import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Size;
@@ -55,6 +58,7 @@ import com.android.car.ui.recyclerview.ContentLimiting;
 import com.android.car.ui.recyclerview.ScrollingLimitedViewHolder;
 import com.android.car.ui.toolbar.MenuItem;
 import com.android.car.ui.toolbar.Toolbar;
+import com.android.car.ui.utils.DirectManipulationHelper;
 import com.android.car.uxr.LifeCycleObserverUxrContentLimiter;
 import com.android.car.uxr.UxrContentLimiterImpl;
 
@@ -463,6 +467,7 @@ public class PlaybackFragment extends Fragment {
         mQueue = view.findViewById(R.id.queue_list);
         mSeekBarContainer = view.findViewById(R.id.seek_bar_container);
         mSeekBar = view.findViewById(R.id.seek_bar);
+        DirectManipulationHelper.setSupportsRotateDirectly(mSeekBar, true);
         mAppBarController = new AppBarController(view);
 
         mAppBarController.setTitle(R.string.fragment_playback_title);
@@ -518,15 +523,13 @@ public class PlaybackFragment extends Fragment {
                 if (useMediaSourceColor) {
                     getPlaybackViewModel().getMediaSourceColors().observe(getViewLifecycleOwner(),
                             sourceColors -> {
-                                int color = sourceColors != null ? sourceColors.getAccentColor(
-                                        defaultColor)
+                                int color = sourceColors != null
+                                        ? sourceColors.getAccentColor(defaultColor)
                                         : defaultColor;
-                                mSeekBar.setThumbTintList(ColorStateList.valueOf(color));
-                                mSeekBar.setProgressTintList(ColorStateList.valueOf(color));
+                                setSeekBarColor(color);
                             });
                 } else {
-                    mSeekBar.setThumbTintList(ColorStateList.valueOf(defaultColor));
-                    mSeekBar.setProgressTintList(ColorStateList.valueOf(defaultColor));
+                    setSeekBarColor(defaultColor);
                 }
             } else {
                 mSeekBar.setVisibility(View.GONE);
@@ -757,6 +760,24 @@ public class PlaybackFragment extends Fragment {
 
     private MediaSourceViewModel getMediaSourceViewModel() {
         return MediaSourceViewModel.get(getActivity().getApplication(), MEDIA_SOURCE_MODE_BROWSE);
+    }
+
+    private void setSeekBarColor(int color) {
+        mSeekBar.setProgressTintList(ColorStateList.valueOf(color));
+
+        // If the thumb drawable consists of a center drawable, only change the color of the center
+        // drawable. Otherwise change the color of the entire thumb drawable.
+        Drawable thumb = mSeekBar.getThumb();
+        if (thumb instanceof LayerDrawable) {
+            LayerDrawable thumbDrawable = (LayerDrawable) thumb;
+            Drawable thumbCenter = thumbDrawable.findDrawableByLayerId(R.id.thumb_center);
+            if (thumbCenter != null) {
+                thumbCenter.setColorFilter(color, PorterDuff.Mode.SRC);
+                thumbDrawable.setDrawableByLayerId(R.id.thumb_center, thumbCenter);
+                return;
+            }
+        }
+        mSeekBar.setThumbTintList(ColorStateList.valueOf(color));
     }
 
     /**
