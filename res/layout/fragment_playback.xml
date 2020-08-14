@@ -77,13 +77,13 @@
             android:clickable="false"
             android:paddingEnd="@dimen/playback_seekbar_padding_x"
             android:paddingStart="@dimen/playback_seekbar_padding_x"
-            android:progressDrawable="@drawable/seekbar_background"
+            android:progressDrawable="@drawable/seekbar_progress"
             android:thumb="@drawable/seekbar_thumb"
             android:thumbOffset="@dimen/playback_seekbar_thumb_offset"
             android:splitTrack="false"
             android:progressTint="@color/progress_bar_highlight"
             android:progressBackgroundTint="@color/progress_bar_background"
-            android:background="@null"/>
+            android:foreground="@drawable/seekbar_foreground"/>
     </com.android.car.ui.FocusArea>
 
     <Space
