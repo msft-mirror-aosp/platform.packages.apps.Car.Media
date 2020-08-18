@@ -44,7 +44,7 @@ import com.android.car.media.widgets.AppBarController;
 
 /**
  * Functionality common to content view controllers. It mainly handles the AppBar view,
- * which is common to all them.
+ * which is common to all of them.
  */
 abstract class ViewControllerBase {
     private static final String TAG = "ViewControllerBase";
