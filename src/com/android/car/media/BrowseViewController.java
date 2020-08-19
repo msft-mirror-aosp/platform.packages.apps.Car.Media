@@ -43,6 +43,7 @@ import com.android.car.arch.common.FutureData;
 import com.android.car.media.browse.BrowseAdapter;
 import com.android.car.media.common.GridSpacingItemDecoration;
 import com.android.car.media.common.MediaItemMetadata;
+import com.android.car.media.common.browse.BrowsedMediaItems;
 import com.android.car.media.common.browse.MediaBrowserViewModel;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.widgets.AppBarController;
@@ -563,18 +564,7 @@ public class BrowseViewController extends ViewControllerBase {
         }
     }
 
-    /**
-     * Filters the items that are valid for the root (tabs) or the current node. Returns null when
-     * the given list is null to preserve its error signal.
-     */
-    @Nullable
-    private List<MediaItemMetadata> filterItems(boolean forRoot,
-            @Nullable List<MediaItemMetadata> items) {
-        if (items == null) return null;
-        Predicate<MediaItemMetadata> predicate = forRoot ? MediaItemMetadata::isBrowsable
-                : item -> (item.isPlayable() || item.isBrowsable());
-        return items.stream().filter(predicate).collect(Collectors.toList());
-    }
+
 
     private void onItemsUpdate(boolean forRoot, FutureData<List<MediaItemMetadata>> futureData) {
 
@@ -608,7 +598,8 @@ public class BrowseViewController extends ViewControllerBase {
 
         stopLoadingIndicator();
 
-        List<MediaItemMetadata> items = filterItems(forRoot, futureData.getData());
+        List<MediaItemMetadata> items =
+                BrowsedMediaItems.filterItems(forRoot, futureData.getData());
         if (forRoot) {
             boolean browseTreeHasChildren = items != null && !items.isEmpty();
             if (Log.isLoggable(TAG, Log.INFO)) {
