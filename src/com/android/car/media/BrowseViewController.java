@@ -450,6 +450,9 @@ public class BrowseViewController extends ViewControllerBase {
         mBrowseList.setPadding(leftPadding, topPadding, rightPadding, bottomPadding);
         mFocusArea.setHighlightPadding(leftPadding, topPadding, rightPadding,
                 mSetFocusAreaHighlightBottom ? bottomPadding : 0);
+        // Set the bottom offset to bottomPadding regardless of mSetFocusAreaHighlightBottom so that
+        // RotaryService can find the correct target when the user nudges the rotary controller.
+        mFocusArea.setBoundsOffset(leftPadding, topPadding, rightPadding, bottomPadding);
 
         ViewGroup.MarginLayoutParams messageLayout =
                 (ViewGroup.MarginLayoutParams) mMessage.getLayoutParams();

@@ -655,8 +655,9 @@ public class PlaybackFragment extends Fragment {
 
         getPlaybackViewModel().hasQueue().observe(getViewLifecycleOwner(), hasQueue -> {
             boolean enableQueue = (hasQueue != null) && hasQueue;
-            mQueueIsVisible = mViewModel.getQueueVisible();
-            setHasQueue(enableQueue);
+            boolean isQueueVisible = enableQueue && mViewModel.getQueueVisible();
+
+            setQueueState(enableQueue, isQueueVisible);
         });
         getPlaybackViewModel().getProgress().observe(getViewLifecycleOwner(),
                 playbackProgress ->
@@ -693,7 +694,7 @@ public class PlaybackFragment extends Fragment {
      */
     private void toggleQueueVisibility() {
         boolean updatedQueueVisibility = !mQueueIsVisible;
-        setQueueVisible(updatedQueueVisibility);
+        setQueueState(mHasQueue, updatedQueueVisibility);
 
         // When the visibility of queue is changed by the user, save the visibility into ViewModel
         // so that we can restore PlaybackFragment properly when needed. If it's changed by media
@@ -702,7 +703,12 @@ public class PlaybackFragment extends Fragment {
         mViewModel.setQueueVisible(updatedQueueVisibility);
     }
 
-    private void setQueueVisible(boolean visible) {
+    private void setQueueState(boolean hasQueue, boolean visible) {
+        if (mHasQueue == hasQueue && mQueueIsVisible == visible) {
+            return;
+        }
+
+        mHasQueue = hasQueue;
         mQueueIsVisible = visible;
 
         if (mHasQueue) {
@@ -727,12 +733,6 @@ public class PlaybackFragment extends Fragment {
             ViewUtils.setVisible(mViewsToShowImmediatelyWhenQueueIsVisible, false);
             ViewUtils.setVisible(mViewsToHideImmediatelyWhenQueueIsVisible, true);
         }
-    }
-
-    /** Sets whether the source has a queue. */
-    private void setHasQueue(boolean hasQueue) {
-        mHasQueue = hasQueue;
-        setQueueVisible(hasQueue && mQueueIsVisible);
     }
 
     private void onQueueItemClicked(MediaItemMetadata item) {
