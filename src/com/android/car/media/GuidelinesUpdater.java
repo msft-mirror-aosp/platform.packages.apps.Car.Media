@@ -26,6 +26,9 @@ import com.android.car.ui.baselayout.Insets;
 import com.android.car.ui.baselayout.InsetsChangedListener;
 import com.android.car.ui.core.BaseLayoutController;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Applies the insets computed by the car-ui-lib to the spacer views in ui_guides.xml. This allows
  * the Media app to have different instances of the application bar.
@@ -33,6 +36,7 @@ import com.android.car.ui.core.BaseLayoutController;
 class GuidelinesUpdater implements InsetsChangedListener {
 
     private final View mGuidedView;
+    private final Set<InsetsChangedListener> mListeners = new HashSet<>();
 
     public GuidelinesUpdater(Activity activity, View guidedView) {
         mGuidedView = guidedView;
@@ -41,6 +45,10 @@ class GuidelinesUpdater implements InsetsChangedListener {
                 new BaseLayoutController.InsetsUpdater(activity, mGuidedView, mGuidedView);
         insetsUpdater.replaceInsetsChangedListenerWith(this);
         insetsUpdater.installListeners();
+    }
+
+    public void addListener(InsetsChangedListener listener) {
+        mListeners.add(listener);
     }
 
     // Read the results of the base layout measurements and adjust the guidelines to match
@@ -66,5 +74,9 @@ class GuidelinesUpdater implements InsetsChangedListener {
                 (ConstraintLayout.LayoutParams)bottomPad.getLayoutParams();
         bottom.setMargins(0, 0, 0, insets.getBottom());
         bottomPad.setLayoutParams(bottom);
+
+        for (InsetsChangedListener listener : mListeners) {
+            listener.onCarUiInsetsChanged(insets);
+        }
     }
 }

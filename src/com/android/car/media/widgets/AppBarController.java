@@ -79,11 +79,6 @@ public class AppBarController extends ToolbarControllerImpl {
          * Invoked when the user clicks on the search button
          */
         protected void onSearchSelection() {}
-
-        /**
-         * Invoked when the height of the toolbar changes
-         */
-        protected void onHeightChanged(int height) {}
     }
 
     public AppBarController(View view) {
@@ -100,7 +95,6 @@ public class AppBarController extends ToolbarControllerImpl {
             return true;
         });
         registerOnSearchListener(query -> mListener.onSearch(query));
-        registerToolbarHeightChangeListener(height -> mListener.onHeightChanged(height));
         mSearch = MenuItem.Builder.createSearch(mContext, v -> mListener.onSearchSelection());
         mSettings = new MenuItem.Builder(mContext)
                 .setToSettings()
