@@ -704,34 +704,31 @@ public class PlaybackFragment extends Fragment {
     }
 
     private void setQueueState(boolean hasQueue, boolean visible) {
-        if (mHasQueue == hasQueue && mQueueIsVisible == visible) {
-            return;
+        if (mHasQueue != hasQueue) {
+            mHasQueue = hasQueue;
+            if (mHasQueue) {
+                MenuItem queueMenuItem = MenuItem.builder(getContext())
+                        .setIcon(R.drawable.ic_queue_button)
+                        .setActivated(mQueueIsVisible)
+                        .setOnClickListener(button -> toggleQueueVisibility())
+                        .build();
+                mAppBarController.setMenuItems(Collections.singletonList(queueMenuItem));
+            } else {
+                mAppBarController.setMenuItems(Collections.emptyList());
+            }
         }
 
-        mHasQueue = hasQueue;
-        mQueueIsVisible = visible;
-
-        if (mHasQueue) {
-            MenuItem queueMenuItem = MenuItem.builder(getContext())
-                    .setIcon(R.drawable.ic_queue_button)
-                    .setActivated(mQueueIsVisible)
-                    .setOnClickListener(button -> toggleQueueVisibility())
-                    .build();
-            mAppBarController.setMenuItems(Collections.singletonList(queueMenuItem));
-        } else {
-            mAppBarController.setMenuItems(Collections.emptyList());
-        }
-
-        if (mQueueIsVisible) {
-            ViewUtils.showViewsAnimated(mViewsToShowWhenQueueIsVisible, mFadeDuration);
-            ViewUtils.hideViewsAnimated(mViewsToHideWhenQueueIsVisible, mFadeDuration);
-            ViewUtils.setVisible(mViewsToShowImmediatelyWhenQueueIsVisible, true);
-            ViewUtils.setVisible(mViewsToHideImmediatelyWhenQueueIsVisible, false);
-        } else {
-            ViewUtils.hideViewsAnimated(mViewsToShowWhenQueueIsVisible, mFadeDuration);
-            ViewUtils.showViewsAnimated(mViewsToHideWhenQueueIsVisible, mFadeDuration);
-            ViewUtils.setVisible(mViewsToShowImmediatelyWhenQueueIsVisible, false);
-            ViewUtils.setVisible(mViewsToHideImmediatelyWhenQueueIsVisible, true);
+        if (mQueueIsVisible != visible) {
+            mQueueIsVisible = visible;
+            if (mQueueIsVisible) {
+                ViewUtils.showViewsAnimated(mViewsToShowWhenQueueIsVisible, mFadeDuration);
+                ViewUtils.hideViewsAnimated(mViewsToHideWhenQueueIsVisible, mFadeDuration);
+            } else {
+                ViewUtils.hideViewsAnimated(mViewsToShowWhenQueueIsVisible, mFadeDuration);
+                ViewUtils.showViewsAnimated(mViewsToHideWhenQueueIsVisible, mFadeDuration);
+            }
+            ViewUtils.setVisible(mViewsToShowImmediatelyWhenQueueIsVisible, mQueueIsVisible);
+            ViewUtils.setVisible(mViewsToHideImmediatelyWhenQueueIsVisible, !mQueueIsVisible);
         }
     }
 
