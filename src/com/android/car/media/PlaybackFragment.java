@@ -21,8 +21,11 @@ import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Size;
@@ -55,6 +58,7 @@ import com.android.car.ui.recyclerview.ContentLimiting;
 import com.android.car.ui.recyclerview.ScrollingLimitedViewHolder;
 import com.android.car.ui.toolbar.MenuItem;
 import com.android.car.ui.toolbar.Toolbar;
+import com.android.car.ui.utils.DirectManipulationHelper;
 import com.android.car.uxr.LifeCycleObserverUxrContentLimiter;
 import com.android.car.uxr.UxrContentLimiterImpl;
 
@@ -463,6 +467,7 @@ public class PlaybackFragment extends Fragment {
         mQueue = view.findViewById(R.id.queue_list);
         mSeekBarContainer = view.findViewById(R.id.seek_bar_container);
         mSeekBar = view.findViewById(R.id.seek_bar);
+        DirectManipulationHelper.setSupportsRotateDirectly(mSeekBar, true);
         mAppBarController = new AppBarController(view);
 
         mAppBarController.setTitle(R.string.fragment_playback_title);
@@ -518,15 +523,13 @@ public class PlaybackFragment extends Fragment {
                 if (useMediaSourceColor) {
                     getPlaybackViewModel().getMediaSourceColors().observe(getViewLifecycleOwner(),
                             sourceColors -> {
-                                int color = sourceColors != null ? sourceColors.getAccentColor(
-                                        defaultColor)
+                                int color = sourceColors != null
+                                        ? sourceColors.getAccentColor(defaultColor)
                                         : defaultColor;
-                                mSeekBar.setThumbTintList(ColorStateList.valueOf(color));
-                                mSeekBar.setProgressTintList(ColorStateList.valueOf(color));
+                                setSeekBarColor(color);
                             });
                 } else {
-                    mSeekBar.setThumbTintList(ColorStateList.valueOf(defaultColor));
-                    mSeekBar.setProgressTintList(ColorStateList.valueOf(defaultColor));
+                    setSeekBarColor(defaultColor);
                 }
             } else {
                 mSeekBar.setVisibility(View.GONE);
@@ -652,8 +655,9 @@ public class PlaybackFragment extends Fragment {
 
         getPlaybackViewModel().hasQueue().observe(getViewLifecycleOwner(), hasQueue -> {
             boolean enableQueue = (hasQueue != null) && hasQueue;
-            mQueueIsVisible = mViewModel.getQueueVisible();
-            setHasQueue(enableQueue);
+            boolean isQueueVisible = enableQueue && mViewModel.getQueueVisible();
+
+            setQueueState(enableQueue, isQueueVisible);
         });
         getPlaybackViewModel().getProgress().observe(getViewLifecycleOwner(),
                 playbackProgress ->
@@ -690,7 +694,7 @@ public class PlaybackFragment extends Fragment {
      */
     private void toggleQueueVisibility() {
         boolean updatedQueueVisibility = !mQueueIsVisible;
-        setQueueVisible(updatedQueueVisibility);
+        setQueueState(mHasQueue, updatedQueueVisibility);
 
         // When the visibility of queue is changed by the user, save the visibility into ViewModel
         // so that we can restore PlaybackFragment properly when needed. If it's changed by media
@@ -699,37 +703,33 @@ public class PlaybackFragment extends Fragment {
         mViewModel.setQueueVisible(updatedQueueVisibility);
     }
 
-    private void setQueueVisible(boolean visible) {
-        mQueueIsVisible = visible;
-
-        if (mHasQueue) {
-            MenuItem queueMenuItem = MenuItem.builder(getContext())
-                    .setIcon(R.drawable.ic_queue_button)
-                    .setActivated(mQueueIsVisible)
-                    .setOnClickListener(button -> toggleQueueVisibility())
-                    .build();
-            mAppBarController.setMenuItems(Collections.singletonList(queueMenuItem));
-        } else {
-            mAppBarController.setMenuItems(Collections.emptyList());
+    private void setQueueState(boolean hasQueue, boolean visible) {
+        if (mHasQueue != hasQueue) {
+            mHasQueue = hasQueue;
+            if (mHasQueue) {
+                MenuItem queueMenuItem = MenuItem.builder(getContext())
+                        .setIcon(R.drawable.ic_queue_button)
+                        .setActivated(mQueueIsVisible)
+                        .setOnClickListener(button -> toggleQueueVisibility())
+                        .build();
+                mAppBarController.setMenuItems(Collections.singletonList(queueMenuItem));
+            } else {
+                mAppBarController.setMenuItems(Collections.emptyList());
+            }
         }
 
-        if (mQueueIsVisible) {
-            ViewUtils.showViewsAnimated(mViewsToShowWhenQueueIsVisible, mFadeDuration);
-            ViewUtils.hideViewsAnimated(mViewsToHideWhenQueueIsVisible, mFadeDuration);
-            ViewUtils.setVisible(mViewsToShowImmediatelyWhenQueueIsVisible, true);
-            ViewUtils.setVisible(mViewsToHideImmediatelyWhenQueueIsVisible, false);
-        } else {
-            ViewUtils.hideViewsAnimated(mViewsToShowWhenQueueIsVisible, mFadeDuration);
-            ViewUtils.showViewsAnimated(mViewsToHideWhenQueueIsVisible, mFadeDuration);
-            ViewUtils.setVisible(mViewsToShowImmediatelyWhenQueueIsVisible, false);
-            ViewUtils.setVisible(mViewsToHideImmediatelyWhenQueueIsVisible, true);
+        if (mQueueIsVisible != visible) {
+            mQueueIsVisible = visible;
+            if (mQueueIsVisible) {
+                ViewUtils.showViewsAnimated(mViewsToShowWhenQueueIsVisible, mFadeDuration);
+                ViewUtils.hideViewsAnimated(mViewsToHideWhenQueueIsVisible, mFadeDuration);
+            } else {
+                ViewUtils.hideViewsAnimated(mViewsToShowWhenQueueIsVisible, mFadeDuration);
+                ViewUtils.showViewsAnimated(mViewsToHideWhenQueueIsVisible, mFadeDuration);
+            }
+            ViewUtils.setVisible(mViewsToShowImmediatelyWhenQueueIsVisible, mQueueIsVisible);
+            ViewUtils.setVisible(mViewsToHideImmediatelyWhenQueueIsVisible, !mQueueIsVisible);
         }
-    }
-
-    /** Sets whether the source has a queue. */
-    private void setHasQueue(boolean hasQueue) {
-        mHasQueue = hasQueue;
-        setQueueVisible(hasQueue && mQueueIsVisible);
     }
 
     private void onQueueItemClicked(MediaItemMetadata item) {
@@ -757,6 +757,24 @@ public class PlaybackFragment extends Fragment {
 
     private MediaSourceViewModel getMediaSourceViewModel() {
         return MediaSourceViewModel.get(getActivity().getApplication(), MEDIA_SOURCE_MODE_BROWSE);
+    }
+
+    private void setSeekBarColor(int color) {
+        mSeekBar.setProgressTintList(ColorStateList.valueOf(color));
+
+        // If the thumb drawable consists of a center drawable, only change the color of the center
+        // drawable. Otherwise change the color of the entire thumb drawable.
+        Drawable thumb = mSeekBar.getThumb();
+        if (thumb instanceof LayerDrawable) {
+            LayerDrawable thumbDrawable = (LayerDrawable) thumb;
+            Drawable thumbCenter = thumbDrawable.findDrawableByLayerId(R.id.thumb_center);
+            if (thumbCenter != null) {
+                thumbCenter.setColorFilter(color, PorterDuff.Mode.SRC);
+                thumbDrawable.setDrawableByLayerId(R.id.thumb_center, thumbCenter);
+                return;
+            }
+        }
+        mSeekBar.setThumbTintList(ColorStateList.valueOf(color));
     }
 
     /**

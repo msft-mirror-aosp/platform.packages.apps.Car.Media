@@ -43,11 +43,13 @@ import com.android.car.arch.common.FutureData;
 import com.android.car.media.browse.BrowseAdapter;
 import com.android.car.media.common.GridSpacingItemDecoration;
 import com.android.car.media.common.MediaItemMetadata;
+import com.android.car.media.common.browse.BrowsedMediaItems;
 import com.android.car.media.common.browse.MediaBrowserViewModel;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.widgets.AppBarController;
 import com.android.car.ui.FocusArea;
 import com.android.car.ui.recyclerview.DelegatingContentLimitingAdapter;
+import com.android.car.ui.baselayout.Insets;
 import com.android.car.ui.toolbar.Toolbar;
 import com.android.car.uxr.LifeCycleObserverUxrContentLimiter;
 import com.android.car.uxr.UxrContentLimiterImpl;
@@ -344,11 +346,6 @@ public class BrowseViewController extends ViewControllerBase {
         }
 
         @Override
-        public void onHeightChanged(int height) {
-            onAppBarHeightChanged(height);
-        }
-
-        @Override
         public void onSearch(String query) {
             if (Log.isLoggable(TAG, Log.DEBUG)) {
                 Log.d(TAG, "onSearch: " + query);
@@ -430,12 +427,13 @@ public class BrowseViewController extends ViewControllerBase {
         return currentItem != null ? currentItem.getId() : null;
     }
 
-    private void onAppBarHeightChanged(int height) {
+    @Override
+    public void onCarUiInsetsChanged(@NonNull Insets insets) {
         int leftPadding = mBrowseList.getPaddingLeft();
         int rightPadding = mBrowseList.getPaddingRight();
         int bottomPadding = mBrowseList.getPaddingBottom();
-        mBrowseList.setPadding(leftPadding, height, rightPadding, bottomPadding);
-        mFocusArea.setHighlightPadding(leftPadding, height, rightPadding, bottomPadding);
+        mBrowseList.setPadding(leftPadding, insets.getTop(), rightPadding, bottomPadding);
+        mFocusArea.setHighlightPadding(leftPadding, insets.getTop(), rightPadding, bottomPadding);
     }
 
     void onPlaybackControlsChanged(boolean visible) {
@@ -449,6 +447,9 @@ public class BrowseViewController extends ViewControllerBase {
         mBrowseList.setPadding(leftPadding, topPadding, rightPadding, bottomPadding);
         mFocusArea.setHighlightPadding(leftPadding, topPadding, rightPadding,
                 mSetFocusAreaHighlightBottom ? bottomPadding : 0);
+        // Set the bottom offset to bottomPadding regardless of mSetFocusAreaHighlightBottom so that
+        // RotaryService can find the correct target when the user nudges the rotary controller.
+        mFocusArea.setBoundsOffset(leftPadding, topPadding, rightPadding, bottomPadding);
 
         ViewGroup.MarginLayoutParams messageLayout =
                 (ViewGroup.MarginLayoutParams) mMessage.getLayoutParams();
@@ -563,18 +564,7 @@ public class BrowseViewController extends ViewControllerBase {
         }
     }
 
-    /**
-     * Filters the items that are valid for the root (tabs) or the current node. Returns null when
-     * the given list is null to preserve its error signal.
-     */
-    @Nullable
-    private List<MediaItemMetadata> filterItems(boolean forRoot,
-            @Nullable List<MediaItemMetadata> items) {
-        if (items == null) return null;
-        Predicate<MediaItemMetadata> predicate = forRoot ? MediaItemMetadata::isBrowsable
-                : item -> (item.isPlayable() || item.isBrowsable());
-        return items.stream().filter(predicate).collect(Collectors.toList());
-    }
+
 
     private void onItemsUpdate(boolean forRoot, FutureData<List<MediaItemMetadata>> futureData) {
 
@@ -608,7 +598,8 @@ public class BrowseViewController extends ViewControllerBase {
 
         stopLoadingIndicator();
 
-        List<MediaItemMetadata> items = filterItems(forRoot, futureData.getData());
+        List<MediaItemMetadata> items =
+                BrowsedMediaItems.filterItems(forRoot, futureData.getData());
         if (forRoot) {
             boolean browseTreeHasChildren = items != null && !items.isEmpty();
             if (Log.isLoggable(TAG, Log.INFO)) {
