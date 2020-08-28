@@ -106,7 +106,6 @@
     <dimen name="media_browse_grid_item_padding">0dp</dimen>
     <dimen name="media_browse_grid_item_margin_bottom">@dimen/car_ui_padding_4</dimen>
     <dimen name="media_browse_grid_item_text_margin_top">@dimen/car_ui_padding_3</dimen>
-    <dimen name="media_browse_grid_item_background_radius">4dp</dimen>
 
     <dimen name="media_browse_grid_icons_item_art_size">76dp</dimen>
 
