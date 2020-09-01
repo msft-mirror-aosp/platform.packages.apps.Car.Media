@@ -104,4 +104,12 @@ class BrowseViewHolder extends RecyclerView.ViewHolder {
         ViewUtils.setVisible(mSubTitleDownloadIcon, showSubtitle && downloaded);
         ViewUtils.setVisible(mSubTitleExplicitIcon, showSubtitle && explicit);
     }
+
+    void onViewAttachedToWindow(Context context) {
+        mAlbumArtBinder.maybeRestartLoading(context);
+    }
+
+    void onViewDetachedFromWindow(Context context) {
+        mAlbumArtBinder.maybeCancelLoading(context);
+    }
 }
