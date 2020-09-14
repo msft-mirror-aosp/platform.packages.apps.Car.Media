@@ -332,11 +332,6 @@ public class BrowseViewController extends ViewControllerBase {
         }
 
         @Override
-        public void onBack() {
-            onBackPressed();
-        }
-
-        @Override
         public void onSearchSelection() {
             if (mIsSearchController) {
                 reopenSearch();

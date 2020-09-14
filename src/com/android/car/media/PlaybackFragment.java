@@ -115,6 +115,8 @@ public class PlaybackFragment extends Fragment {
 
     private MediaActivity.ViewModel mViewModel;
 
+    private MenuItem mQueueMenuItem;
+
     /**
      * PlaybackFragment listener
      */
@@ -475,18 +477,6 @@ public class PlaybackFragment extends Fragment {
         mAppBarController.setNavButtonMode(Toolbar.NavButtonMode.DOWN);
         mAppBarController.setState(Toolbar.State.SUBPAGE);
 
-        // Notify listeners when toolbar's down button is pressed.
-        // Use AppBarListener rather than Toolbar.OnBackListener because AppBarController will
-        // absorb the onBack() event
-        mAppBarController.setListener(new AppBarController.AppBarListener() {
-            @Override
-            protected void onBack() {
-                if (mListener != null) {
-                    mListener.onCollapse();
-                }
-            }
-        });
-
         // Update toolbar's logo
         MediaSourceViewModel mediaSourceViewModel = getMediaSourceViewModel();
         mediaSourceViewModel.getPrimaryMediaSource().observe(this, mediaSource ->
@@ -704,18 +694,20 @@ public class PlaybackFragment extends Fragment {
     }
 
     private void setQueueState(boolean hasQueue, boolean visible) {
+        if (hasQueue && mQueueMenuItem == null) {
+            mQueueMenuItem = MenuItem.builder(getContext())
+                    .setIcon(R.drawable.ic_queue_button)
+                    .setActivatable()
+                    .setOnClickListener(button -> toggleQueueVisibility())
+                    .build();
+        }
         if (mHasQueue != hasQueue) {
             mHasQueue = hasQueue;
-            if (mHasQueue) {
-                MenuItem queueMenuItem = MenuItem.builder(getContext())
-                        .setIcon(R.drawable.ic_queue_button)
-                        .setActivated(mQueueIsVisible)
-                        .setOnClickListener(button -> toggleQueueVisibility())
-                        .build();
-                mAppBarController.setMenuItems(Collections.singletonList(queueMenuItem));
-            } else {
-                mAppBarController.setMenuItems(Collections.emptyList());
-            }
+            mAppBarController.setMenuItems(
+                    hasQueue ? Collections.singletonList(mQueueMenuItem) : Collections.emptyList());
+        }
+        if (mQueueMenuItem != null) {
+            mQueueMenuItem.setActivated(visible);
         }
 
         if (mQueueIsVisible != visible) {
