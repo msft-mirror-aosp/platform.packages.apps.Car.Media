@@ -475,18 +475,6 @@ public class PlaybackFragment extends Fragment {
         mAppBarController.setNavButtonMode(Toolbar.NavButtonMode.DOWN);
         mAppBarController.setState(Toolbar.State.SUBPAGE);
 
-        // Notify listeners when toolbar's down button is pressed.
-        // Use AppBarListener rather than Toolbar.OnBackListener because AppBarController will
-        // absorb the onBack() event
-        mAppBarController.setListener(new AppBarController.AppBarListener() {
-            @Override
-            protected void onBack() {
-                if (mListener != null) {
-                    mListener.onCollapse();
-                }
-            }
-        });
-
         // Update toolbar's logo
         MediaSourceViewModel mediaSourceViewModel = getMediaSourceViewModel();
         mediaSourceViewModel.getPrimaryMediaSource().observe(this, mediaSource ->
