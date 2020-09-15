@@ -56,11 +56,6 @@ public class AppBarController extends ToolbarControllerImpl {
         protected void onTabSelected(MediaItemMetadata item) {}
 
         /**
-         * Invoked when the user clicks on the back button
-         */
-        protected void onBack() {}
-
-        /**
          * Invoked when the user clicks on the settings button.
          */
         protected void onSettingsSelection() {}
@@ -90,10 +85,6 @@ public class AppBarController extends ToolbarControllerImpl {
 
         registerOnTabSelectedListener(tab ->
                 mListener.onTabSelected(((MediaItemTab) tab).getItem()));
-        registerOnBackListener(() -> {
-            mListener.onBack();
-            return true;
-        });
         registerOnSearchListener(query -> mListener.onSearch(query));
         mSearch = MenuItem.Builder.createSearch(mContext, v -> mListener.onSearchSelection());
         mSettings = new MenuItem.Builder(mContext)
