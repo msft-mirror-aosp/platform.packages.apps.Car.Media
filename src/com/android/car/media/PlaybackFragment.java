@@ -115,6 +115,8 @@ public class PlaybackFragment extends Fragment {
 
     private MediaActivity.ViewModel mViewModel;
 
+    private MenuItem mQueueMenuItem;
+
     /**
      * PlaybackFragment listener
      */
@@ -692,18 +694,20 @@ public class PlaybackFragment extends Fragment {
     }
 
     private void setQueueState(boolean hasQueue, boolean visible) {
+        if (hasQueue && mQueueMenuItem == null) {
+            mQueueMenuItem = MenuItem.builder(getContext())
+                    .setIcon(R.drawable.ic_queue_button)
+                    .setActivatable()
+                    .setOnClickListener(button -> toggleQueueVisibility())
+                    .build();
+        }
         if (mHasQueue != hasQueue) {
             mHasQueue = hasQueue;
-            if (mHasQueue) {
-                MenuItem queueMenuItem = MenuItem.builder(getContext())
-                        .setIcon(R.drawable.ic_queue_button)
-                        .setActivated(mQueueIsVisible)
-                        .setOnClickListener(button -> toggleQueueVisibility())
-                        .build();
-                mAppBarController.setMenuItems(Collections.singletonList(queueMenuItem));
-            } else {
-                mAppBarController.setMenuItems(Collections.emptyList());
-            }
+            mAppBarController.setMenuItems(
+                    hasQueue ? Collections.singletonList(mQueueMenuItem) : Collections.emptyList());
+        }
+        if (mQueueMenuItem != null) {
+            mQueueMenuItem.setActivated(visible);
         }
 
         if (mQueueIsVisible != visible) {
