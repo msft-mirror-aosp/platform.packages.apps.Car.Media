@@ -641,6 +641,12 @@ public class PlaybackFragment extends Fragment {
         mItemAnimator.setSupportsChangeAnimations(false);
         mQueue.setItemAnimator(mItemAnimator);
 
+        // Make sure the AppBar menu reflects the initial state of playback fragment.
+        updateAppBarMenu(mHasQueue);
+        if (mQueueMenuItem != null) {
+            mQueueMenuItem.setActivated(mQueueIsVisible);
+        }
+
         getPlaybackViewModel().getQueue().observe(this, this::setQueue);
 
         getPlaybackViewModel().hasQueue().observe(getViewLifecycleOwner(), hasQueue -> {
@@ -693,7 +699,7 @@ public class PlaybackFragment extends Fragment {
         mViewModel.setQueueVisible(updatedQueueVisibility);
     }
 
-    private void setQueueState(boolean hasQueue, boolean visible) {
+    private void updateAppBarMenu(boolean hasQueue) {
         if (hasQueue && mQueueMenuItem == null) {
             mQueueMenuItem = MenuItem.builder(getContext())
                     .setIcon(R.drawable.ic_queue_button)
@@ -701,10 +707,14 @@ public class PlaybackFragment extends Fragment {
                     .setOnClickListener(button -> toggleQueueVisibility())
                     .build();
         }
+        mAppBarController.setMenuItems(
+                hasQueue ? Collections.singletonList(mQueueMenuItem) : Collections.emptyList());
+    }
+
+    private void setQueueState(boolean hasQueue, boolean visible) {
         if (mHasQueue != hasQueue) {
             mHasQueue = hasQueue;
-            mAppBarController.setMenuItems(
-                    hasQueue ? Collections.singletonList(mQueueMenuItem) : Collections.emptyList());
+            updateAppBarMenu(hasQueue);
         }
         if (mQueueMenuItem != null) {
             mQueueMenuItem.setActivated(visible);
