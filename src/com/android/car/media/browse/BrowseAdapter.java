@@ -51,6 +51,17 @@ import java.util.function.Consumer;
  */
 public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder> {
     private static final String TAG = "BrowseAdapter";
+
+    /**
+     * Listens to the list data changes.
+     */
+    public interface OnListChangedListener {
+        /**
+         * Called when {@link #onCurrentListChanged(List, List)} is called.
+         */
+        void onListChanged(List<BrowseViewData> previousList, List<BrowseViewData> currentList);
+    }
+
     @NonNull
     private final Context mContext;
     @NonNull
@@ -62,6 +73,8 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
 
     private BrowseItemViewType mRootBrowsableViewType = BrowseItemViewType.LIST_ITEM;
     private BrowseItemViewType mRootPlayableViewType = BrowseItemViewType.LIST_ITEM;
+
+    private OnListChangedListener mOnListChangedListener;
 
     private static final DiffUtil.ItemCallback<BrowseViewData> DIFF_CALLBACK =
             new DiffUtil.ItemCallback<BrowseViewData>() {
@@ -145,6 +158,13 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
         return viewType.getSpanSize(maxSpanSize);
     }
 
+    /**
+     * Sets a listener to listen for the list data changes.
+     */
+    public void setOnListChangedListener(OnListChangedListener onListChangedListener) {
+        mOnListChangedListener = onListChangedListener;
+    }
+
     @NonNull
     @Override
     public BrowseViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -174,6 +194,15 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
     @Override
     public int getItemViewType(int position) {
         return getItem(position).mViewType.ordinal();
+    }
+
+    @Override
+    public void onCurrentListChanged(@NonNull List<BrowseViewData> previousList,
+            @NonNull List<BrowseViewData> currentList) {
+        super.onCurrentListChanged(previousList, currentList);
+        if (mOnListChangedListener != null) {
+            mOnListChangedListener.onListChanged(previousList, currentList);
+        }
     }
 
     public void submitItems(@Nullable MediaItemMetadata parentItem,
