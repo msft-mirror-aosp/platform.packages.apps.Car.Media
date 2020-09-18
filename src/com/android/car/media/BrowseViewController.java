@@ -20,7 +20,6 @@ import static com.android.car.arch.common.LiveDataFunctions.ifThenElse;
 
 import android.car.content.pm.CarPackageManager;
 import android.content.Context;
-import android.content.res.Resources;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
@@ -41,6 +40,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.arch.common.FutureData;
 import com.android.car.media.browse.BrowseAdapter;
+import com.android.car.media.browse.LimitedBrowseAdapter;
 import com.android.car.media.common.GridSpacingItemDecoration;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.browse.BrowsedMediaItems;
@@ -48,7 +48,6 @@ import com.android.car.media.common.browse.MediaBrowserViewModel;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.widgets.AppBarController;
 import com.android.car.ui.FocusArea;
-import com.android.car.ui.recyclerview.DelegatingContentLimitingAdapter;
 import com.android.car.ui.baselayout.Insets;
 import com.android.car.ui.toolbar.Toolbar;
 import com.android.car.uxr.LifeCycleObserverUxrContentLimiter;
@@ -58,8 +57,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Stack;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * A view controller that implements the content forward browsing experience.
@@ -81,9 +78,7 @@ public class BrowseViewController extends ViewControllerBase {
     private final RecyclerView mBrowseList;
     private final ImageView mErrorIcon;
     private final TextView mMessage;
-    private final DelegatingContentLimitingAdapter mLimitedBrowseAdapter;
-    private final BrowseAdapter mBrowseAdapter;
-    private int mMaxSpanSize = 1;
+    private final LimitedBrowseAdapter mLimitedBrowseAdapter;
     private String mSearchQuery;
     private final int mFadeDuration;
     private final int mLoadingIndicatorDelay;
@@ -240,7 +235,7 @@ public class BrowseViewController extends ViewControllerBase {
             updateTabs((mediaSource != null) ? null : new ArrayList<>());
         }
 
-        mBrowseAdapter.submitItems(null, null);
+        mLimitedBrowseAdapter.submitItems(null, null);
         stopLoadingIndicator();
         ViewUtils.hideViewAnimated(mErrorIcon, mFadeDuration);
         ViewUtils.hideViewAnimated(mMessage, mFadeDuration);
@@ -294,16 +289,10 @@ public class BrowseViewController extends ViewControllerBase {
         mBrowseList.addItemDecoration(new GridSpacingItemDecoration(
                 activity.getResources().getDimensionPixelSize(R.dimen.grid_item_spacing)));
 
-        mBrowseAdapter = new BrowseAdapter(mBrowseList.getContext());
-        mBrowseAdapter.registerObserver(mBrowseAdapterObserver);
-        mLimitedBrowseAdapter = new DelegatingContentLimitingAdapter(mBrowseAdapter,
-                R.id.browse_list_uxr_config);
-        mBrowseList.setAdapter(mLimitedBrowseAdapter);
-
         GridLayoutManager manager = (GridLayoutManager) mBrowseList.getLayoutManager();
-        mMaxSpanSize = manager.getSpanCount();
-        manager.setSpanSizeLookup(mSpanSizeLookup);
-
+        mLimitedBrowseAdapter = new LimitedBrowseAdapter(
+                new BrowseAdapter(mBrowseList.getContext()), manager, mBrowseAdapterObserver);
+        mBrowseList.setAdapter(mLimitedBrowseAdapter);
 
         mUxrContentLimiter = new LifeCycleObserverUxrContentLimiter(
                 new UxrContentLimiterImpl(activity, R.xml.uxr_config));
@@ -311,9 +300,9 @@ public class BrowseViewController extends ViewControllerBase {
         activity.getLifecycle().addObserver(mUxrContentLimiter);
 
         mMediaBrowserViewModel.rootBrowsableHint().observe(activity,
-                mBrowseAdapter::setRootBrowsableViewType);
+                hint -> mLimitedBrowseAdapter.getBrowseAdapter().setRootBrowsableViewType(hint));
         mMediaBrowserViewModel.rootPlayableHint().observe(activity,
-                mBrowseAdapter::setRootPlayableViewType);
+                hint -> mLimitedBrowseAdapter.getBrowseAdapter().setRootPlayableViewType(hint));
         LiveData<FutureData<List<MediaItemMetadata>>> mediaItems = ifThenElse(mShowSearchResults,
                 mMediaBrowserViewModel.getSearchedMediaItems(),
                 mMediaBrowserViewModel.getBrowsedMediaItems());
@@ -356,19 +345,6 @@ public class BrowseViewController extends ViewControllerBase {
         public void run() {
             mMessage.setText(R.string.browser_loading);
             ViewUtils.showViewAnimated(mMessage, mFadeDuration);
-        }
-    };
-
-    private final GridLayoutManager.SpanSizeLookup mSpanSizeLookup =
-            new GridLayoutManager.SpanSizeLookup() {
-        @Override
-        public int getSpanSize(int position) {
-            if (mLimitedBrowseAdapter.getItemViewType(position) ==
-                    mLimitedBrowseAdapter.getScrollingLimitedMessageViewType()) {
-                return mMaxSpanSize;
-            }
-
-            return mBrowseAdapter.getSpanSize(position, mMaxSpanSize);
         }
     };
 
@@ -579,7 +555,7 @@ public class BrowseViewController extends ViewControllerBase {
             ViewUtils.hideViewAnimated(mMessage, 0);
             // TODO(b/139759881) build a jank-free animation of the transition.
             mBrowseList.setAlpha(0f);
-            mBrowseAdapter.submitItems(null, null);
+            mLimitedBrowseAdapter.submitItems(null, null);
 
             if (forRoot) {
                 if (Log.isLoggable(TAG, Log.INFO)) {
@@ -605,7 +581,7 @@ public class BrowseViewController extends ViewControllerBase {
             mCallbacks.onRootLoaded();
             updateTabs(items != null ? items : new ArrayList<>());
         } else {
-            mBrowseAdapter.submitItems(getCurrentMediaItem(), items);
+            mLimitedBrowseAdapter.submitItems(getCurrentMediaItem(), items);
         }
 
         int duration = forRoot ? 0 : mFadeDuration;
