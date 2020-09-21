@@ -45,6 +45,8 @@ import com.android.car.media.widgets.AppBarController;
 
 import com.android.car.ui.baselayout.Insets;
 import com.android.car.ui.baselayout.InsetsChangedListener;
+import com.android.car.ui.core.CarUi;
+import com.android.car.ui.toolbar.ToolbarController;
 
 /**
  * Functionality common to content view controllers. It mainly handles the AppBar view,
@@ -73,20 +75,21 @@ abstract class ViewControllerBase implements InsetsChangedListener {
 
         LayoutInflater inflater = LayoutInflater.from(container.getContext());
         mContent = inflater.inflate(resource, container, false);
+        container.addView(mContent);
 
-        mAppBarController = new AppBarController(mContent);
+        GuidelinesUpdater updater = new GuidelinesUpdater(mContent);
+        updater.addListener(this);
+        ToolbarController toolbar = CarUi.installBaseLayoutAround(mContent, updater, true);
+
+        mAppBarController = new AppBarController(activity, toolbar);
         mAppBarController.setSearchSupported(false);
         mAppBarController.setHasEqualizer(false);
-
-        container.addView(mContent);
 
         mCarPackageManager = carPackageManager;
 
         mMediaSourceVM = MediaSourceViewModel.get(activity.getApplication(),
                 MEDIA_SOURCE_MODE_BROWSE);
 
-        GuidelinesUpdater updater = new GuidelinesUpdater(activity, mContent);
-        updater.addListener(this);
     }
 
     @Override

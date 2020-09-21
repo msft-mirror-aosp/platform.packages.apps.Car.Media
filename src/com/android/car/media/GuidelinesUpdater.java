@@ -38,13 +38,8 @@ class GuidelinesUpdater implements InsetsChangedListener {
     private final View mGuidedView;
     private final Set<InsetsChangedListener> mListeners = new HashSet<>();
 
-    public GuidelinesUpdater(Activity activity, View guidedView) {
+    public GuidelinesUpdater(View guidedView) {
         mGuidedView = guidedView;
-
-        BaseLayoutController.InsetsUpdater insetsUpdater =
-                new BaseLayoutController.InsetsUpdater(activity, mGuidedView, mGuidedView);
-        insetsUpdater.replaceInsetsChangedListenerWith(this);
-        insetsUpdater.installListeners();
     }
 
     public void addListener(InsetsChangedListener listener) {
