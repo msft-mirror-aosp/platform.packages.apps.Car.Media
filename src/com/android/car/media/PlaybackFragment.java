@@ -54,10 +54,12 @@ import com.android.car.media.common.PlaybackControlsActionBar;
 import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaSourceViewModel;
 import com.android.car.media.widgets.AppBarController;
+import com.android.car.ui.core.CarUi;
 import com.android.car.ui.recyclerview.ContentLimiting;
 import com.android.car.ui.recyclerview.ScrollingLimitedViewHolder;
 import com.android.car.ui.toolbar.MenuItem;
 import com.android.car.ui.toolbar.Toolbar;
+import com.android.car.ui.toolbar.ToolbarController;
 import com.android.car.ui.utils.DirectManipulationHelper;
 import com.android.car.uxr.LifeCycleObserverUxrContentLimiter;
 import com.android.car.uxr.UxrContentLimiterImpl;
@@ -114,6 +116,8 @@ public class PlaybackFragment extends Fragment {
     private int mFadeDuration;
 
     private MediaActivity.ViewModel mViewModel;
+
+    private MenuItem mQueueMenuItem;
 
     /**
      * PlaybackFragment listener
@@ -462,30 +466,25 @@ public class PlaybackFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, final ViewGroup container,
             Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_playback, container, false);
+        return inflater.inflate(R.layout.fragment_playback, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mAlbumBackground = view.findViewById(R.id.playback_background);
         mQueue = view.findViewById(R.id.queue_list);
         mSeekBarContainer = view.findViewById(R.id.seek_bar_container);
         mSeekBar = view.findViewById(R.id.seek_bar);
         DirectManipulationHelper.setSupportsRotateDirectly(mSeekBar, true);
-        mAppBarController = new AppBarController(view);
+
+        GuidelinesUpdater updater = new GuidelinesUpdater(view);
+        ToolbarController toolbarController = CarUi.installBaseLayoutAround(view, updater, true);
+        mAppBarController = new AppBarController(view.getContext(), toolbarController);
 
         mAppBarController.setTitle(R.string.fragment_playback_title);
         mAppBarController.setBackgroundShown(false);
         mAppBarController.setNavButtonMode(Toolbar.NavButtonMode.DOWN);
         mAppBarController.setState(Toolbar.State.SUBPAGE);
-
-        // Notify listeners when toolbar's down button is pressed.
-        // Use AppBarListener rather than Toolbar.OnBackListener because AppBarController will
-        // absorb the onBack() event
-        mAppBarController.setListener(new AppBarController.AppBarListener() {
-            @Override
-            protected void onBack() {
-                if (mListener != null) {
-                    mListener.onCollapse();
-                }
-            }
-        });
 
         // Update toolbar's logo
         MediaSourceViewModel mediaSourceViewModel = getMediaSourceViewModel();
@@ -568,14 +567,10 @@ public class PlaybackFragment extends Fragment {
                 item -> mAlbumArtBinder.setImage(PlaybackFragment.this.getContext(),
                         item != null ? item.getArtworkKey() : null));
 
-        new GuidelinesUpdater(requireActivity(), view);
-
         mUxrContentLimiter = new LifeCycleObserverUxrContentLimiter(
                 new UxrContentLimiterImpl(getContext(), R.xml.uxr_config));
         mUxrContentLimiter.setAdapter(mQueueAdapter);
         getLifecycle().addObserver(mUxrContentLimiter);
-
-        return view;
     }
 
     @Override
@@ -651,6 +646,12 @@ public class PlaybackFragment extends Fragment {
         mItemAnimator.setSupportsChangeAnimations(false);
         mQueue.setItemAnimator(mItemAnimator);
 
+        // Make sure the AppBar menu reflects the initial state of playback fragment.
+        updateAppBarMenu(mHasQueue);
+        if (mQueueMenuItem != null) {
+            mQueueMenuItem.setActivated(mQueueIsVisible);
+        }
+
         getPlaybackViewModel().getQueue().observe(this, this::setQueue);
 
         getPlaybackViewModel().hasQueue().observe(getViewLifecycleOwner(), hasQueue -> {
@@ -703,19 +704,25 @@ public class PlaybackFragment extends Fragment {
         mViewModel.setQueueVisible(updatedQueueVisibility);
     }
 
+    private void updateAppBarMenu(boolean hasQueue) {
+        if (hasQueue && mQueueMenuItem == null) {
+            mQueueMenuItem = MenuItem.builder(getContext())
+                    .setIcon(R.drawable.ic_queue_button)
+                    .setActivatable()
+                    .setOnClickListener(button -> toggleQueueVisibility())
+                    .build();
+        }
+        mAppBarController.setMenuItems(
+                hasQueue ? Collections.singletonList(mQueueMenuItem) : Collections.emptyList());
+    }
+
     private void setQueueState(boolean hasQueue, boolean visible) {
         if (mHasQueue != hasQueue) {
             mHasQueue = hasQueue;
-            if (mHasQueue) {
-                MenuItem queueMenuItem = MenuItem.builder(getContext())
-                        .setIcon(R.drawable.ic_queue_button)
-                        .setActivated(mQueueIsVisible)
-                        .setOnClickListener(button -> toggleQueueVisibility())
-                        .build();
-                mAppBarController.setMenuItems(Collections.singletonList(queueMenuItem));
-            } else {
-                mAppBarController.setMenuItems(Collections.emptyList());
-            }
+            updateAppBarMenu(hasQueue);
+        }
+        if (mQueueMenuItem != null) {
+            mQueueMenuItem.setActivated(visible);
         }
 
         if (mQueueIsVisible != visible) {

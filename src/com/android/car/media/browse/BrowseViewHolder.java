@@ -34,7 +34,7 @@ import com.android.car.media.common.MediaItemMetadata;
 /**
  * Generic {@link RecyclerView.ViewHolder} to use for all views in the {@link BrowseAdapter}
  */
-class BrowseViewHolder extends RecyclerView.ViewHolder {
+public class BrowseViewHolder extends RecyclerView.ViewHolder {
     private final TextView mTitle;
     private final TextView mSubtitle;
     private final ImageView mAlbumArt;
