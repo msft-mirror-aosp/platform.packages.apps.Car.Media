@@ -3,6 +3,7 @@ package com.android.car.media.widgets;
 import android.car.drivingstate.CarUxRestrictions;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -13,7 +14,7 @@ import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.ui.toolbar.MenuItem;
 import com.android.car.ui.toolbar.Toolbar;
-import com.android.car.ui.toolbar.ToolbarControllerImpl;
+import com.android.car.ui.toolbar.ToolbarController;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,14 +26,14 @@ import java.util.Objects;
  * views via {@link #setState}. A detailed explanation of all possible states of this application
  * bar can be seen at {@link Toolbar.State}.
  */
-public class AppBarController extends ToolbarControllerImpl {
+public class AppBarController {
 
     private static final int MEDIA_UX_RESTRICTION_DEFAULT =
             CarUxRestrictions.UX_RESTRICTIONS_NO_SETUP;
     private static final int MEDIA_UX_RESTRICTION_NONE = CarUxRestrictions.UX_RESTRICTIONS_BASELINE;
 
     private int mMaxTabs;
-    private final Context mContext;
+    private final ToolbarController mToolbarController;
 
     @NonNull
     private AppBarListener mListener = new AppBarListener();
@@ -76,33 +77,36 @@ public class AppBarController extends ToolbarControllerImpl {
         protected void onSearchSelection() {}
     }
 
-    public AppBarController(View view) {
-        super(view);
-        mContext = view.getContext();
-        mMaxTabs = mContext.getResources().getInteger(R.integer.max_tabs);
+    public AppBarController(Context context, ToolbarController controller) {
+        mToolbarController = controller;
+        mMaxTabs = context.getResources().getInteger(R.integer.max_tabs);
 
-        mAppSelectorIntent = MediaSource.getSourceSelectorIntent(mContext, false);
+        mAppSelectorIntent = MediaSource.getSourceSelectorIntent(context, false);
 
-        registerOnTabSelectedListener(tab ->
+        mToolbarController.registerOnTabSelectedListener(tab ->
                 mListener.onTabSelected(((MediaItemTab) tab).getItem()));
-        registerOnSearchListener(query -> mListener.onSearch(query));
-        mSearch = MenuItem.Builder.createSearch(mContext, v -> mListener.onSearchSelection());
-        mSettings = new MenuItem.Builder(mContext)
+        mToolbarController.registerOnSearchListener(query -> mListener.onSearch(query));
+        mSearch = MenuItem.builder(context)
+                .setToSearch()
+                .setOnClickListener(v -> mListener.onSearchSelection())
+                .build();
+        mSettings = MenuItem.builder(context)
                 .setToSettings()
                 .setUxRestrictions(MEDIA_UX_RESTRICTION_DEFAULT)
                 .setOnClickListener(v -> mListener.onSettingsSelection())
                 .build();
-        mEqualizer = new MenuItem.Builder(mContext)
+        mEqualizer = MenuItem.builder(context)
                 .setTitle(R.string.menu_item_sound_settings_title)
                 .setIcon(R.drawable.ic_equalizer)
                 .setOnClickListener(v -> mListener.onEqualizerSelection())
                 .build();
-        mAppSelector = new MenuItem.Builder(mContext)
+        mAppSelector = MenuItem.builder(context)
                 .setTitle(R.string.menu_item_app_selector_title)
                 .setIcon(R.drawable.ic_app_switch)
-                .setOnClickListener(m -> mContext.startActivity(mAppSelectorIntent))
+                .setOnClickListener(m -> context.startActivity(mAppSelectorIntent))
                 .build();
-        setMenuItems(Arrays.asList(mSearch, mEqualizer, mSettings, mAppSelector));
+        mToolbarController.setMenuItems(
+                Arrays.asList(mSearch, mEqualizer, mSettings, mAppSelector));
 
         setAppLauncherSupported(mAppSelectorIntent != null);
     }
@@ -121,12 +125,12 @@ public class AppBarController extends ToolbarControllerImpl {
      * @param items list of tabs to show, or null if no tabs should be shown.
      */
     public void setItems(@Nullable List<MediaItemMetadata> items) {
-        clearAllTabs();
+        mToolbarController.clearAllTabs();
 
         if (items != null && !items.isEmpty()) {
             int count = 0;
             for (MediaItemMetadata item : items) {
-                addTab(new MediaItemTab(item));
+                mToolbarController.addTab(new MediaItemTab(item));
 
                 count++;
                 if (count >= mMaxTabs) {
@@ -182,15 +186,55 @@ public class AppBarController extends ToolbarControllerImpl {
      * Updates the currently active item
      */
     public void setActiveItem(MediaItemMetadata item) {
-        for (int i = 0; i < getTabLayout().getTabCount(); i++) {
-            MediaItemTab mediaItemTab = (MediaItemTab) getTabLayout().get(i);
+        for (int i = 0; i < mToolbarController.getTabLayout().getTabCount(); i++) {
+            MediaItemTab mediaItemTab = (MediaItemTab) mToolbarController.getTabLayout().get(i);
             boolean match = item != null && Objects.equals(
                     item.getId(),
                     mediaItemTab.getItem().getId());
             if (match) {
-                getTabLayout().selectTab(i);
+                mToolbarController.selectTab(i);
                 return;
             }
         }
+    }
+
+    public void setSearchQuery(String query) {
+        mToolbarController.setSearchQuery(query);
+    }
+
+    public void setLogo(Drawable drawable) {
+        mToolbarController.setLogo(drawable);
+    }
+
+    public void setSearchIcon(Drawable drawable) {
+        mToolbarController.setSearchIcon(drawable);
+    }
+
+    public void setTitle(CharSequence title) {
+        mToolbarController.setTitle(title);
+    }
+
+    public void setTitle(int title) {
+        mToolbarController.setTitle(title);
+    }
+
+    public void setState(Toolbar.State state) {
+        mToolbarController.setState(state);
+    }
+
+    public void setMenuItems(List<MenuItem> items) {
+        mToolbarController.setMenuItems(items);
+    }
+
+    public void setBackgroundShown(boolean shown) {
+        mToolbarController.setBackgroundShown(shown);
+    }
+
+    public void registerOnBackListener(Toolbar.OnBackListener listener) {
+        mToolbarController.registerOnBackListener(listener);
+    }
+
+    public void setNavButtonMode(Toolbar.NavButtonMode mode) {
+        mToolbarController.setNavButtonMode(mode);
     }
 }

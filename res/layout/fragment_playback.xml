@@ -45,8 +45,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <include layout="@layout/car_ui_base_layout_toolbar"/>
-
     <include
         style="@style/MetadataContainerStyle"
         android:id="@+id/metadata_container"

@@ -61,6 +61,4 @@
 
     </com.android.car.ui.FocusArea>
 
-    <include layout="@layout/car_ui_base_layout_toolbar"/>
-
 </androidx.constraintlayout.widget.ConstraintLayout>
