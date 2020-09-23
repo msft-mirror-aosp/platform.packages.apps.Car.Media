@@ -40,5 +40,4 @@
     <string name="error_code_end_of_queue" msgid="2842652212154074468">"Es ist sonst nichts in der Warteschlange"</string>
     <string name="service_notification_title" msgid="8085444675783592744">"Verbindung zu Medien wird hergestellt"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"Toneinstellungen"</string>
-    <string name="menu_item_app_selector_title" msgid="4587248991114338595">"Apps wechseln"</string>
 </resources>

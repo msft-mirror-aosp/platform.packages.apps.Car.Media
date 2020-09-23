@@ -40,5 +40,4 @@
     <string name="error_code_end_of_queue" msgid="2842652212154074468">"Er staat niets anders in de wachtrij"</string>
     <string name="service_notification_title" msgid="8085444675783592744">"Verbinden met media"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"Geluidsinstellingen"</string>
-    <string name="menu_item_app_selector_title" msgid="4587248991114338595">"Schakelen tussen apps"</string>
 </resources>

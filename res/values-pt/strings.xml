@@ -40,5 +40,4 @@
     <string name="error_code_end_of_queue" msgid="2842652212154074468">"Não há mais nada na fila"</string>
     <string name="service_notification_title" msgid="8085444675783592744">"Conectando à mídia"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"Configurações de som"</string>
-    <string name="menu_item_app_selector_title" msgid="4587248991114338595">"Alternar entre apps"</string>
 </resources>
