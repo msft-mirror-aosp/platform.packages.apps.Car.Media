@@ -16,12 +16,14 @@
 
 package com.android.car.media;
 
-import android.annotation.Nullable;
+import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
+
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
-import android.content.res.TypedArray;
+import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Size;
@@ -33,11 +35,10 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.car.apps.common.BackgroundImageView;
@@ -50,6 +51,8 @@ import com.android.car.media.common.MetadataController;
 import com.android.car.media.common.PlaybackControlsActionBar;
 import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaSourceViewModel;
+import com.android.car.ui.toolbar.MenuItem;
+import com.android.car.ui.toolbar.Toolbar;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -74,8 +77,7 @@ public class PlaybackFragment extends Fragment {
     private RecyclerView mQueue;
     private ViewGroup mSeekBarContainer;
     private SeekBar mSeekBar;
-    private View mQueueButton;
-    private ViewGroup mNavIconContainer;
+    private Toolbar mToolbar;
     private List<View> mViewsToHideForCustomActions;
     private List<View> mViewsToHideWhenQueueIsVisible;
     private List<View> mViewsToShowWhenQueueIsVisible;
@@ -170,6 +172,8 @@ public class PlaybackFragment extends Fragment {
             ViewUtils.setVisible(mCurrentTime, shouldShowTime);
             ViewUtils.setVisible(mMaxTime, shouldShowTime);
             ViewUtils.setVisible(mTimeSeparator, shouldShowTime);
+
+            mView.setSelected(active);
 
             boolean shouldShowIcon = mShowIconForActiveQueueItem && active;
             ViewUtils.setVisible(mActiveIcon, shouldShowIcon);
@@ -353,10 +357,26 @@ public class PlaybackFragment extends Fragment {
         mQueue = view.findViewById(R.id.queue_list);
         mSeekBarContainer = view.findViewById(R.id.seek_bar_container);
         mSeekBar = view.findViewById(R.id.seek_bar);
-        mQueueButton = view.findViewById(R.id.queue_button);
-        mQueueButton.setOnClickListener(button -> toggleQueueVisibility());
-        mNavIconContainer = view.findViewById(R.id.nav_icon_container);
-        mNavIconContainer.setOnClickListener(nav -> onCollapse());
+        mToolbar = view.findViewById(R.id.toolbar);
+        if (mToolbar != null) {
+            mToolbar.setBackgroundShown(false);
+            mToolbar.setNavButtonMode(Toolbar.NavButtonMode.DOWN);
+
+            // Notify listeners when toolbar's down button is pressed.
+            mToolbar.registerOnBackListener(() -> {
+                if (mListener != null) {
+                    mListener.onCollapse();
+                }
+                return true;
+            });
+
+            // Update toolbar's logo
+            MediaSourceViewModel mediaSourceViewModel = getMediaSourceViewModel();
+            mediaSourceViewModel.getPrimaryMediaSource().observe(this, mediaSource ->
+                mToolbar.setLogo(mediaSource != null
+                        ? new BitmapDrawable(getResources(), mediaSource.getCroppedPackageIcon())
+                        : null));
+        }
         mBackgroundScrim = view.findViewById(R.id.background_scrim);
         ViewUtils.setVisible(mBackgroundScrim, false);
         mControlBarScrim = view.findViewById(R.id.control_bar_scrim);
@@ -400,12 +420,6 @@ public class PlaybackFragment extends Fragment {
                 mSeekBar.setVisibility(View.GONE);
             }
         }
-
-        ImageView logoView = view.findViewById(R.id.car_ui_toolbar_title_logo);
-        MediaSourceViewModel mediaSourceViewModel = getMediaSourceViewModel();
-        mediaSourceViewModel.getPrimaryMediaSource().observe(this, mediaSource ->
-                logoView.setImageBitmap(mediaSource != null
-                        ? mediaSource.getRoundPackageIcon() : null));
 
         mViewModel = ViewModelProviders.of(requireActivity()).get(MediaActivity.ViewModel.class);
 
@@ -568,8 +582,20 @@ public class PlaybackFragment extends Fragment {
 
     private void setQueueVisible(boolean visible) {
         mQueueIsVisible = visible;
-        mQueueButton.setActivated(mQueueIsVisible);
-        mQueueButton.setSelected(mQueueIsVisible);
+
+        if (mToolbar != null) {
+            if (mHasQueue) {
+                MenuItem queueMenuItem = MenuItem.builder(getContext())
+                        .setIcon(R.drawable.ic_queue_button)
+                        .setActivated(mQueueIsVisible)
+                        .setOnClickListener(button -> toggleQueueVisibility())
+                        .build();
+                mToolbar.setMenuItems(Collections.singletonList(queueMenuItem));
+            } else {
+                mToolbar.setMenuItems(Collections.emptyList());
+            }
+        }
+
         if (mQueueIsVisible) {
             ViewUtils.showViewsAnimated(mViewsToShowWhenQueueIsVisible, mFadeDuration);
             ViewUtils.hideViewsAnimated(mViewsToHideWhenQueueIsVisible, mFadeDuration);
@@ -586,7 +612,6 @@ public class PlaybackFragment extends Fragment {
     /** Sets whether the source has a queue. */
     private void setHasQueue(boolean hasQueue) {
         mHasQueue = hasQueue;
-        mQueueButton.setVisibility(mHasQueue ? View.VISIBLE : View.GONE);
         setQueueVisible(hasQueue && mQueueIsVisible);
     }
 
@@ -608,12 +633,13 @@ public class PlaybackFragment extends Fragment {
         mPlaybackControls.close();
     }
 
+    // TODO(b/151174811): Use appropriate modes, instead of just MEDIA_SOURCE_MODE_BROWSE
     private PlaybackViewModel getPlaybackViewModel() {
-        return PlaybackViewModel.get(getActivity().getApplication());
+        return PlaybackViewModel.get(getActivity().getApplication(), MEDIA_SOURCE_MODE_BROWSE);
     }
 
     private MediaSourceViewModel getMediaSourceViewModel() {
-        return MediaSourceViewModel.get(getActivity().getApplication());
+        return MediaSourceViewModel.get(getActivity().getApplication(), MEDIA_SOURCE_MODE_BROWSE);
     }
 
     /**
@@ -622,11 +648,5 @@ public class PlaybackFragment extends Fragment {
      */
     public void setListener(PlaybackFragmentListener listener) {
         mListener = listener;
-    }
-
-    private void onCollapse() {
-        if (mListener != null) {
-            mListener.onCollapse();
-        }
     }
 }
