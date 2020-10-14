@@ -4,7 +4,6 @@ import android.car.drivingstate.CarUxRestrictions;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -186,8 +185,8 @@ public class AppBarController {
      * Updates the currently active item
      */
     public void setActiveItem(MediaItemMetadata item) {
-        for (int i = 0; i < mToolbarController.getTabLayout().getTabCount(); i++) {
-            MediaItemTab mediaItemTab = (MediaItemTab) mToolbarController.getTabLayout().get(i);
+        for (int i = 0; i < mToolbarController.getTabCount(); i++) {
+            MediaItemTab mediaItemTab = (MediaItemTab) mToolbarController.getTab(i);
             boolean match = item != null && Objects.equals(
                     item.getId(),
                     mediaItemTab.getItem().getId());
