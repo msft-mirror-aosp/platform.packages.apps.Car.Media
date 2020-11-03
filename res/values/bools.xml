@@ -24,4 +24,8 @@
     <bool name="show_subtitle_for_queue_list_item">false</bool>
     <!-- Override this flag to show an icon that launches sound settings (equalizer) -->
     <bool name="show_sound_settings">false</bool>
+    <!-- The minimized control bar sits on top of the FocusArea that contains the browse list. This
+         flag sets whether to move the bottom highlight of the FocusArea upward so that the
+         highlight doesn't overlap with the minimized control bar. -->
+    <bool name="set_browse_list_focus_area_highlight_above_minimized_control_bar">true</bool>
 </resources>

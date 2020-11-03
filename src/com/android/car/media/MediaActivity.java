@@ -31,7 +31,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Size;
@@ -54,7 +53,7 @@ import androidx.lifecycle.ViewModelProviders;
 import com.android.car.apps.common.util.VectorMath;
 import com.android.car.apps.common.util.CarPackageManagerUtils;
 import com.android.car.apps.common.util.ViewUtils;
-import com.android.car.media.common.MediaConstants;
+import com.android.car.media.common.PlaybackErrorsHelper;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.MinimizedPlaybackControlBar;
 import com.android.car.media.common.playback.PlaybackViewModel;
@@ -63,7 +62,6 @@ import com.android.car.media.common.source.MediaSourceViewModel;
 import com.android.car.ui.AlertDialogBuilder;
 import com.android.car.ui.utils.CarUxRestrictionsUtil;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -90,7 +88,7 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
     private ViewGroup mBrowseContainer;
     private ViewGroup mPlaybackContainer;
     private ViewGroup mErrorContainer;
-    private ErrorViewController mErrorController;
+    private ErrorScreenController mErrorController;
     private ViewGroup mSearchContainer;
 
     private Toast mToast;
@@ -133,30 +131,6 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
         FATAL_ERROR
     }
 
-    private static final Map<Integer, Integer> ERROR_CODE_MESSAGES_MAP;
-
-    static {
-        Map<Integer, Integer> map = new HashMap<>();
-        map.put(PlaybackStateCompat.ERROR_CODE_APP_ERROR, R.string.error_code_app_error);
-        map.put(PlaybackStateCompat.ERROR_CODE_NOT_SUPPORTED, R.string.error_code_not_supported);
-        map.put(PlaybackStateCompat.ERROR_CODE_AUTHENTICATION_EXPIRED,
-                R.string.error_code_authentication_expired);
-        map.put(PlaybackStateCompat.ERROR_CODE_PREMIUM_ACCOUNT_REQUIRED,
-                R.string.error_code_premium_account_required);
-        map.put(PlaybackStateCompat.ERROR_CODE_CONCURRENT_STREAM_LIMIT,
-                R.string.error_code_concurrent_stream_limit);
-        map.put(PlaybackStateCompat.ERROR_CODE_PARENTAL_CONTROL_RESTRICTED,
-                R.string.error_code_parental_control_restricted);
-        map.put(PlaybackStateCompat.ERROR_CODE_NOT_AVAILABLE_IN_REGION,
-                R.string.error_code_not_available_in_region);
-        map.put(PlaybackStateCompat.ERROR_CODE_CONTENT_ALREADY_PLAYING,
-                R.string.error_code_content_already_playing);
-        map.put(PlaybackStateCompat.ERROR_CODE_SKIP_LIMIT_REACHED,
-                R.string.error_code_skip_limit_reached);
-        map.put(PlaybackStateCompat.ERROR_CODE_ACTION_ABORTED, R.string.error_code_action_aborted);
-        map.put(PlaybackStateCompat.ERROR_CODE_END_OF_QUEUE, R.string.error_code_end_of_queue);
-        ERROR_CODE_MESSAGES_MAP = Collections.unmodifiableMap(map);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -247,95 +221,60 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
 
     private void handlePlaybackState(PlaybackViewModel.PlaybackStateWrapper state,
             boolean ignoreSameState) {
-        if (Log.isLoggable(TAG, Log.DEBUG)) {
-            Log.d(TAG,
-                    "handlePlaybackState(); state change: " + (mCurrentPlaybackStateWrapper != null
-                            ? mCurrentPlaybackStateWrapper.getState() : null) + " -> " + (
-                            state != null ? state.getState() : null));
-
-        }
-
-        // TODO(arnaudberry) rethink interactions between customized layouts and dynamic visibility.
-        mCanShowMiniPlaybackControls = (state != null) && state.shouldDisplay();
-        updateMiniPlaybackControls(true);
-
-        if (state == null) {
-            mCurrentPlaybackStateWrapper = null;
-            return;
-        }
-
-        String displayedMessage = getDisplayedMessage(state);
-        if (Log.isLoggable(TAG, Log.DEBUG)) {
-            Log.d(TAG, "Displayed error message: [" + displayedMessage + "]");
-        }
-        if (ignoreSameState && mCurrentPlaybackStateWrapper != null
-                && mCurrentPlaybackStateWrapper.getState() == state.getState()
-                && TextUtils.equals(displayedMessage,
-                getDisplayedMessage(mCurrentPlaybackStateWrapper))) {
-            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                Log.d(TAG, "Ignore same playback state.");
-            }
-            return;
-        }
-
-        mCurrentPlaybackStateWrapper = state;
-
-        maybeCancelToast();
-        maybeCancelDialog();
-
-        Bundle extras = state.getExtras();
-        PendingIntent intent = extras == null ? null : extras.getParcelable(
-                MediaConstants.ERROR_RESOLUTION_ACTION_INTENT);
-        String label = extras == null ? null : extras.getString(
-                MediaConstants.ERROR_RESOLUTION_ACTION_LABEL);
-
-        boolean isFatalError = false;
-        if (!TextUtils.isEmpty(displayedMessage)) {
-            if (mBrowseController.browseTreeHasChildren()) {
-                if (intent != null && !isUxRestricted()) {
-                    showDialog(intent, displayedMessage, label, getString(android.R.string.cancel));
-                } else {
-                    showToast(displayedMessage);
-                }
-            } else {
-                getErrorController().setError(displayedMessage, label, intent,
-                        CarPackageManagerUtils.isDistractionOptimized(mCarPackageManager, intent));
-                isFatalError = true;
-            }
-        }
-        if (isFatalError) {
-            changeMode(Mode.FATAL_ERROR);
-        } else if (mMode == Mode.FATAL_ERROR) {
-            changeMode(Mode.BROWSING);
-        }
+        mErrorsHelper.handlePlaybackState(TAG, state, ignoreSameState);
     }
 
-    private ErrorViewController getErrorController() {
+    private final PlaybackErrorsHelper mErrorsHelper = new PlaybackErrorsHelper(this) {
+
+        @Override
+        public void handlePlaybackState(@NonNull String tag,
+                PlaybackViewModel.PlaybackStateWrapper state, boolean ignoreSameState) {
+
+            // TODO rethink interactions between customized layouts and dynamic visibility.
+            mCanShowMiniPlaybackControls = (state != null) && state.shouldDisplay();
+            updateMiniPlaybackControls(true);
+            super.handlePlaybackState(tag, state, ignoreSameState);
+        }
+
+        @Override
+        public void handleNewPlaybackState(String displayedMessage, PendingIntent intent,
+                String label) {
+            maybeCancelToast();
+            maybeCancelDialog();
+
+            boolean isFatalError = false;
+            if (!TextUtils.isEmpty(displayedMessage)) {
+                if (mBrowseController.browseTreeHasChildren()) {
+                    if (intent != null && !isUxRestricted()) {
+                        showDialog(intent, displayedMessage, label,
+                                getString(android.R.string.cancel));
+                    } else {
+                        showToast(displayedMessage);
+                    }
+                } else {
+                    boolean isDistractionOptimized =
+                            intent != null && CarPackageManagerUtils.isDistractionOptimized(
+                                    mCarPackageManager, intent);
+                    getErrorController().setError(displayedMessage, label, intent,
+                            isDistractionOptimized);
+                    isFatalError = true;
+                }
+            }
+            if (isFatalError) {
+                changeMode(MediaActivity.Mode.FATAL_ERROR);
+            } else if (mMode == MediaActivity.Mode.FATAL_ERROR) {
+                changeMode(MediaActivity.Mode.BROWSING);
+            }
+        }
+    };
+
+    private ErrorScreenController getErrorController() {
         if (mErrorController == null) {
-            mErrorController = new ErrorViewController(this, mCarPackageManager, mErrorContainer);
+            mErrorController = new ErrorScreenController(this, mCarPackageManager, mErrorContainer);
             MediaSource mediaSource = getMediaSourceViewModel().getPrimaryMediaSource().getValue();
             mErrorController.onMediaSourceChanged(mediaSource);
         }
         return mErrorController;
-    }
-
-    private String getDisplayedMessage(@Nullable PlaybackViewModel.PlaybackStateWrapper state) {
-        if (state == null) {
-            return null;
-        }
-        if (!TextUtils.isEmpty(state.getErrorMessage())) {
-            return state.getErrorMessage().toString();
-        }
-        // ERROR_CODE_UNKNOWN_ERROR means there is no error in PlaybackState.
-        if (state.getErrorCode() != PlaybackStateCompat.ERROR_CODE_UNKNOWN_ERROR) {
-            Integer messageId = ERROR_CODE_MESSAGES_MAP.get(state.getErrorCode());
-            return messageId != null ? getString(messageId) : getString(
-                    R.string.default_error_message);
-        }
-        if (state.getState() == PlaybackStateCompat.STATE_ERROR) {
-            return getString(R.string.default_error_message);
-        }
-        return null;
     }
 
     private void showDialog(PendingIntent intent, String message, String positiveBtnText,
