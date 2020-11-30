@@ -40,4 +40,5 @@
     <string name="error_code_end_of_queue" msgid="2842652212154074468">"Ijro navbatida boshqa fayllar mavjud emas"</string>
     <string name="service_notification_title" msgid="8085444675783592744">"Media manbaga ulanish"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"Tovush sozlamalari"</string>
+    <string name="menu_item_app_selector_title" msgid="4587248991114338595">"Ilovalarni almashtirish"</string>
 </resources>
