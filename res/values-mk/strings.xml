@@ -36,7 +36,7 @@
     <string name="error_code_not_available_in_region" msgid="4106605584926645567">"Не може да се добие таа содржина тука"</string>
     <string name="error_code_content_already_playing" msgid="8050972499898729459">"Веќе е пуштена таа содржина"</string>
     <string name="error_code_skip_limit_reached" msgid="8926507875025988831">"Не може да прескокне повеќе песни"</string>
-    <string name="error_code_action_aborted" msgid="3889734248905737169">"Не можеше да заврши. Обидете се повторно."</string>
+    <string name="error_code_action_aborted" msgid="3889734248905737169">"Не може да заврши. Обидете се повторно."</string>
     <string name="error_code_end_of_queue" msgid="2842652212154074468">"Веќе ништо не чека на ред"</string>
     <string name="service_notification_title" msgid="8085444675783592744">"Се поврзува со аудиовизуелниот извор"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"Поставки за звукот"</string>
