@@ -229,10 +229,6 @@ public class AppBarController {
         mToolbarController.setBackgroundShown(shown);
     }
 
-    public void registerOnBackListener(Toolbar.OnBackListener listener) {
-        mToolbarController.registerOnBackListener(listener);
-    }
-
     public void setNavButtonMode(Toolbar.NavButtonMode mode) {
         mToolbarController.setNavButtonMode(mode);
     }
