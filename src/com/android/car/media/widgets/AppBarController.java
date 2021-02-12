@@ -43,6 +43,7 @@ public class AppBarController {
 
     private boolean mSearchSupported;
     private boolean mShowSearchIfSupported;
+    private String mSearchQuery;
 
     private Intent mAppSelectorIntent;
 
@@ -84,7 +85,12 @@ public class AppBarController {
 
         mToolbarController.registerOnTabSelectedListener(tab ->
                 mListener.onTabSelected(((MediaItemTab) tab).getItem()));
-        mToolbarController.registerOnSearchListener(query -> mListener.onSearch(query));
+        mToolbarController.registerOnSearchListener(query -> {
+            mSearchQuery = query;
+            mListener.onSearch(query);
+        });
+        mToolbarController.registerOnSearchCompletedListener(
+                () -> mListener.onSearch(mSearchQuery));
         mSearch = MenuItem.builder(context)
                 .setToSearch()
                 .setOnClickListener(v -> mListener.onSearchSelection())
