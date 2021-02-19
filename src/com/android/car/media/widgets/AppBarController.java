@@ -4,6 +4,7 @@ import android.car.drivingstate.CarUxRestrictions;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -237,5 +238,15 @@ public class AppBarController {
 
     public void setNavButtonMode(Toolbar.NavButtonMode mode) {
         mToolbarController.setNavButtonMode(mode);
+    }
+
+    /** See {@link ToolbarController#canShowSearchResultItems}. */
+    public boolean canShowSearchResultsView() {
+        return mToolbarController.canShowSearchResultsView();
+    }
+
+    /** See {@link ToolbarController#setSearchResultsView}. */
+    public void setSearchResultsView(View view) {
+        mToolbarController.setSearchResultsView(view);
     }
 }
