@@ -31,6 +31,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.apps.common.util.ViewUtils.ViewAnimEndListener;
@@ -252,6 +254,21 @@ public class MediaActivityController extends ViewControllerBase {
 
         mAppBarController.setListener(mAppBarListener);
         mAppBarController.setSearchQuery(mViewModel.getSearchQuery());
+        if (mAppBarController.canShowSearchResultsView()) {
+            // TODO(b/180441965) eliminate the need to create a different view and use
+            //     mSearchResultsController.getContent() instead.
+            RecyclerView toolbarSearchResultsView = new RecyclerView(activity);
+            mSearchResultsController.shareBrowseAdapterWith(toolbarSearchResultsView);
+
+            ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            toolbarSearchResultsView.setLayoutParams(params);
+            toolbarSearchResultsView.setLayoutManager(new LinearLayoutManager(activity));
+            toolbarSearchResultsView.setBackground(
+                    activity.getDrawable(R.drawable.car_ui_ime_wide_screen_background));
+
+            mAppBarController.setSearchResultsView(toolbarSearchResultsView);
+        }
 
         updateAppBar();
 
