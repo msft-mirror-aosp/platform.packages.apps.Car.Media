@@ -199,6 +199,11 @@ public class BrowseViewController {
         mMediaItems.observe(activity, mItemsObserver);
     }
 
+    /** Shares the browse adapter with the given view... #local-hack. */
+    public void shareBrowseAdapterWith(RecyclerView view) {
+        view.setAdapter(mLimitedBrowseAdapter);
+    }
+
     private final Observer<FutureData<List<MediaItemMetadata>>> mItemsObserver =
             this::onItemsUpdate;
 
