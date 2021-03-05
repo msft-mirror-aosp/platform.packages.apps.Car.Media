@@ -48,6 +48,7 @@ import com.android.car.ui.baselayout.Insets;
 import com.android.car.ui.toolbar.Toolbar;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -328,6 +329,25 @@ public class MediaActivityController extends ViewControllerBase {
         }
 
         @Override
+            public void onChildrenNodesRemoved(@NonNull BrowseViewController controller,
+                    @NonNull Collection<MediaItemMetadata> removedNodes) {
+
+            if (mBrowseStack.contains(controller.getParentItem())) {
+                for (MediaItemMetadata node : removedNodes) {
+                    int indexOfNode = mBrowseStack.indexOf(node);
+                    if (indexOfNode >= 0) {
+                        clearStack(mBrowseStack.subList(indexOfNode, mBrowseStack.size()));
+                        if (!mViewModel.isShowingSearchResults()) {
+                            showCurrentNode(true);
+                            updateAppBar();
+                        }
+                        break; // The stack contains at most one of the removed nodes.
+                    }
+                }
+            }
+        }
+
+        @Override
         public FragmentActivity getActivity() {
             return mCallbacks.getActivity();
         }
@@ -477,9 +497,10 @@ public class MediaActivityController extends ViewControllerBase {
     }
 
     /**
-     * Clears the given stack and destroys the old controllers (after their view is hidden).
+     * Clears the given stack (or a portion of a stack) and destroys the old controllers (after
+     * their view is hidden).
      */
-    private void clearStack(Stack<MediaItemMetadata> stack) {
+    private void clearStack(List<MediaItemMetadata> stack) {
         for (MediaItemMetadata item : stack) {
             hideAndDestroyControllerForItem(item);
         }
@@ -522,12 +543,8 @@ public class MediaActivityController extends ViewControllerBase {
             mAcceptTabSelection = false;
             mAppBarController.setItems(mTopItems.size() == 1 ? null : mTopItems);
             mAppBarController.setActiveItem(newTab);
-            updateAppBar();
 
             if (oldTab != newTab) {
-                if (!mViewModel.isSearching()) {
-                    showCurrentNode(false);
-                }
                 // Tabs belong to the browse stack.
                 clearStack(mBrowseStack);
                 mBrowseStack.push(newTab);
@@ -541,6 +558,7 @@ public class MediaActivityController extends ViewControllerBase {
         }  finally {
             mAcceptTabSelection = true;
         }
+        updateAppBar();
     }
 
     private void updateAppBarTitle() {
