@@ -49,6 +49,7 @@ import com.android.car.ui.baselayout.Insets;
 import com.android.car.uxr.LifeCycleObserverUxrContentLimiter;
 import com.android.car.uxr.UxrContentLimiterImpl;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -113,6 +114,10 @@ public class BrowseViewController {
 
         /** Invoked when the user clicks on a browsable item. */
         void onBrowsableItemClicked(@NonNull MediaItemMetadata item);
+
+        /** Invoked when child nodes have been removed from this controller. */
+        void onChildrenNodesRemoved(@NonNull BrowseViewController controller,
+                @NonNull Collection<MediaItemMetadata> removedNodes);
 
         FragmentActivity getActivity();
     }
@@ -197,6 +202,10 @@ public class BrowseViewController {
         browseAdapter.setRootPlayableViewType(rootPlayableHint);
 
         mMediaItems.observe(activity, mItemsObserver);
+    }
+
+    public MediaItemMetadata getParentItem() {
+        return mParentItem;
     }
 
     /** Shares the browse adapter with the given view... #local-hack. */
@@ -340,6 +349,14 @@ public class BrowseViewController {
                 /*root*/ !mDisplayMediaItems, futureData.getData());
         if (mDisplayMediaItems) {
             mLimitedBrowseAdapter.submitItems(mParentItem, items);
+
+            List<MediaItemMetadata> lastNodes =
+                    MediaBrowserViewModelImpl.selectBrowseableItems(futureData.getPastData());
+            Collection<MediaItemMetadata> removedNodes =
+                    MediaBrowserViewModelImpl.computeRemovedItems(lastNodes, items);
+            if (!removedNodes.isEmpty()) {
+                mCallbacks.onChildrenNodesRemoved(this, removedNodes);
+            }
         }
 
         int duration = mFadeDuration;
