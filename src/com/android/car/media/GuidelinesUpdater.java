@@ -16,7 +16,6 @@
 
 package com.android.car.media;
 
-import android.app.Activity;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -24,7 +23,6 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.android.car.ui.baselayout.Insets;
 import com.android.car.ui.baselayout.InsetsChangedListener;
-import com.android.car.ui.core.BaseLayoutController;
 
 import java.util.HashSet;
 import java.util.Set;
