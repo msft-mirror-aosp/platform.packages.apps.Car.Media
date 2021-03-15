@@ -120,6 +120,11 @@ public class BrowseViewController extends ViewControllerBase {
     private List<MediaItemMetadata> mTopItems;
 
     /**
+     * The bottom padding of the FocusArea highlight.
+     */
+    private int mFocusAreaHighlightBottomPadding;
+
+    /**
      * Callbacks (implemented by the hosting Activity)
      */
     public interface Callbacks {
@@ -404,7 +409,12 @@ public class BrowseViewController extends ViewControllerBase {
         int rightPadding = mBrowseList.getPaddingRight();
         int bottomPadding = mBrowseList.getPaddingBottom();
         mBrowseList.setPadding(leftPadding, insets.getTop(), rightPadding, bottomPadding);
-        mFocusArea.setHighlightPadding(leftPadding, insets.getTop(), rightPadding, bottomPadding);
+        if (bottomPadding > mFocusAreaHighlightBottomPadding) {
+            mFocusAreaHighlightBottomPadding = bottomPadding;
+        }
+        mFocusArea.setHighlightPadding(
+                leftPadding, insets.getTop(), rightPadding, mFocusAreaHighlightBottomPadding);
+        mFocusArea.setBoundsOffset(leftPadding, insets.getTop(), rightPadding, bottomPadding);
     }
 
     void onPlaybackControlsChanged(boolean visible) {
@@ -416,8 +426,12 @@ public class BrowseViewController extends ViewControllerBase {
                         R.dimen.browse_fragment_bottom_padding)
                 : 0;
         mBrowseList.setPadding(leftPadding, topPadding, rightPadding, bottomPadding);
-        mFocusArea.setHighlightPadding(leftPadding, topPadding, rightPadding,
-                mSetFocusAreaHighlightBottom ? bottomPadding : 0);
+        int highlightBottomPadding = mSetFocusAreaHighlightBottom ? bottomPadding : 0;
+        if (highlightBottomPadding > mFocusAreaHighlightBottomPadding) {
+            mFocusAreaHighlightBottomPadding = highlightBottomPadding;
+        }
+        mFocusArea.setHighlightPadding(
+                leftPadding, topPadding, rightPadding, mFocusAreaHighlightBottomPadding);
         // Set the bottom offset to bottomPadding regardless of mSetFocusAreaHighlightBottom so that
         // RotaryService can find the correct target when the user nudges the rotary controller.
         mFocusArea.setBoundsOffset(leftPadding, topPadding, rightPadding, bottomPadding);
