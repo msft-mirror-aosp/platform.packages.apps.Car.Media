@@ -33,7 +33,6 @@ import com.android.car.media.common.MediaConstants;
 import com.android.car.media.common.MediaItemMetadata;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -100,13 +99,13 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
         /**
          * Callback invoked when a user clicks on a playable item.
          */
-        protected void onPlayableItemClicked(MediaItemMetadata item) {
+        protected void onPlayableItemClicked(@NonNull MediaItemMetadata item) {
         }
 
         /**
          * Callback invoked when a user clicks on a browsable item.
          */
-        protected void onBrowsableItemClicked(MediaItemMetadata item) {
+        protected void onBrowsableItemClicked(@NonNull MediaItemMetadata item) {
         }
 
         /**
