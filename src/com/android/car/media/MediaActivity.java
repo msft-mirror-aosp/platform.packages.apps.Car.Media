@@ -50,12 +50,12 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProviders;
 
-import com.android.car.apps.common.util.VectorMath;
 import com.android.car.apps.common.util.CarPackageManagerUtils;
+import com.android.car.apps.common.util.VectorMath;
 import com.android.car.apps.common.util.ViewUtils;
-import com.android.car.media.common.PlaybackErrorsHelper;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.MinimizedPlaybackControlBar;
+import com.android.car.media.common.PlaybackErrorsHelper;
 import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.common.source.MediaSourceViewModel;
@@ -359,10 +359,11 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
             if (Log.isLoggable(TAG, Log.INFO)) {
                 Log.i(TAG, "Browsing: " + mediaSource.getDisplayName());
             }
-            Mode mediaSourceMode = getInnerViewModel().getSavedMode();
-            // Changes the mode regardless of its previous value so that the views can be updated.
-            changeModeInternal(mediaSourceMode, false);
-
+            // Change the mode regardless of its previous value so that the views can be updated.
+            // The saved mode is ignored as the media apps don't always recreate a playback state
+            // that can be displayed (and some send a displayable state after sending a non
+            // displayable one...).
+            changeModeInternal(Mode.BROWSING, false);
             // Always go through the trampoline activity to keep all the dispatching logic there.
             startActivity(new Intent(Car.CAR_INTENT_ACTION_MEDIA_TEMPLATE));
         }
