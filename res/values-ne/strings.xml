@@ -28,7 +28,7 @@
     <string name="fragment_playback_title" msgid="5014481549024607614">"अहिले प्ले भइरहेको"</string>
     <string name="default_error_message" msgid="6365377134388091079">"केही चिज गडबड छ। पछि प्रयास गर्नुहोस्।"</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"त्यो कार्य अहिले नै गर्न सकिँदैन"</string>
-    <string name="error_code_not_supported" msgid="1435878548411799387">"यो अनुप्रयोगले त्यो कार्य गर्न सक्दैन"</string>
+    <string name="error_code_not_supported" msgid="1435878548411799387">"यो एपले त्यो कार्य गर्न सक्दैन"</string>
     <string name="error_code_authentication_expired" msgid="905154133202017052">"यो एप प्रयोग गर्न साइन इन गर्नुहोस्"</string>
     <string name="error_code_premium_account_required" msgid="4736461331592855166">"प्रिमियममाथिको पहुँच आवश्यक छ"</string>
     <string name="error_code_concurrent_stream_limit" msgid="1279573243715957403">"अत्यधिक यन्त्रहरूमा सुन्दै"</string>
