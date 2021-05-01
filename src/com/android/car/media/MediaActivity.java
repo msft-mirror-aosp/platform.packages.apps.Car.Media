@@ -437,7 +437,9 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         int fadeOutDuration = hideViewAnimated ? mFadeDuration : 0;
         // Minimized control bar should be hidden in playback view.
         final boolean shouldShowMiniPlaybackControls =
-                mCanShowMiniPlaybackControls && mMode != Mode.PLAYBACK;
+                getResources().getBoolean(R.bool.show_mini_playback_controls)
+                        && mCanShowMiniPlaybackControls
+                        && mMode != Mode.PLAYBACK;
         if (shouldShowMiniPlaybackControls) {
             Boolean visible = getInnerViewModel().getMiniControlsVisible().getValue();
             if (visible != Boolean.TRUE) {
