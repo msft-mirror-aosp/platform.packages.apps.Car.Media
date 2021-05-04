@@ -18,6 +18,7 @@ package com.android.car.media;
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
 
 import static com.android.car.apps.common.util.VectorMath.EPSILON;
+import static com.android.car.arch.common.LiveDataFunctions.dataOf;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -26,7 +27,6 @@ import android.app.PendingIntent;
 import android.car.Car;
 import android.car.content.pm.CarPackageManager;
 import android.car.drivingstate.CarUxRestrictions;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -56,9 +56,9 @@ import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.MinimizedPlaybackControlBar;
 import com.android.car.media.common.PlaybackErrorsHelper;
+import com.android.car.media.common.browse.MediaItemsRepository;
 import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaSource;
-import com.android.car.media.common.source.MediaSourceViewModel;
 import com.android.car.ui.AlertDialogBuilder;
 import com.android.car.ui.utils.CarUxRestrictionsUtil;
 
@@ -70,7 +70,7 @@ import java.util.Stack;
  * This activity controls the UI of media. It also updates the connection status for the media app
  * by broadcast.
  */
-public class MediaActivity extends FragmentActivity implements BrowseViewController.Callbacks {
+public class MediaActivity extends FragmentActivity implements MediaActivityController.Callbacks {
     private static final String TAG = "MediaActivity";
 
     /** Configuration (controlled from resources) */
@@ -80,16 +80,13 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
     private PlaybackViewModel.PlaybackController mPlaybackController;
 
     /** Layout views */
-    private View mRootView;
     private PlaybackFragment mPlaybackFragment;
-    private BrowseViewController mSearchController;
-    private BrowseViewController mBrowseController;
+    private MediaActivityController mMediaActivityController;
     private MinimizedPlaybackControlBar mMiniPlaybackControls;
     private ViewGroup mBrowseContainer;
     private ViewGroup mPlaybackContainer;
     private ViewGroup mErrorContainer;
     private ErrorScreenController mErrorController;
-    private ViewGroup mSearchContainer;
 
     private Toast mToast;
     private AlertDialog mDialog;
@@ -119,14 +116,14 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
 
     /**
      * Possible modes of the application UI
+     * Todo: refactor into non exclusive flags to allow concurrent modes (eg: play details & browse)
+     * (b/179292793).
      */
     enum Mode {
-        /** The user is browsing a media source */
+        /** The user is browsing or searching a media source */
         BROWSING,
         /** The user is interacting with the full screen playback UI */
         PLAYBACK,
-        /** The user is searching within a media source */
-        SEARCHING,
         /** There's no browse tree and playback doesn't work. */
         FATAL_ERROR
     }
@@ -142,8 +139,6 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
         mCloseVectorY = res.getFloat(R.dimen.media_activity_close_vector_y);
         mCloseVectorNorm = VectorMath.norm2(mCloseVectorX, mCloseVectorY);
 
-
-        MediaSourceViewModel mediaSourceViewModel = getMediaSourceViewModel();
         // TODO(b/151174811): Use appropriate modes, instead of just MEDIA_SOURCE_MODE_BROWSE
         PlaybackViewModel playbackViewModel = getPlaybackViewModel();
         ViewModel localViewModel = getInnerViewModel();
@@ -156,10 +151,7 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
         }
         mMode = localViewModel.getSavedMode();
 
-        mRootView = findViewById(R.id.media_activity_root);
-
-        mediaSourceViewModel.getPrimaryMediaSource().observe(this,
-                this::onMediaSourceChanged);
+        localViewModel.getBrowsedMediaSource().observe(this, this::onMediaSourceChanged);
 
         mPlaybackFragment = new PlaybackFragment();
         mPlaybackFragment.setListener(mPlaybackFragmentListener);
@@ -174,15 +166,12 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
         mBrowseContainer = findViewById(R.id.fragment_container);
         mErrorContainer = findViewById(R.id.error_container);
         mPlaybackContainer = findViewById(R.id.playback_container);
-        mSearchContainer = findViewById(R.id.search_container);
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.playback_container, mPlaybackFragment)
                 .commit();
 
-        mBrowseController = BrowseViewController.newInstance(this,
+        mMediaActivityController = new MediaActivityController(this, getMediaItemsRepository(),
                 mCarPackageManager, mBrowseContainer);
-        mSearchController = BrowseViewController.newSearchInstance(this,
-                mCarPackageManager, mSearchContainer);
 
         playbackViewModel.getPlaybackController().observe(this,
                 playbackController -> {
@@ -201,17 +190,13 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
         mCarUxRestrictionsUtil.register(mListener);
 
         mPlaybackContainer.setOnTouchListener(new ClosePlaybackDetector(this));
-
-        localViewModel.getMiniControlsVisible().observe(this, visible -> {
-            mBrowseController.onPlaybackControlsChanged(visible);
-            mSearchController.onPlaybackControlsChanged(visible);
-        });
     }
 
     @Override
     protected void onDestroy() {
         mCarUxRestrictionsUtil.unregister(mListener);
         mCar.disconnect();
+        mMediaActivityController.onDestroy();
         super.onDestroy();
     }
 
@@ -244,7 +229,7 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
 
             boolean isFatalError = false;
             if (!TextUtils.isEmpty(displayedMessage)) {
-                if (mBrowseController.browseTreeHasChildren()) {
+                if (mMediaActivityController.browseTreeHasChildren()) {
                     if (intent != null && !isUxRestricted()) {
                         showDialog(intent, displayedMessage, label,
                                 getString(android.R.string.cancel));
@@ -271,7 +256,7 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
     private ErrorScreenController getErrorController() {
         if (mErrorController == null) {
             mErrorController = new ErrorScreenController(this, mCarPackageManager, mErrorContainer);
-            MediaSource mediaSource = getMediaSourceViewModel().getPrimaryMediaSource().getValue();
+            MediaSource mediaSource = getInnerViewModel().getBrowsedMediaSource().getValue();
             mErrorController.onMediaSourceChanged(mediaSource);
         }
         return mErrorController;
@@ -319,11 +304,8 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
             case PLAYBACK:
                 changeMode(Mode.BROWSING);
                 break;
-            case SEARCHING:
-                mSearchController.onBackPressed();
-                break;
             case BROWSING:
-                boolean handled = mBrowseController.onBackPressed();
+                boolean handled = mMediaActivityController.onBackPressed();
                 if (handled) return;
                 // Fall through.
             case FATAL_ERROR:
@@ -338,16 +320,7 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
      * @param mediaSource the new media source we are going to try to browse
      */
     private void onMediaSourceChanged(@Nullable MediaSource mediaSource) {
-        ComponentName savedMediaSource = getInnerViewModel().getSavedMediaSource();
-        if (Log.isLoggable(TAG, Log.INFO)) {
-            Log.i(TAG, "MediaSource changed from " + savedMediaSource + " to " + mediaSource);
-        }
 
-        savedMediaSource = mediaSource != null ? mediaSource.getBrowseServiceComponentName() : null;
-        getInnerViewModel().saveMediaSource(savedMediaSource);
-
-        mBrowseController.onMediaSourceChanged(mediaSource);
-        mSearchController.onMediaSourceChanged(mediaSource);
         if (mErrorController != null) {
             mErrorController.onMediaSourceChanged(mediaSource);
         }
@@ -369,8 +342,7 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
         }
     }
 
-    @Override
-    public void changeMode(Mode mode) {
+    private void changeMode(Mode mode) {
         if (mMode == mode) {
             if (Log.isLoggable(TAG, Log.INFO)) {
                 Log.i(TAG, "Mode " + mMode + " change is ignored");
@@ -398,7 +370,6 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
                 ViewUtils.showViewAnimated(mErrorContainer, mFadeDuration);
                 ViewUtils.hideViewAnimated(mPlaybackContainer, fadeOutDuration);
                 ViewUtils.hideViewAnimated(mBrowseContainer, fadeOutDuration);
-                ViewUtils.hideViewAnimated(mSearchContainer, fadeOutDuration);
                 break;
             case PLAYBACK:
                 mPlaybackContainer.setX(0);
@@ -407,26 +378,17 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
                 ViewUtils.hideViewAnimated(mErrorContainer, fadeOutDuration);
                 ViewUtils.showViewAnimated(mPlaybackContainer, mFadeDuration);
                 ViewUtils.hideViewAnimated(mBrowseContainer, fadeOutDuration);
-                ViewUtils.hideViewAnimated(mSearchContainer, fadeOutDuration);
                 break;
             case BROWSING:
                 if (oldMode == Mode.PLAYBACK) {
                     ViewUtils.hideViewAnimated(mErrorContainer, 0);
                     ViewUtils.showViewAnimated(mBrowseContainer, 0);
-                    ViewUtils.hideViewAnimated(mSearchContainer, 0);
                     animateOutPlaybackContainer(fadeOutDuration);
                 } else {
                     ViewUtils.hideViewAnimated(mErrorContainer, fadeOutDuration);
                     ViewUtils.hideViewAnimated(mPlaybackContainer, fadeOutDuration);
                     ViewUtils.showViewAnimated(mBrowseContainer, mFadeDuration);
-                    ViewUtils.hideViewAnimated(mSearchContainer, fadeOutDuration);
                 }
-                break;
-            case SEARCHING:
-                ViewUtils.hideViewAnimated(mErrorContainer, fadeOutDuration);
-                ViewUtils.hideViewAnimated(mPlaybackContainer, fadeOutDuration);
-                ViewUtils.hideViewAnimated(mBrowseContainer, fadeOutDuration);
-                ViewUtils.showViewAnimated(mSearchContainer, mFadeDuration);
                 break;
         }
     }
@@ -477,7 +439,10 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
         final boolean shouldShowMiniPlaybackControls =
                 mCanShowMiniPlaybackControls && mMode != Mode.PLAYBACK;
         if (shouldShowMiniPlaybackControls) {
-            ViewUtils.showViewAnimated(mMiniPlaybackControls, mFadeDuration);
+            Boolean visible = getInnerViewModel().getMiniControlsVisible().getValue();
+            if (visible != Boolean.TRUE) {
+                ViewUtils.showViewAnimated(mMiniPlaybackControls, mFadeDuration);
+            }
         } else {
             ViewUtils.hideViewAnimated(mMiniPlaybackControls, fadeOutDuration);
         }
@@ -485,14 +450,12 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
     }
 
     @Override
-    public void onPlayableItemClicked(MediaItemMetadata item) {
+    public void onPlayableItemClicked(@NonNull MediaItemMetadata item) {
         mPlaybackController.playItem(item);
         boolean switchToPlayback = getResources().getBoolean(
                 R.bool.switch_to_playback_view_when_playable_item_is_clicked);
         if (switchToPlayback) {
             changeMode(Mode.PLAYBACK);
-        } else if (mMode == Mode.SEARCHING) {
-            changeMode(Mode.BROWSING);
         }
         setIntent(null);
     }
@@ -508,8 +471,8 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
         return this;
     }
 
-    private MediaSourceViewModel getMediaSourceViewModel() {
-        return MediaSourceViewModel.get(getApplication(), MEDIA_SOURCE_MODE_BROWSE);
+    private MediaItemsRepository getMediaItemsRepository() {
+        return MediaItemsRepository.get(getApplication(), MEDIA_SOURCE_MODE_BROWSE);
     }
 
     private PlaybackViewModel getPlaybackViewModel() {
@@ -526,14 +489,18 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
             Mode mMode = Mode.BROWSING;
             Stack<MediaItemMetadata> mBrowseStack = new Stack<>();
             Stack<MediaItemMetadata> mSearchStack = new Stack<>();
+            /** True when the search bar has been opened or when the search results are browsed. */
+            boolean mSearching;
+            /** True iif the list of search results is being shown (implies mIsSearching). */
+            boolean mShowingSearchResults;
             String mSearchQuery;
             boolean mQueueVisible = false;
         }
 
         private boolean mNeedsInitialization = true;
         private PlaybackViewModel mPlaybackViewModel;
-        private ComponentName mMediaSource;
-        private final Map<ComponentName, MediaServiceState> mStates = new HashMap<>();
+        private final MutableLiveData<MediaSource> mBrowsedMediaSource = dataOf(null);
+        private final Map<MediaSource, MediaServiceState> mStates = new HashMap<>();
         private MutableLiveData<Boolean> mIsMiniControlsVisible = new MutableLiveData<>();
 
         public ViewModel(@NonNull Application application) {
@@ -561,10 +528,11 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
         }
 
         MediaServiceState getSavedState() {
-            MediaServiceState state = mStates.get(mMediaSource);
+            MediaSource source = mBrowsedMediaSource.getValue();
+            MediaServiceState state = mStates.get(source);
             if (state == null) {
                 state = new MediaServiceState();
-                mStates.put(mMediaSource, state);
+                mStates.put(source, state);
             }
             return state;
         }
@@ -591,24 +559,41 @@ public class MediaActivity extends FragmentActivity implements BrowseViewControl
             return getSavedState().mQueueVisible;
         }
 
-        void saveMediaSource(ComponentName mediaSource) {
-            mMediaSource = mediaSource;
+        void saveBrowsedMediaSource(MediaSource mediaSource) {
+            mBrowsedMediaSource.setValue(mediaSource);
         }
 
-        ComponentName getSavedMediaSource() {
-            return mMediaSource;
+        LiveData<MediaSource> getBrowsedMediaSource() {
+            return mBrowsedMediaSource;
         }
 
-        Stack<MediaItemMetadata> getBrowseStack() {
+        @NonNull Stack<MediaItemMetadata> getBrowseStack() {
             return getSavedState().mBrowseStack;
         }
 
-        Stack<MediaItemMetadata> getSearchStack() {
+        @NonNull Stack<MediaItemMetadata> getSearchStack() {
             return getSavedState().mSearchStack;
+        }
+
+        /** Returns whether search mode is on (showing search results or browsing them). */
+        boolean isSearching() {
+            return getSavedState().mSearching;
+        }
+
+        boolean isShowingSearchResults() {
+            return getSavedState().mShowingSearchResults;
         }
 
         String getSearchQuery() {
             return getSavedState().mSearchQuery;
+        }
+
+        void setSearching(boolean isSearching) {
+            getSavedState().mSearching = isSearching;
+        }
+
+        void setShowingSearchResults(boolean isShowing) {
+            getSavedState().mShowingSearchResults = isShowing;
         }
 
         void setSearchQuery(String searchQuery) {
