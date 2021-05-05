@@ -216,14 +216,7 @@ public class MediaActivityController extends ViewControllerBase {
                 break;
         }
 
-        MediaSource savedSource = mViewModel.getBrowsedMediaSource().getValue();
-        MediaSource mediaSource = newBrowsingState.mMediaSource;
-        if (Log.isLoggable(TAG, Log.INFO)) {
-            Log.i(TAG, "MediaSource changed from " + savedSource + " to " + mediaSource);
-        }
-
-        mViewModel.saveBrowsedMediaSource(mediaSource);
-        onMediaSourceChanged(mediaSource);
+        mViewModel.saveBrowsedMediaSource(newBrowsingState.mMediaSource);
     }
 
 
@@ -275,6 +268,10 @@ public class MediaActivityController extends ViewControllerBase {
 
         // Observe forever ensures the caches are destroyed even while the activity isn't resumed.
         mediaItemsRepo.getBrowsingState().observeForever(mMediaBrowsingObserver);
+
+        mViewModel.getBrowsedMediaSource().observeForever(future -> {
+            onMediaSourceChanged(future.isLoading() ? null : future.getData());
+        });
 
         rootMediaItems.observe(activity, this::onRootMediaItemsUpdate);
         mViewModel.getMiniControlsVisible().observe(activity, this::onPlaybackControlsChanged);
