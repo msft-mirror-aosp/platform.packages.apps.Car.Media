@@ -316,7 +316,7 @@ public class BrowseViewController {
 
     private String getErrorMessage() {
         if (/*root*/ !mDisplayMediaItems) {
-            MediaSource mediaSource = mViewModel.getBrowsedMediaSource().getValue();
+            MediaSource mediaSource = mViewModel.getMediaSourceValue();
             return getActivity().getString(
                     R.string.cannot_connect_to_app,
                     mediaSource != null
