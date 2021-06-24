@@ -169,6 +169,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="explicit_icon_with_subtitle"/>
       <item type="id" name="explicit_icon_with_title"/>
       <item type="id" name="focus_area"/>
+      <item type="id" name="fpv"/>
       <item type="id" name="fragment_container"/>
       <item type="id" name="imageDownloadTask"/>
       <item type="id" name="inner_separator"/>
