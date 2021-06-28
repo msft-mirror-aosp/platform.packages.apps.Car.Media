@@ -65,10 +65,6 @@ public class LimitedBrowseAdapter extends DelegatingContentLimitingAdapter<Brows
                 }
             };
 
-    public BrowseAdapter getBrowseAdapter() {
-        return mBrowseAdapter;
-    }
-
     /**
      * @see BrowseAdapter#submitItems(MediaItemMetadata, List)
      */

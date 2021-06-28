@@ -4,6 +4,7 @@ import android.car.drivingstate.CarUxRestrictions;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -34,6 +35,8 @@ public class AppBarController {
     private int mMaxTabs;
     private final ToolbarController mToolbarController;
 
+    private final boolean mUseSourceLogoForAppSelector;
+
     @NonNull
     private AppBarListener mListener = new AppBarListener();
     private MenuItem mSearch;
@@ -43,6 +46,7 @@ public class AppBarController {
 
     private boolean mSearchSupported;
     private boolean mShowSearchIfSupported;
+    private String mSearchQuery;
 
     private Intent mAppSelectorIntent;
 
@@ -80,11 +84,19 @@ public class AppBarController {
         mToolbarController = controller;
         mMaxTabs = context.getResources().getInteger(R.integer.max_tabs);
 
+        mUseSourceLogoForAppSelector =
+                context.getResources().getBoolean(R.bool.use_media_source_logo_for_app_selector);
+
         mAppSelectorIntent = MediaSource.getSourceSelectorIntent(context, false);
 
         mToolbarController.registerOnTabSelectedListener(tab ->
                 mListener.onTabSelected(((MediaItemTab) tab).getItem()));
-        mToolbarController.registerOnSearchListener(query -> mListener.onSearch(query));
+        mToolbarController.registerOnSearchListener(query -> {
+            mSearchQuery = query;
+            mListener.onSearch(query);
+        });
+        mToolbarController.registerOnSearchCompletedListener(
+                () -> mListener.onSearch(mSearchQuery));
         mSearch = MenuItem.builder(context)
                 .setToSearch()
                 .setOnClickListener(v -> mListener.onSearchSelection())
@@ -101,7 +113,9 @@ public class AppBarController {
                 .build();
         mAppSelector = MenuItem.builder(context)
                 .setTitle(R.string.menu_item_app_selector_title)
-                .setIcon(R.drawable.ic_app_switch)
+                .setTinted(!mUseSourceLogoForAppSelector)
+                .setIcon(mUseSourceLogoForAppSelector
+                        ? null : context.getDrawable(R.drawable.ic_app_switch))
                 .setOnClickListener(m -> context.startActivity(mAppSelectorIntent))
                 .build();
         mToolbarController.setMenuItems(
@@ -202,7 +216,11 @@ public class AppBarController {
     }
 
     public void setLogo(Drawable drawable) {
-        mToolbarController.setLogo(drawable);
+        if (mUseSourceLogoForAppSelector) {
+            mAppSelector.setIcon(drawable);
+        } else {
+            mToolbarController.setLogo(drawable);
+        }
     }
 
     public void setSearchIcon(Drawable drawable) {
@@ -229,11 +247,17 @@ public class AppBarController {
         mToolbarController.setBackgroundShown(shown);
     }
 
-    public void registerOnBackListener(Toolbar.OnBackListener listener) {
-        mToolbarController.registerOnBackListener(listener);
-    }
-
     public void setNavButtonMode(Toolbar.NavButtonMode mode) {
         mToolbarController.setNavButtonMode(mode);
+    }
+
+    /** See {@link ToolbarController#canShowSearchResultItems}. */
+    public boolean canShowSearchResultsView() {
+        return mToolbarController.canShowSearchResultsView();
+    }
+
+    /** See {@link ToolbarController#setSearchResultsView}. */
+    public void setSearchResultsView(View view) {
+        mToolbarController.setSearchResultsView(view);
     }
 }
