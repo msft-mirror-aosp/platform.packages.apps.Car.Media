@@ -27,6 +27,8 @@ import android.app.PendingIntent;
 import android.car.Car;
 import android.car.content.pm.CarPackageManager;
 import android.car.drivingstate.CarUxRestrictions;
+import android.car.media.CarMediaIntents;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -60,6 +62,7 @@ import com.android.car.media.common.PlaybackErrorsHelper;
 import com.android.car.media.common.browse.MediaItemsRepository;
 import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaSource;
+import com.android.car.media.common.source.MediaTrampolineHelper;
 import com.android.car.ui.AlertDialogBuilder;
 import com.android.car.ui.utils.CarUxRestrictionsUtil;
 
@@ -116,6 +119,8 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
     private PlaybackFragment.PlaybackFragmentListener mPlaybackFragmentListener =
             () -> changeMode(Mode.BROWSING);
 
+    private MediaTrampolineHelper mMediaTrampoline;
+
     /**
      * Possible modes of the application UI
      * Todo: refactor into non exclusive flags to allow concurrent modes (eg: play details & browse)
@@ -155,6 +160,8 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
 
         localViewModel.getBrowsedMediaSource().observe(this, this::onMediaSourceChanged);
 
+        mMediaTrampoline = new MediaTrampolineHelper(this);
+
         mPlaybackFragment = new PlaybackFragment();
         mPlaybackFragment.setListener(mPlaybackFragmentListener);
 
@@ -192,6 +199,44 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         mCarUxRestrictionsUtil.register(mListener);
 
         mPlaybackContainer.setOnTouchListener(new ClosePlaybackDetector(this));
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent); // getIntent() should always return the most recent
+
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Log.d(TAG, "onNewIntent: " + intent);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        Intent intent = getIntent();
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Log.d(TAG, "onResume intent: " + intent);
+        }
+
+        if (intent != null) {
+            String compName = getIntent().getStringExtra(CarMediaIntents.EXTRA_MEDIA_COMPONENT);
+            ComponentName launchedSourceComp = (compName == null) ? null :
+                    ComponentName.unflattenFromString(compName);
+
+            if (launchedSourceComp == null) {
+                // Might happen if there's no media source at all on the system as the
+                // MediaDispatcherActivity always specifies the component otherwise.
+                Log.w(TAG, "launchedSourceComp should almost never be null: " + compName);
+            }
+
+            mMediaTrampoline.setLaunchedMediaSource(launchedSourceComp);
+
+            // Mark the intent as consumed so that coming back from the media app selector doesn't
+            // set the source again.
+            setIntent(null);
+        }
     }
 
     @Override
@@ -349,12 +394,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
                 // state that can be displayed (and some send a displayable state after sending a
                 // non displayable one...).
                 changeModeInternal(Mode.BROWSING, false);
-
-                // Always go through the trampoline activity to keep the dispatching logic there.
-                startActivity(new Intent(Car.CAR_INTENT_ACTION_MEDIA_TEMPLATE));
             }
-        } else {
-            startActivity(new Intent(Car.CAR_INTENT_ACTION_MEDIA_TEMPLATE));
         }
     }
 
@@ -588,6 +628,11 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         }
 
         void saveBrowsedMediaSource(MediaSource mediaSource) {
+            Resources res = getApplication().getResources();
+            if (MediaDispatcherActivity.isCustomMediaSource(res, mediaSource)) {
+                Log.i(TAG, "Ignoring custom media source: " + mediaSource);
+                return;
+            }
             MediaSource oldSource = getMediaSourceValue();
             if (Log.isLoggable(TAG, Log.INFO)) {
                 Log.i(TAG, "MediaSource changed from " + oldSource + " to " + mediaSource);
