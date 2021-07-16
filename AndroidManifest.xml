@@ -41,6 +41,7 @@
             android:name="android.car.application"
             android:resource="@xml/automotive_app_desc" />
 
+        <!-- Private implementation, should never be exported. -->
         <activity
             android:name=".MediaActivity"
             android:resizeableActivity="true"
