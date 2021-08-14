@@ -50,7 +50,9 @@ import com.android.car.media.widgets.AppBarController;
 import com.android.car.ui.FocusParkingView;
 import com.android.car.ui.baselayout.Insets;
 import com.android.car.ui.recyclerview.CarUiRecyclerView;
-import com.android.car.ui.toolbar.Toolbar;
+import com.android.car.ui.toolbar.NavButtonMode;
+import com.android.car.ui.toolbar.SearchConfig;
+import com.android.car.ui.toolbar.SearchMode;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -255,7 +257,7 @@ public class MediaActivityController extends ViewControllerBase {
 
         mAppBarController.setListener(mAppBarListener);
         mAppBarController.setSearchQuery(mViewModel.getSearchQuery());
-        if (mAppBarController.canShowSearchResultsView()) {
+        if (mAppBarController.getSearchCapabilities().canShowSearchResultsView()) {
             // TODO(b/180441965) eliminate the need to create a different view and use
             //     mSearchResultsController.getContent() instead.
             RecyclerView toolbarSearchResultsView = new RecyclerView(activity);
@@ -268,7 +270,9 @@ public class MediaActivityController extends ViewControllerBase {
             toolbarSearchResultsView.setBackground(
                     activity.getDrawable(R.drawable.car_ui_ime_wide_screen_background));
 
-            mAppBarController.setSearchResultsView(toolbarSearchResultsView);
+            mAppBarController.setSearchConfig(SearchConfig.builder()
+                    .setSearchResultsView(toolbarSearchResultsView)
+                    .build());
         }
 
         updateAppBar();
@@ -616,13 +620,14 @@ public class MediaActivityController extends ViewControllerBase {
         updateAppBar();
     }
 
-    private void updateAppBarTitle() {
+    private CharSequence getAppBarTitle() {
         boolean isStacked = !isAtTopStack();
 
         final CharSequence title;
         if (isStacked) {
             // If not at top level, show the current item as title
-            title = getCurrentMediaItem().getTitle();
+            MediaItemMetadata item = getCurrentMediaItem();
+            title = item != null ? item.getTitle() : "";
         } else if (mTopItems == null) {
             // If still loading the tabs, force to show an empty bar.
             title = "";
@@ -635,7 +640,7 @@ public class MediaActivityController extends ViewControllerBase {
             title = getAppBarDefaultTitle(mediaSource);
         }
 
-        mAppBarController.setTitle(title);
+        return title;
     }
 
     /**
@@ -647,9 +652,11 @@ public class MediaActivityController extends ViewControllerBase {
         if (Log.isLoggable(TAG, Log.DEBUG)) {
             Log.d(TAG, "App bar is in stacked state: " + isStacked);
         }
-        Toolbar.State unstackedState = isSearching ? Toolbar.State.SEARCH : Toolbar.State.HOME;
-        updateAppBarTitle();
-        mAppBarController.setState(isStacked ? Toolbar.State.SUBPAGE : unstackedState);
+
+        mAppBarController.setSearchMode(isSearching ? SearchMode.SEARCH : SearchMode.DISABLED);
+        mAppBarController.setNavButtonMode(isStacked || isSearching
+                ? NavButtonMode.BACK : NavButtonMode.DISABLED);
+        mAppBarController.setTitle(!isSearching ? getAppBarTitle() : null);
         mAppBarController.showSearchIfSupported(!isSearching || isStacked);
     }
 

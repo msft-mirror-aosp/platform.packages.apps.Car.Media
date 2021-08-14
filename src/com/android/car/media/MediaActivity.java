@@ -108,13 +108,6 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
     private float mCloseVectorY;
     private float mCloseVectorNorm;
 
-    private CarUxRestrictionsUtil mCarUxRestrictionsUtil;
-    private CarUxRestrictions mActiveCarUxRestrictions;
-    @CarUxRestrictions.CarUxRestrictionsInfo
-    private int mRestrictions;
-    private final CarUxRestrictionsUtil.OnUxRestrictionsChangedListener mListener =
-            (carUxRestrictions) -> mActiveCarUxRestrictions = carUxRestrictions;
-
 
     private PlaybackFragment.PlaybackFragmentListener mPlaybackFragmentListener =
             () -> changeMode(Mode.BROWSING);
@@ -179,9 +172,6 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
                 .replace(R.id.playback_container, mPlaybackFragment)
                 .commit();
 
-        mMediaActivityController = new MediaActivityController(this, getMediaItemsRepository(),
-                mCarPackageManager, mBrowseContainer);
-
         playbackViewModel.getPlaybackController().observe(this,
                 playbackController -> {
                     if (playbackController != null) playbackController.prepare();
@@ -194,9 +184,8 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         mCar = Car.createCar(this);
         mCarPackageManager = (CarPackageManager) mCar.getCarManager(Car.PACKAGE_SERVICE);
 
-        mCarUxRestrictionsUtil = CarUxRestrictionsUtil.getInstance(this);
-        mRestrictions = CarUxRestrictions.UX_RESTRICTIONS_NO_SETUP;
-        mCarUxRestrictionsUtil.register(mListener);
+        mMediaActivityController = new MediaActivityController(this, getMediaItemsRepository(),
+                mCarPackageManager, mBrowseContainer);
 
         mPlaybackContainer.setOnTouchListener(new ClosePlaybackDetector(this));
     }
@@ -241,14 +230,14 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
 
     @Override
     protected void onDestroy() {
-        mCarUxRestrictionsUtil.unregister(mListener);
         mCar.disconnect();
         mMediaActivityController.onDestroy();
         super.onDestroy();
     }
 
     private boolean isUxRestricted() {
-        return CarUxRestrictionsUtil.isRestricted(mRestrictions, mActiveCarUxRestrictions);
+        return CarUxRestrictionsUtil.isRestricted(CarUxRestrictions.UX_RESTRICTIONS_NO_SETUP,
+                CarUxRestrictionsUtil.getInstance(this).getCurrentRestrictions());
     }
 
     private void handlePlaybackState(PlaybackViewModel.PlaybackStateWrapper state,
