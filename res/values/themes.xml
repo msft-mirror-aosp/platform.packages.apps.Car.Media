@@ -19,5 +19,6 @@ limitations under the License.
         <item name="textAppearanceGridItem">@android:style/TextAppearance.DeviceDefault.Medium</item>
         <item name="textAppearanceGridItemSecondary">@android:style/TextAppearance.DeviceDefault.Small</item>
         <item name="android:splitMotionEvents">false</item>
+        <item name="carUiActivity">true</item>
     </style>
 </resources>
