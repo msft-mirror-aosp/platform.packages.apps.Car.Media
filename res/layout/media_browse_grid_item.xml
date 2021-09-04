@@ -38,6 +38,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:scaleType="centerCrop"
+            style="@style/MediaIconContainerStyle"
             app:aspect_ratio="1"/>
 
     </FrameLayout>
