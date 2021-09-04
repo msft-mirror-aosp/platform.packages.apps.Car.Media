@@ -251,6 +251,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="style" name="BrowseListTitleStyle"/>
       <item type="style" name="BrowseSubheaderStyle"/>
       <item type="style" name="ErrorTextStyle"/>
+      <item type="style" name="MediaIconContainerStyle"/>
       <item type="style" name="MetadataContainerStyle"/>
       <item type="style" name="MetadataPlaybackSubtitleStyle"/>
       <item type="style" name="MetadataPlaybackTitleStyle"/>
