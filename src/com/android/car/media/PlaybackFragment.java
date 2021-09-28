@@ -55,6 +55,7 @@ import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaSourceViewModel;
 import com.android.car.media.widgets.AppBarController;
 import com.android.car.ui.core.CarUi;
+import com.android.car.ui.recyclerview.CarUiRecyclerView;
 import com.android.car.ui.recyclerview.ContentLimiting;
 import com.android.car.ui.recyclerview.ScrollingLimitedViewHolder;
 import com.android.car.ui.toolbar.MenuItem;
@@ -86,7 +87,7 @@ public class PlaybackFragment extends Fragment {
     private View mControlBarScrim;
     private PlaybackControlsActionBar mPlaybackControls;
     private QueueItemsAdapter mQueueAdapter;
-    private RecyclerView mQueue;
+    private CarUiRecyclerView mQueue;
     private ViewGroup mSeekBarContainer;
     private SeekBar mSeekBar;
     private List<View> mViewsToHideForCustomActions;
