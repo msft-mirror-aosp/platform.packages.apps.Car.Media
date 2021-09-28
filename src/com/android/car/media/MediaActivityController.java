@@ -446,7 +446,8 @@ public class MediaActivityController extends ViewControllerBase {
         CarUiRecyclerView carUiRecyclerView =
                 controller.getContent().findViewById(R.id.browse_list);
         if (carUiRecyclerView != null && carUiRecyclerView instanceof LazyLayoutView
-                && !carUiRecyclerView.hasFocus() && !carUiRecyclerView.isInTouchMode()) {
+                && !carUiRecyclerView.getView().hasFocus()
+                && !carUiRecyclerView.getView().isInTouchMode()) {
             LazyLayoutView lazyLayoutView = (LazyLayoutView) carUiRecyclerView;
             com.android.car.ui.utils.ViewUtils.initFocus(lazyLayoutView);
         }
@@ -456,18 +457,18 @@ public class MediaActivityController extends ViewControllerBase {
             @Nullable ViewAnimEndListener listener) {
         CarUiRecyclerView carUiRecyclerView = content.findViewById(R.id.browse_list);
         if (carUiRecyclerView != null && carUiRecyclerView instanceof LazyLayoutView
-                && !carUiRecyclerView.isInTouchMode()) {
+                && !carUiRecyclerView.getView().isInTouchMode()) {
             // If a CarUiRecyclerView is about to hide and it has focus, park the focus on the
             // FocusParkingView before hiding the CarUiRecyclerView. Otherwise hiding the focused
             // view will cause the Android framework to move focus to another view, causing visual
             // jank.
-            if (!show && carUiRecyclerView.hasFocus()) {
+            if (!show && carUiRecyclerView.getView().hasFocus()) {
                 mFpv.performAccessibilityAction(ACTION_FOCUS, null);
             }
             // If a new CarUiRecyclerView is about to show and there is no view focused or the
             // FocusParkingView is focused, restore focus in the new CarUiRecyclerView.
             if (show) {
-                View focusedView = carUiRecyclerView.getRootView().findFocus();
+                View focusedView = carUiRecyclerView.getView().getRootView().findFocus();
                 if (focusedView == null || focusedView instanceof FocusParkingView) {
                     LazyLayoutView lazyLayoutView = (LazyLayoutView) carUiRecyclerView;
                     com.android.car.ui.utils.ViewUtils.initFocus(lazyLayoutView);
