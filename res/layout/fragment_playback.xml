@@ -54,13 +54,13 @@
         app:layout_constraintTop_toBottomOf="@id/ui_content_top_guideline"
         app:layout_constraintBottom_toTopOf="@+id/control_bar_first_row_guideline"/>
 
-    <!-- @id/seek_bar should be hidden when @id/control_bar_scrim is expanded, and shown when the
-    scrim is collapsed. Since its visibility is also controlled by MetadataController, it could
-    become visible again even if the scrim is still expanded. To solve that we add a wrapper around
-    it and hide/show the wrapper when the scrim is expanded/collapsed.-->
+    <!-- @id/playback_seek_bar should be hidden when @id/control_bar_scrim is expanded, and shown
+    when the scrim is collapsed. Since its visibility is also controlled by MetadataController, it
+    could become visible again even if the scrim is still expanded. To solve that we add a wrapper
+    around it and hide/show the wrapper when the scrim is expanded/collapsed.-->
     <com.android.car.ui.FocusArea
         style="@style/SeekBarStyle"
-        android:id="@+id/seek_bar_container"
+        android:id="@+id/playback_seek_bar_container"
         android:layout_gravity="center"
         android:layout_marginStart="@dimen/playback_seekbar_margin_x"
         android:layout_marginEnd="@dimen/playback_seekbar_margin_x"
@@ -69,7 +69,7 @@
         app:layout_constraintTop_toBottomOf="@+id/metadata_container"
         app:layout_constraintBottom_toTopOf="@+id/control_bar_first_row_guideline">
         <SeekBar
-            android:id="@+id/seek_bar"
+            android:id="@+id/playback_seek_bar"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clickable="false"

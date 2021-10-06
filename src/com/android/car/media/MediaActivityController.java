@@ -16,7 +16,10 @@
 
 package com.android.car.media;
 
+import static android.view.accessibility.AccessibilityNodeInfo.ACTION_FOCUS;
+
 import static com.android.car.apps.common.util.ViewUtils.showHideViewAnimated;
+import static com.android.car.ui.utils.ViewUtils.LazyLayoutView;
 
 import android.car.content.pm.CarPackageManager;
 import android.content.Context;
@@ -44,7 +47,9 @@ import com.android.car.media.common.browse.MediaItemsRepository.MediaItemsLiveDa
 import com.android.car.media.common.source.MediaBrowserConnector.BrowsingState;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.widgets.AppBarController;
+import com.android.car.ui.FocusParkingView;
 import com.android.car.ui.baselayout.Insets;
+import com.android.car.ui.recyclerview.CarUiRecyclerView;
 import com.android.car.ui.toolbar.Toolbar;
 
 import java.util.ArrayList;
@@ -66,6 +71,7 @@ public class MediaActivityController extends ViewControllerBase {
     private final MediaItemsRepository mMediaItemsRepository;
     private final Callbacks mCallbacks;
     private final ViewGroup mBrowseArea;
+    private final FocusParkingView mFpv;
     private Insets mCarUiInsets;
     private boolean mPlaybackControlsVisible;
 
@@ -216,14 +222,7 @@ public class MediaActivityController extends ViewControllerBase {
                 break;
         }
 
-        MediaSource savedSource = mViewModel.getBrowsedMediaSource().getValue();
-        MediaSource mediaSource = newBrowsingState.mMediaSource;
-        if (Log.isLoggable(TAG, Log.INFO)) {
-            Log.i(TAG, "MediaSource changed from " + savedSource + " to " + mediaSource);
-        }
-
-        mViewModel.saveBrowsedMediaSource(mediaSource);
-        onMediaSourceChanged(mediaSource);
+        mViewModel.saveBrowsedMediaSource(newBrowsingState.mMediaSource);
     }
 
 
@@ -238,6 +237,7 @@ public class MediaActivityController extends ViewControllerBase {
         mSearchStack = mViewModel.getSearchStack();
         mBrowseStack = mViewModel.getBrowseStack();
         mBrowseArea = mContent.requireViewById(R.id.browse_content_area);
+        mFpv = activity.requireViewById(R.id.fpv);
 
         MediaItemsLiveData rootMediaItems = mediaItemsRepo.getRootMediaItems();
         mRootLoadingController = BrowseViewController.newRootController(
@@ -275,6 +275,10 @@ public class MediaActivityController extends ViewControllerBase {
 
         // Observe forever ensures the caches are destroyed even while the activity isn't resumed.
         mediaItemsRepo.getBrowsingState().observeForever(mMediaBrowsingObserver);
+
+        mViewModel.getBrowsedMediaSource().observeForever(future -> {
+            onMediaSourceChanged(future.isLoading() ? null : future.getData());
+        });
 
         rootMediaItems.observe(activity, this::onRootMediaItemsUpdate);
         mViewModel.getMiniControlsVisible().observe(activity, this::onPlaybackControlsChanged);
@@ -365,7 +369,12 @@ public class MediaActivityController extends ViewControllerBase {
         if (!success && mViewModel.isSearching()) {
             showSearchMode(false);
             updateAppBar();
-            return true;
+            success = true;
+        }
+        if (success) {
+            // When the back button is pressed, if a CarUiRecyclerView shows up and it's in rotary
+            // mode, restore focus in the CarUiRecyclerView.
+            restoreFocusInCurrentNode();
         }
         return success;
     }
@@ -416,15 +425,61 @@ public class MediaActivityController extends ViewControllerBase {
                 mBrowseViewControllersByNode.get(currentNode);
 
         if (controller != null) {
-            showHideViewAnimated(show, controller.getContent(), mFadeDuration,
-                    mViewAnimEndListener);
+            showHideContentAnimated(show, controller.getContent(), mViewAnimEndListener);
         }
     }
+
+    // If the current node has a CarUiRecyclerView and it's in rotary mode, restore focus in it.
+    void restoreFocusInCurrentNode() {
+        MediaItemMetadata currentNode = getCurrentMediaItem();
+        if (currentNode == null) {
+            return;
+        }
+        BrowseViewController controller = getControllerForItem(currentNode);
+        if (controller == null) {
+            return;
+        }
+        CarUiRecyclerView carUiRecyclerView =
+                controller.getContent().findViewById(R.id.browse_list);
+        if (carUiRecyclerView != null && carUiRecyclerView instanceof LazyLayoutView
+                && !carUiRecyclerView.hasFocus() && !carUiRecyclerView.isInTouchMode()) {
+            LazyLayoutView lazyLayoutView = (LazyLayoutView) carUiRecyclerView;
+            com.android.car.ui.utils.ViewUtils.initFocus(lazyLayoutView);
+        }
+    }
+
+    private void showHideContentAnimated(boolean show, @NonNull View content,
+            @Nullable ViewAnimEndListener listener) {
+        CarUiRecyclerView carUiRecyclerView = content.findViewById(R.id.browse_list);
+        if (carUiRecyclerView != null && carUiRecyclerView instanceof LazyLayoutView
+                && !carUiRecyclerView.isInTouchMode()) {
+            // If a CarUiRecyclerView is about to hide and it has focus, park the focus on the
+            // FocusParkingView before hiding the CarUiRecyclerView. Otherwise hiding the focused
+            // view will cause the Android framework to move focus to another view, causing visual
+            // jank.
+            if (!show && carUiRecyclerView.hasFocus()) {
+                mFpv.performAccessibilityAction(ACTION_FOCUS, null);
+            }
+            // If a new CarUiRecyclerView is about to show and there is no view focused or the
+            // FocusParkingView is focused, restore focus in the new CarUiRecyclerView.
+            if (show) {
+                View focusedView = carUiRecyclerView.getRootView().findFocus();
+                if (focusedView == null || focusedView instanceof FocusParkingView) {
+                    LazyLayoutView lazyLayoutView = (LazyLayoutView) carUiRecyclerView;
+                    com.android.car.ui.utils.ViewUtils.initFocus(lazyLayoutView);
+                }
+            }
+        }
+
+        showHideViewAnimated(show, content, mFadeDuration, listener);
+    }
+
+
 
     private void showSearchResults(boolean show) {
         if (mViewModel.isShowingSearchResults() != show) {
             mViewModel.setShowingSearchResults(show);
-            showHideViewAnimated(show, mSearchResultsController.getContent(), mFadeDuration, null);
+            showHideContentAnimated(show, mSearchResultsController.getContent(), null);
         }
     }
 
@@ -489,7 +544,7 @@ public class MediaActivityController extends ViewControllerBase {
         if (controller.getContent().getVisibility() == View.VISIBLE) {
             View view = controller.getContent();
             mBrowseViewControllersToDestroy.put(view, controller);
-            showHideViewAnimated(false, view, mFadeDuration, mViewAnimEndListener);
+            showHideContentAnimated(false, view, mViewAnimEndListener);
         } else {
             controller.destroy();
         }
