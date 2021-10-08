@@ -448,6 +448,10 @@ public class MediaActivityController extends ViewControllerBase {
         if (carUiRecyclerView != null && carUiRecyclerView instanceof LazyLayoutView
                 && !carUiRecyclerView.getView().hasFocus()
                 && !carUiRecyclerView.getView().isInTouchMode()) {
+            // Park the focus on the FocusParkingView to ensure that it can restore focus inside
+            // the LazyLayoutView successfully later.
+            mFpv.performAccessibilityAction(ACTION_FOCUS, null);
+
             LazyLayoutView lazyLayoutView = (LazyLayoutView) carUiRecyclerView;
             com.android.car.ui.utils.ViewUtils.initFocus(lazyLayoutView);
         }
