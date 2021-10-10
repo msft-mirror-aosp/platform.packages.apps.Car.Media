@@ -23,7 +23,7 @@
     android:layout_marginBottom="@dimen/media_browse_grid_item_margin_bottom">
 
     <FrameLayout
-        android:id="@+id/container"
+        android:id="@+id/item_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clickable="true"
@@ -75,7 +75,7 @@
         android:includeFontPadding="false"
         android:duplicateParentState="true"
         app:layout_constraintStart_toEndOf="@+id/explicit_icon_with_title"
-        app:layout_constraintTop_toBottomOf="@+id/container"
+        app:layout_constraintTop_toBottomOf="@+id/item_container"
         app:layout_constraintEnd_toEndOf="parent"/>
 
     <ImageView
