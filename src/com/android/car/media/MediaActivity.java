@@ -53,6 +53,7 @@ import androidx.lifecycle.ViewModelProviders;
 import com.android.car.apps.common.util.CarPackageManagerUtils;
 import com.android.car.apps.common.util.VectorMath;
 import com.android.car.apps.common.util.ViewUtils;
+import com.android.car.arch.common.FutureData;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.MinimizedPlaybackControlBar;
 import com.android.car.media.common.PlaybackErrorsHelper;
@@ -64,6 +65,7 @@ import com.android.car.ui.utils.CarUxRestrictionsUtil;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Stack;
 
 /**
@@ -256,7 +258,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
     private ErrorScreenController getErrorController() {
         if (mErrorController == null) {
             mErrorController = new ErrorScreenController(this, mCarPackageManager, mErrorContainer);
-            MediaSource mediaSource = getInnerViewModel().getBrowsedMediaSource().getValue();
+            MediaSource mediaSource = getInnerViewModel().getMediaSourceValue();
             mErrorController.onMediaSourceChanged(mediaSource);
         }
         return mErrorController;
@@ -317,27 +319,41 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
     /**
      * Sets the media source being browsed.
      *
-     * @param mediaSource the new media source we are going to try to browse
+     * @param futureSource contains the new media source we are going to try to browse, as well as
+     *                     the old one (either could be null).
      */
-    private void onMediaSourceChanged(@Nullable MediaSource mediaSource) {
+    private void onMediaSourceChanged(FutureData<MediaSource> futureSource) {
+
+        MediaSource newMediaSource = FutureData.getData(futureSource);
+        MediaSource oldMediaSource = FutureData.getPastData(futureSource);
 
         if (mErrorController != null) {
-            mErrorController.onMediaSourceChanged(mediaSource);
+            mErrorController.onMediaSourceChanged(newMediaSource);
         }
 
         mCurrentPlaybackStateWrapper = null;
         maybeCancelToast();
         maybeCancelDialog();
-        if (mediaSource != null) {
+        if (newMediaSource != null) {
             if (Log.isLoggable(TAG, Log.INFO)) {
-                Log.i(TAG, "Browsing: " + mediaSource.getDisplayName());
+                Log.i(TAG, "Browsing: " + newMediaSource.getDisplayName());
             }
-            // Change the mode regardless of its previous value so that the views can be updated.
-            // The saved mode is ignored as the media apps don't always recreate a playback state
-            // that can be displayed (and some send a displayable state after sending a non
-            // displayable one...).
-            changeModeInternal(Mode.BROWSING, false);
-            // Always go through the trampoline activity to keep all the dispatching logic there.
+
+            if (Objects.equals(oldMediaSource, newMediaSource)) {
+                // The UI is being restored (eg: after a config change) => restore the mode.
+                Mode mediaSourceMode = getInnerViewModel().getSavedMode();
+                changeModeInternal(mediaSourceMode, false);
+            } else {
+                // Change the mode regardless of its previous value to update the views.
+                // The saved mode is ignored as the media apps don't always recreate a playback
+                // state that can be displayed (and some send a displayable state after sending a
+                // non displayable one...).
+                changeModeInternal(Mode.BROWSING, false);
+
+                // Always go through the trampoline activity to keep the dispatching logic there.
+                startActivity(new Intent(Car.CAR_INTENT_ACTION_MEDIA_TEMPLATE));
+            }
+        } else {
             startActivity(new Intent(Car.CAR_INTENT_ACTION_MEDIA_TEMPLATE));
         }
     }
@@ -381,6 +397,10 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
                 break;
             case BROWSING:
                 if (oldMode == Mode.PLAYBACK) {
+                    // When switching from PLAYBACK mode to BROWSING mode, if a CarUiRecyclerView
+                    // shows up and it's in rotary mode, restore focus in the CarUiRecyclerView.
+                    mMediaActivityController.restoreFocusInCurrentNode();
+
                     ViewUtils.hideViewAnimated(mErrorContainer, 0);
                     ViewUtils.showViewAnimated(mBrowseContainer, 0);
                     animateOutPlaybackContainer(fadeOutDuration);
@@ -437,7 +457,9 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         int fadeOutDuration = hideViewAnimated ? mFadeDuration : 0;
         // Minimized control bar should be hidden in playback view.
         final boolean shouldShowMiniPlaybackControls =
-                mCanShowMiniPlaybackControls && mMode != Mode.PLAYBACK;
+                getResources().getBoolean(R.bool.show_mini_playback_controls)
+                        && mCanShowMiniPlaybackControls
+                        && mMode != Mode.PLAYBACK;
         if (shouldShowMiniPlaybackControls) {
             Boolean visible = getInnerViewModel().getMiniControlsVisible().getValue();
             if (visible != Boolean.TRUE) {
@@ -499,7 +521,8 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
 
         private boolean mNeedsInitialization = true;
         private PlaybackViewModel mPlaybackViewModel;
-        private final MutableLiveData<MediaSource> mBrowsedMediaSource = dataOf(null);
+        private final MutableLiveData<FutureData<MediaSource>> mBrowsedMediaSource =
+                dataOf(FutureData.newLoadingData());
         private final Map<MediaSource, MediaServiceState> mStates = new HashMap<>();
         private MutableLiveData<Boolean> mIsMiniControlsVisible = new MutableLiveData<>();
 
@@ -527,8 +550,13 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
             return mIsMiniControlsVisible;
         }
 
+        @Nullable
+        MediaSource getMediaSourceValue() {
+            return FutureData.getData(mBrowsedMediaSource.getValue());
+        }
+
         MediaServiceState getSavedState() {
-            MediaSource source = mBrowsedMediaSource.getValue();
+            MediaSource source = getMediaSourceValue();
             MediaServiceState state = mStates.get(source);
             if (state == null) {
                 state = new MediaServiceState();
@@ -560,10 +588,14 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         }
 
         void saveBrowsedMediaSource(MediaSource mediaSource) {
-            mBrowsedMediaSource.setValue(mediaSource);
+            MediaSource oldSource = getMediaSourceValue();
+            if (Log.isLoggable(TAG, Log.INFO)) {
+                Log.i(TAG, "MediaSource changed from " + oldSource + " to " + mediaSource);
+            }
+            mBrowsedMediaSource.setValue(FutureData.newLoadedData(oldSource, mediaSource));
         }
 
-        LiveData<MediaSource> getBrowsedMediaSource() {
+        LiveData<FutureData<MediaSource>> getBrowsedMediaSource() {
             return mBrowsedMediaSource;
         }
 

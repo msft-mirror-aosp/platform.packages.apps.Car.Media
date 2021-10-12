@@ -473,8 +473,8 @@ public class PlaybackFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mAlbumBackground = view.findViewById(R.id.playback_background);
         mQueue = view.findViewById(R.id.queue_list);
-        mSeekBarContainer = view.findViewById(R.id.seek_bar_container);
-        mSeekBar = view.findViewById(R.id.seek_bar);
+        mSeekBarContainer = view.findViewById(R.id.playback_seek_bar_container);
+        mSeekBar = view.findViewById(R.id.playback_seek_bar);
         DirectManipulationHelper.setSupportsRotateDirectly(mSeekBar, true);
 
         GuidelinesUpdater updater = new GuidelinesUpdater(view);
