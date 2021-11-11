@@ -17,8 +17,8 @@ package com.android.car.media;
 
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
 
+import static com.android.car.apps.common.util.LiveDataFunctions.dataOf;
 import static com.android.car.apps.common.util.VectorMath.EPSILON;
-import static com.android.car.arch.common.LiveDataFunctions.dataOf;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -53,9 +53,9 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.android.car.apps.common.util.CarPackageManagerUtils;
+import com.android.car.apps.common.util.FutureData;
 import com.android.car.apps.common.util.VectorMath;
 import com.android.car.apps.common.util.ViewUtils;
-import com.android.car.arch.common.FutureData;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.MinimizedPlaybackControlBar;
 import com.android.car.media.common.PlaybackErrorsHelper;
