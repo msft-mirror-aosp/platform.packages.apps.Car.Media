@@ -38,7 +38,6 @@ import com.android.car.apps.common.util.FutureData;
 import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.media.browse.BrowseAdapter;
 import com.android.car.media.browse.LimitedBrowseAdapter;
-import com.android.car.media.common.GridSpacingItemDecoration;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.browse.MediaBrowserViewModelImpl;
 import com.android.car.media.common.browse.MediaItemsRepository.MediaItemsLiveData;
@@ -183,9 +182,6 @@ public class BrowseViewController {
 
         FragmentActivity activity = callbacks.getActivity();
         mViewModel = ViewModelProviders.of(activity).get(MediaActivity.ViewModel.class);
-
-        mBrowseList.addItemDecoration(new GridSpacingItemDecoration(
-                activity.getResources().getDimensionPixelSize(R.dimen.grid_item_spacing)));
 
         BrowseAdapter browseAdapter = new BrowseAdapter(mBrowseList.getContext());
         mLimitedBrowseAdapter = new LimitedBrowseAdapter(mBrowseList, browseAdapter,
