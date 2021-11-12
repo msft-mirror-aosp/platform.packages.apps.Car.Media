@@ -34,8 +34,8 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.car.apps.common.util.FutureData;
 import com.android.car.apps.common.util.ViewUtils;
-import com.android.car.arch.common.FutureData;
 import com.android.car.media.browse.BrowseAdapter;
 import com.android.car.media.browse.LimitedBrowseAdapter;
 import com.android.car.media.common.GridSpacingItemDecoration;

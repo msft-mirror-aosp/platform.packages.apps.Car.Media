@@ -71,7 +71,6 @@ dependencies {
 
     implementation project(":car-ui-lib")
     implementation project(":car-apps-common")
-    implementation project(":car-arch-common")
     implementation project(":car-media-common")
     implementation project(":car-uxr-client-lib")
 }
