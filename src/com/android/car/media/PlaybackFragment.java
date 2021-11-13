@@ -623,6 +623,8 @@ public class PlaybackFragment extends Fragment {
 
         int decorationHeight = getResources().getDimensionPixelSize(
                 R.dimen.playback_queue_list_padding_top);
+        // TODO (b/206038962): addItemDecoration is not supported anymore. Find another way to
+        // support this.
         // Put the decoration above the first item.
         int decorationPosition = 0;
         mQueue.addItemDecoration(new QueueTopItemDecoration(decorationHeight, decorationPosition));
