@@ -205,6 +205,10 @@ public class MediaActivityController extends ViewControllerBase {
     }
 
     private void onMediaBrowsingStateChanged(BrowsingState newBrowsingState) {
+        if (newBrowsingState == null) {
+            Log.e(TAG, "Null browsing state (no media source!)");
+            return;
+        }
         switch (newBrowsingState.mConnectionStatus) {
             case CONNECTING:
                 break;
