@@ -426,10 +426,6 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
                 break;
             case BROWSING:
                 if (oldMode == Mode.PLAYBACK) {
-                    // When switching from PLAYBACK mode to BROWSING mode, if a CarUiRecyclerView
-                    // shows up and it's in rotary mode, restore focus in the CarUiRecyclerView.
-                    mMediaActivityController.restoreFocusInCurrentNode();
-
                     ViewUtils.hideViewAnimated(mErrorContainer, 0);
                     ViewUtils.showViewAnimated(mBrowseContainer, 0);
                     animateOutPlaybackContainer(fadeOutDuration);
