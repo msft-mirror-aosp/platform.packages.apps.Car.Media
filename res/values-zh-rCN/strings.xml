@@ -25,7 +25,7 @@
     <string name="media_browse_more" msgid="6330295386693311592">"更多…"</string>
     <string name="media_app_title" msgid="94717597743776797">"媒体"</string>
     <string name="search_hint" msgid="5401750426238148416">"搜索歌曲、音乐人等…"</string>
-    <string name="fragment_playback_title" msgid="5014481549024607614">"正在播放"</string>
+    <string name="fragment_playback_title" msgid="5014481549024607614">"现正播放"</string>
     <string name="service_notification_title" msgid="8085444675783592744">"正在连接到媒体"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"声音设置"</string>
     <string name="menu_item_app_selector_title" msgid="4587248991114338595">"切换应用"</string>
