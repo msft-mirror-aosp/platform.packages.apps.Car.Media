@@ -25,7 +25,7 @@
     <string name="media_browse_more" msgid="6330295386693311592">"更多…"</string>
     <string name="media_app_title" msgid="94717597743776797">"媒體"</string>
     <string name="search_hint" msgid="5401750426238148416">"搜尋歌曲、演出者和更多內容…"</string>
-    <string name="fragment_playback_title" msgid="5014481549024607614">"現正播放"</string>
+    <string name="fragment_playback_title" msgid="5014481549024607614">"正在播放"</string>
     <string name="default_error_message" msgid="6365377134388091079">"發生錯誤，請稍後再試。"</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"目前無法執行有關操作"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"此應用程式無法執行有關操作"</string>

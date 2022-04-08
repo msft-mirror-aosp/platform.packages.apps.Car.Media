@@ -25,7 +25,7 @@
     <string name="media_browse_more" msgid="6330295386693311592">"Daha çox…"</string>
     <string name="media_app_title" msgid="94717597743776797">"Media"</string>
     <string name="search_hint" msgid="5401750426238148416">"Mahnı, ifaçı və s. axtarın"</string>
-    <string name="fragment_playback_title" msgid="5014481549024607614">"İndi Efirdə"</string>
+    <string name="fragment_playback_title" msgid="5014481549024607614">"İndi oxudulur"</string>
     <string name="default_error_message" msgid="6365377134388091079">"Xəta baş verdi. Sonra cəhd edin."</string>
     <string name="error_code_app_error" msgid="1726372057192704809">"Hazırda onu etmək olmur"</string>
     <string name="error_code_not_supported" msgid="1435878548411799387">"Bu tətbiq onu edə bilmir"</string>
