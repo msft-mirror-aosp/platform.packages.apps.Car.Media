@@ -406,6 +406,7 @@ public class MediaActivityController extends ViewControllerBase {
         updateAppBar();
     }
 
+    @NonNull
     private BrowseViewController getControllerForItem(@NonNull MediaItemMetadata item) {
         BrowseViewController controller = mBrowseViewControllersByNode.get(item);
         if (controller == null) {
@@ -438,15 +439,15 @@ public class MediaActivityController extends ViewControllerBase {
     }
 
     // If the current node has a CarUiRecyclerView and it's in rotary mode, restore focus in it.
-    void restoreFocusInCurrentNode() {
+    // Should remain private and definitely NOT be called from MediaActivity#changeModeInternal
+    // as the controller isn't ready to show the browse data of the new media source (it hasn't
+    // connected to it (b/217159531).
+    private void restoreFocusInCurrentNode() {
         MediaItemMetadata currentNode = getCurrentMediaItem();
         if (currentNode == null) {
             return;
         }
         BrowseViewController controller = getControllerForItem(currentNode);
-        if (controller == null) {
-            return;
-        }
         CarUiRecyclerView carUiRecyclerView =
                 controller.getContent().findViewById(R.id.browse_list);
         if (carUiRecyclerView != null && carUiRecyclerView instanceof LazyLayoutView
