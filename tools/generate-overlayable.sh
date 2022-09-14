@@ -15,12 +15,15 @@
 
 # Run this script to regenerate the overlayable.xml file.
 
-if [[ -z "$ANDROID_BUILD_TOP" ]]; then
-  echo 'ANDROID_BUILD_TOP environment variable is empty; did you forget to run `lunch`?'
-  exit 1
-fi
+cd $(dirname $0)
+cd ..
 
-PROJECT_TOP=$ANDROID_BUILD_TOP/packages/apps/Car/Media
+PROJECT_TOP="$(pwd)"
+export PROJECT_TOP
+cd ../../../..
+
+ANDROID_BUILD_TOP="$(pwd)"
+export ANDROID_BUILD_TOP
 
 python3 $ANDROID_BUILD_TOP/packages/apps/Car/tests/tools/rro/generate-overlayable.py \
     -n CarMediaApp \

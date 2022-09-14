@@ -68,8 +68,8 @@ public class BrowseMiniMediaItemView extends BrowseMiniMediaItemBar {
     /** Connects the bar to the {@link PlaybackViewModel}. */
     public void setModel(@NonNull PlaybackViewModel model, @NonNull LifecycleOwner owner,
                          @NonNull Size maxArtSize) {
-        mMetadataController = new MetadataController(owner, model, mTitle, mSubtitle, null, null,
-                null, null, null, null, mContentTile, mAppIcon, maxArtSize);
+        mMetadataController = new MetadataController(owner, model, null, mTitle, mSubtitle, null,
+                null, null, null, null, null, mContentTile, mAppIcon, maxArtSize, null);
         mPlaybackViewModel = model;
 
         if (mArtBinder != null) {
