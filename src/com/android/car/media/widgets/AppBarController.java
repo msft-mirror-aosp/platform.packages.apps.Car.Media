@@ -308,6 +308,11 @@ public class AppBarController {
         return null;
     }
 
+    /** Sets menu items */
+    public void setMenuItems(List<MenuItem> items) {
+        mToolbarController.setMenuItems(items);
+    }
+
     public void setBackgroundShown(boolean shown) {
         mToolbarController.setBackgroundShown(shown);
     }

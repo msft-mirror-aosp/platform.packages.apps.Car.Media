@@ -90,7 +90,7 @@
     </style>
 
     <style name="BrowseListItemRightArrowStyle">
-        <item name="android:src">@null</item>
+        <item name="android:src">@drawable/ic_chevron_right</item>
     </style>
 
     <style name="MediaIconContainerStyle"/>
