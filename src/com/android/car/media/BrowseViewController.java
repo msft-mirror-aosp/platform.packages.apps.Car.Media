@@ -24,6 +24,7 @@ import static com.android.car.ui.recyclerview.CarUiRecyclerView.SCROLL_STATE_DRA
 
 import android.content.res.Resources;
 import android.os.Handler;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 import android.util.Size;
 import android.view.LayoutInflater;
@@ -97,6 +98,7 @@ public class BrowseViewController {
     private final MediaActivity.ViewModel mViewModel;
 
     private final PlaybackViewModel mPlaybackViewModel;
+    private final PlaybackViewModel mPlaybackViewModelBrowseSource;
 
     private final BrowseAdapter.Observer mBrowseAdapterObserver = new BrowseAdapter.Observer() {
 
@@ -245,6 +247,8 @@ public class BrowseViewController {
 
         mPlaybackViewModel = PlaybackViewModel.get(activity.getApplication(),
                 MEDIA_SOURCE_MODE_PLAYBACK);
+        mPlaybackViewModelBrowseSource = PlaybackViewModel.get(activity.getApplication(),
+            MEDIA_SOURCE_MODE_BROWSE);
 
         LiveDataFunctions.pair(mPlaybackViewModel.getProgress(), mPlaybackViewModel.getMetadata())
                 .observe(activity, this::handleProgressUpdate);
@@ -439,11 +443,19 @@ public class BrowseViewController {
         stopLoadingIndicator();
 
         List<MediaItemMetadata> items = MediaBrowserViewModelImpl.filterItems(
-                /*root*/ !mDisplayMediaItems, futureData.getData());
+            /*root*/ !mDisplayMediaItems, futureData.getData());
 
         boolean sourceHasPlayable = mViewModel.hasPlayableItem();
         if (items != null && !sourceHasPlayable) {
             mViewModel.setHasPlayableItem(items.stream().anyMatch(MediaItemMetadata::isPlayable));
+        }
+
+        boolean hasMetaData = mPlaybackViewModelBrowseSource.getMetadata().getValue() != null;
+
+        boolean hasPlayCommand = false;
+        if (mPlaybackViewModelBrowseSource.getPlaybackStateWrapper().getValue() != null) {
+            hasPlayCommand = (mPlaybackViewModelBrowseSource.getPlaybackStateWrapper().getValue()
+                .getSupportedActions() & PlaybackStateCompat.ACTION_PLAY) != 0;
         }
 
         if (mDisplayMediaItems) {
@@ -466,17 +478,20 @@ public class BrowseViewController {
             ViewUtils.showViewAnimated(mErrorIcon, duration);
             hideEmptyListPlayItem();
         } else if (items.isEmpty()) {
-            if (mViewModel.hasPlayableItem()  || isSourcesSame()) {
+            // If sources are same then no need for playbar. Otherwise we need to check if we have
+            // seen a playable item or we have metadata and a play command.
+            if (!isSourcesSame()
+                    && (mViewModel.hasPlayableItem() || (hasMetaData && hasPlayCommand))) {
+                ViewUtils.hideViewAnimated(mBrowseList.getView(), duration);
+                ViewUtils.hideViewAnimated(mErrorIcon, duration);
+                ViewUtils.hideViewAnimated(mMessage, duration);
+                showEmptyListPlayItem();
+            } else {
                 mMessage.setText(R.string.nothing_to_play);
                 ViewUtils.hideViewAnimated(mBrowseList.getView(), duration);
                 ViewUtils.hideViewAnimated(mErrorIcon, duration);
                 ViewUtils.showViewAnimated(mMessage, duration);
                 hideEmptyListPlayItem();
-            } else {
-                ViewUtils.hideViewAnimated(mBrowseList.getView(), duration);
-                ViewUtils.hideViewAnimated(mErrorIcon, duration);
-                ViewUtils.hideViewAnimated(mMessage, duration);
-                showEmptyListPlayItem();
             }
         } else {
             ViewUtils.showViewAnimated(mBrowseList.getView(), duration);
