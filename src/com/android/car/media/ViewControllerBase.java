@@ -85,7 +85,9 @@ abstract class ViewControllerBase implements InsetsChangedListener {
         updater.addListener(this);
         ToolbarController toolbar = CarUi.installBaseLayoutAround(mContent, updater, true);
 
-        mAppBarController = new AppBarController(activity, toolbar);
+        mAppBarController = new AppBarController(activity, toolbar, R.xml.menuitems_browse,
+                res.getBoolean(R.bool.use_media_source_logo_for_app_selector));
+        mAppBarController.checkBrowseMenus();
         mAppBarController.setSearchSupported(false);
         mAppBarController.setHasEqualizer(false);
 

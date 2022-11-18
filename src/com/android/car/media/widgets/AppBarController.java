@@ -8,6 +8,7 @@ import android.util.Size;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.XmlRes;
 import androidx.core.util.Preconditions;
 
 import com.android.car.media.MediaAppConfig;
@@ -91,13 +92,13 @@ public class AppBarController {
         protected void onSearchSelection() {}
     }
 
-    public AppBarController(Context context, ToolbarController controller) {
+    public AppBarController(Context context, ToolbarController controller, @XmlRes int menuResId,
+                            boolean useSourceLogoForAppSelector) {
         mToolbarController = controller;
         mApplicationContext = context.getApplicationContext();
         mMaxTabs = context.getResources().getInteger(R.integer.max_tabs);
 
-        mUseSourceLogoForAppSelector =
-                context.getResources().getBoolean(R.bool.use_media_source_logo_for_app_selector);
+        mUseSourceLogoForAppSelector = useSourceLogoForAppSelector;
         Intent appSelectorIntent = MediaSource.getSourceSelectorIntent(context, false);
 
         mShowPersistentTabs = context.getResources().getBoolean(R.bool.show_persistent_tabs);
@@ -111,20 +112,23 @@ public class AppBarController {
 
         Map<Integer, MenuItem> menuMap = new HashMap<>();
         List<MenuItem> menuItems = MenuItemXmlParserUtil.readMenuItemList(mApplicationContext,
-                R.xml.menuitems_browse);
+                menuResId);
         menuItems.forEach((item) -> menuMap.put(item.getId(), item));
 
         mSearch = menuMap.get(R.id.menu_item_search);
-        Preconditions.checkNotNull(mSearch);
-        mSearch.setOnClickListener((menuItem) -> mListener.onSearchSelection());
+        if (mSearch != null) {
+            mSearch.setOnClickListener((menuItem) -> mListener.onSearchSelection());
+        }
 
         mSettings = menuMap.get(R.id.menu_item_setting);
-        Preconditions.checkNotNull(mSettings);
-        mSettings.setOnClickListener((menuItem) -> mListener.onSettingsSelection());
+        if (mSettings != null) {
+            mSettings.setOnClickListener((menuItem) -> mListener.onSettingsSelection());
+        }
 
         mEqualizer = menuMap.get(R.id.menu_item_equalizer);
-        Preconditions.checkNotNull(mEqualizer);
-        mEqualizer.setOnClickListener((menuItem) -> mListener.onEqualizerSelection());
+        if (mEqualizer != null) {
+            mEqualizer.setOnClickListener((menuItem) -> mListener.onEqualizerSelection());
+        }
 
         if (mUseSourceLogoForAppSelector) {
             menuItems.remove(menuMap.get(R.id.menu_item_selector));
@@ -133,11 +137,20 @@ public class AppBarController {
             menuItems.remove(menuMap.get(R.id.menu_item_selector_with_source_logo));
             mAppSelector = menuMap.get(R.id.menu_item_selector);
         }
-        Preconditions.checkNotNull(mAppSelector);
-        mAppSelector.setOnClickListener((menuItem) -> context.startActivity(appSelectorIntent));
-        mAppSelector.setVisible(appSelectorIntent != null);
+        if (mAppSelector != null) {
+            mAppSelector.setOnClickListener((menuItem) -> context.startActivity(appSelectorIntent));
+            mAppSelector.setVisible(appSelectorIntent != null);
+        }
 
         mToolbarController.setMenuItems(menuItems);
+    }
+
+    /** Verifies that all the menus needed in the browse view have been created. */
+    public void checkBrowseMenus() {
+        Preconditions.checkNotNull(mSearch);
+        Preconditions.checkNotNull(mSettings);
+        Preconditions.checkNotNull(mEqualizer);
+        Preconditions.checkNotNull(mAppSelector);
     }
 
     /**
@@ -285,8 +298,14 @@ public class AppBarController {
         mToolbarController.setTitle(title);
     }
 
-    public void setMenuItems(List<MenuItem> items) {
-        mToolbarController.setMenuItems(items);
+    /** Returns the first menu item matching the given id, or null. */
+    public @Nullable MenuItem getMenuItem(int menuId) {
+        for (MenuItem menuItem : mToolbarController.getMenuItems()) {
+            if (menuItem.getId() == menuId) {
+                return menuItem;
+            }
+        }
+        return null;
     }
 
     public void setBackgroundShown(boolean shown) {
