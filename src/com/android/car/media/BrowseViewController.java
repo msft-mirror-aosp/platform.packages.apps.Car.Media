@@ -478,10 +478,12 @@ public class BrowseViewController {
             ViewUtils.showViewAnimated(mErrorIcon, duration);
             hideEmptyListPlayItem();
         } else if (items.isEmpty()) {
-            // If sources are same then no need for playbar. Otherwise we need to check if we have
-            // seen a playable item or we have metadata and a play command.
-            if (!isSourcesSame()
-                    && (mViewModel.hasPlayableItem() || (hasMetaData && hasPlayCommand))) {
+            boolean shouldShowEmptyListPlayItem =
+                    !isSourcesSame()
+                            && !mViewModel.hasPlayableItem()
+                            && hasMetaData
+                            && hasPlayCommand;
+            if (shouldShowEmptyListPlayItem) {
                 ViewUtils.hideViewAnimated(mBrowseList.getView(), duration);
                 ViewUtils.hideViewAnimated(mErrorIcon, duration);
                 ViewUtils.hideViewAnimated(mMessage, duration);
