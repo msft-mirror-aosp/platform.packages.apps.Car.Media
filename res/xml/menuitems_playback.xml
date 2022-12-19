@@ -20,4 +20,15 @@
         app:id="@+id/menu_item_queue"
         app:carUiIcon="@drawable/ic_queue_button"
         app:activatable="true"/>
+    <MenuItem
+        app:id="@+id/menu_item_selector_with_source_logo"
+        app:title="@string/menu_item_app_selector_title"
+        app:tinted="false"/>
+    <!-- Uncomment or overlay to add the app selector to the Now Playing view.
+    <MenuItem
+        app:id="@+id/menu_item_selector"
+        app:title="@string/menu_item_app_selector_title"
+        app:carUiIcon="@drawable/ic_app_switch"
+        app:tinted="true"/>
+    -->
 </MenuItems>

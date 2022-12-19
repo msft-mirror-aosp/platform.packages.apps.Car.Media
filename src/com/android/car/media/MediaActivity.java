@@ -332,7 +332,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         if (intent != null && !isUxRestricted()) {
             maybeCancelDialog();
             showDialog(intent, displayedMessage, label,
-                    getString(android.R.string.cancel), icon);
+                    getString(android.R.string.cancel), icon, mediaSource);
         } else {
             maybeCancelToast();
             showToast(displayedMessage, icon);
@@ -349,11 +349,15 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         return mErrorController;
     }
 
-    private void showDialog(PendingIntent intent, String message, String positiveBtnText,
-            String negativeButtonText, @Nullable Drawable icon) {
+    private void showDialog(
+            PendingIntent intent,
+            String message,
+            String positiveBtnText,
+            String negativeButtonText,
+            @Nullable Drawable icon,
+            MediaSource mediaSource) {
         boolean showTitleIcon = getResources().getBoolean(R.bool.show_playback_source_id);
-        String title = getPlaybackViewModel(
-                MEDIA_SOURCE_MODE_PLAYBACK).getMediaSource().getValue().getDisplayName().toString();
+        String title = mediaSource != null ? mediaSource.getDisplayName().toString() : "";
 
         AlertDialogBuilder dialog = new AlertDialogBuilder(this);
         mDialog = dialog.setMessage(message)

@@ -38,6 +38,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Preconditions;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DefaultItemAnimator;
@@ -59,7 +60,6 @@ import com.android.car.ui.recyclerview.CarUiRecyclerView;
 import com.android.car.ui.recyclerview.ContentLimiting;
 import com.android.car.ui.recyclerview.ScrollingLimitedViewHolder;
 import com.android.car.ui.toolbar.MenuItem;
-import com.android.car.ui.toolbar.MenuItemXmlParserUtil;
 import com.android.car.ui.toolbar.NavButtonMode;
 import com.android.car.ui.toolbar.ToolbarController;
 import com.android.car.ui.utils.DirectManipulationHelper;
@@ -477,6 +477,7 @@ public class PlaybackFragment extends Fragment {
         mPlaybackViewModel = PlaybackViewModel.get(getActivity().getApplication(),
                 MEDIA_SOURCE_MODE_PLAYBACK);
 
+        Resources res = getResources();
         mAlbumBackground = view.findViewById(R.id.playback_background);
         mQueue = view.findViewById(R.id.queue_list);
         mSeekBarContainer = view.findViewById(R.id.playback_seek_bar_container);
@@ -485,11 +486,17 @@ public class PlaybackFragment extends Fragment {
 
         GuidelinesUpdater updater = new GuidelinesUpdater(view);
         ToolbarController toolbarController = CarUi.installBaseLayoutAround(view, updater, true);
-        mAppBarController = new AppBarController(view.getContext(), toolbarController);
+        mAppBarController = new AppBarController(view.getContext(), toolbarController,
+                R.xml.menuitems_playback,
+                res.getBoolean(R.bool.use_media_source_logo_for_app_selector_in_playback_view));
 
         mAppBarController.setTitle(R.string.fragment_playback_title);
         mAppBarController.setBackgroundShown(false);
         mAppBarController.setNavButtonMode(NavButtonMode.DOWN);
+
+        mQueueMenuItem = mAppBarController.getMenuItem(R.id.menu_item_queue);
+        Preconditions.checkNotNull(mQueueMenuItem);
+        mQueueMenuItem.setOnClickListener((item) -> toggleQueueVisibility());
 
         // Update toolbar's logo
         MediaSourceViewModel mediaSourceViewModel = getMediaSourceViewModel();
@@ -507,7 +514,6 @@ public class PlaybackFragment extends Fragment {
             mControlBarScrim.setClickable(false);
         }
 
-        Resources res = getResources();
         mShowTimeForActiveQueueItem = res.getBoolean(
                 R.bool.show_time_for_now_playing_queue_list_item);
         mShowIconForActiveQueueItem = res.getBoolean(
@@ -714,18 +720,7 @@ public class PlaybackFragment extends Fragment {
     }
 
     private void updateAppBarMenu(boolean hasQueue) {
-        if (hasQueue && mQueueMenuItem == null) {
-            List<MenuItem> menuItems = MenuItemXmlParserUtil.readMenuItemList(getContext(),
-                    R.xml.menuitems_playback);
-            menuItems.forEach((menuItem -> {
-                if (menuItem.getId() == R.id.menu_item_queue) {
-                    mQueueMenuItem = menuItem;
-                    mQueueMenuItem.setOnClickListener((item) -> toggleQueueVisibility());
-                }
-            }));
-        }
-        mAppBarController.setMenuItems(
-                hasQueue ? Collections.singletonList(mQueueMenuItem) : Collections.emptyList());
+        mQueueMenuItem.setVisible(hasQueue);
     }
 
     private void setQueueState(boolean hasQueue, boolean visible) {
