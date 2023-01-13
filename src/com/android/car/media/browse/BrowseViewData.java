@@ -16,12 +16,12 @@
 
 package com.android.car.media.browse;
 
-import android.view.View;
-
 import androidx.annotation.NonNull;
 
+import com.android.car.media.common.CustomBrowseAction;
 import com.android.car.media.common.MediaItemMetadata;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -30,54 +30,49 @@ import java.util.Objects;
 class BrowseViewData {
     /** {@link com.android.car.media.common.MediaItemMetadata} associated with this item */
     public final MediaItemMetadata mMediaItem;
-    /** Item updated by AAOS player, not by media app**/
-    public MediaItemMetadata mUpdatedMediaItem = null;
     /** View type associated with this item */
     @NonNull
     public final BrowseItemViewType mViewType;
     /** Text associated with this item */
     public final CharSequence mText;
-    /** Click listener to set for this item */
-    public final View.OnClickListener mOnClickListener;
+    List<CustomBrowseAction> mCustomBrowseActions;
+    /** Callback for clicks */
+    public final BrowseViewDataCallback mCallback;
+
+    public interface BrowseViewDataCallback{
+        void onMediaItemClicked(BrowseViewData item);
+        void onBrowseActionClick(CustomBrowseAction action, BrowseViewData browseViewData);
+        void onOverflowClicked(List<CustomBrowseAction> item, BrowseViewData browseViewData);
+    }
 
     /**
      * Creates a {@link BrowseViewData} for a particular {@link MediaItemMetadata}.
-     *
-     * @param mediaItem       {@link MediaItemMetadata} metadata
-     * @param viewType        view type to use to represent this item
-     * @param onClickListener optional {@link android.view.View.OnClickListener}
      */
-    BrowseViewData(MediaItemMetadata mediaItem, @NonNull BrowseItemViewType viewType,
-            View.OnClickListener onClickListener) {
+    BrowseViewData(
+            MediaItemMetadata mediaItem,
+            @NonNull BrowseItemViewType viewType,
+            @NonNull List<CustomBrowseAction> customBrowseActions,
+            BrowseViewDataCallback callback) {
         mMediaItem = mediaItem;
         mViewType = viewType;
         mText = null;
-        mOnClickListener = onClickListener;
+        mCallback = callback;
+        mCustomBrowseActions = customBrowseActions;
     }
 
     /**
      * Creates a {@link BrowseViewData} for a given text (normally used for headers or footers)
-     *
-     * @param text            text to set
-     * @param viewType        view type to use
-     * @param onClickListener optional {@link android.view.View.OnClickListener}
      */
-    BrowseViewData(@NonNull CharSequence text, @NonNull BrowseItemViewType viewType,
-            View.OnClickListener onClickListener) {
+    BrowseViewData(
+            @NonNull CharSequence text,
+            @NonNull BrowseItemViewType viewType,
+            @NonNull List<CustomBrowseAction> customBrowseActions,
+            BrowseViewDataCallback callback) {
         mText = text;
         mViewType = viewType;
         mMediaItem = null;
-        mOnClickListener = onClickListener;
-    }
-
-    /**
-     * Creates a {@link BrowseViewData} with no metadata
-     */
-    BrowseViewData(@NonNull BrowseItemViewType viewType, View.OnClickListener onClickListener) {
-        mText = null;
-        mMediaItem = null;
-        mViewType = viewType;
-        mOnClickListener = onClickListener;
+        mCallback = callback;
+        mCustomBrowseActions = customBrowseActions;
     }
 
     @Override
@@ -87,14 +82,12 @@ class BrowseViewData {
         BrowseViewData item = (BrowseViewData) o;
 
         return Objects.equals(mMediaItem, item.mMediaItem)
-                && Objects.equals(mUpdatedMediaItem, item.mUpdatedMediaItem)
-                && mViewType == item.mViewType;
+                && mViewType == item.mViewType
+                && Objects.equals(mCustomBrowseActions, item.mCustomBrowseActions);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(mMediaItem, mViewType);
     }
-
-
 }

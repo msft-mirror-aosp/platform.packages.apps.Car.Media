@@ -16,12 +16,20 @@
 
 package com.android.car.media.browse;
 
+import android.content.Context;
 import android.view.View;
 import android.widget.ProgressBar;
 
+import androidx.annotation.NonNull;
 import androidx.media.utils.MediaConstants;
 
 import com.android.car.apps.common.util.ViewUtils;
+import com.android.car.media.common.CustomBrowseAction;
+import com.android.car.media.common.MediaItemMetadata;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Utility class for {@link BrowseViewHolder}
@@ -71,5 +79,37 @@ public class BrowseAdapterUtils {
             ViewUtils.setVisible(progressIndicator, progress > 0.0 && progress < 1.0);
             progressIndicator.setProgress((int) (progress * 100));
         }
+    }
+
+    /**
+     * Builds list of {@link CustomBrowseAction} from the supplied media item.
+     *
+     * @param item - contains the list of action IDs
+     * @param globalBrowseCustomActions - Global actions in root.extras
+     * @return list of actions for item
+     */
+    public static List<CustomBrowseAction> buildBrowseCustomActions(
+            Context mContext,
+            MediaItemMetadata item,
+            @NonNull Map<String, CustomBrowseAction> globalBrowseCustomActions) {
+        int actionsLimit =  mContext.getResources()
+                .getInteger(com.android.car.media.common.R.integer.max_custom_actions);
+        if (actionsLimit <= 0) return new ArrayList<>();
+        if (globalBrowseCustomActions.isEmpty()) return new ArrayList<>();
+
+        List<CustomBrowseAction> customActions = new ArrayList<>();
+
+        for (String actionId : item.getBrowseCustomActionIds()) {
+            if (globalBrowseCustomActions.containsKey(actionId)) {
+                CustomBrowseAction customBrowseAction = globalBrowseCustomActions.get(actionId);
+                if (customBrowseAction == null) continue;
+                customActions.add(customBrowseAction);
+            }
+        }
+
+        //Limit item actions to OEM set value
+        actionsLimit = Math.min(customActions.size(), actionsLimit);
+
+        return customActions.subList(0, actionsLimit);
     }
 }

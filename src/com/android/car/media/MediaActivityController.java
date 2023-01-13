@@ -32,6 +32,7 @@ import android.view.inputmethod.InputMethodManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -40,6 +41,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.android.car.apps.common.util.FutureData;
 import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.apps.common.util.ViewUtils.ViewAnimEndListener;
+import com.android.car.media.common.CustomBrowseAction;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.browse.MediaBrowserViewModelImpl;
 import com.android.car.media.common.browse.MediaItemsRepository;
@@ -126,6 +128,9 @@ public class MediaActivityController extends ViewControllerBase {
 
         /** Called once the list of the root node's children has been loaded. */
         void onRootLoaded();
+
+        /** Called when switching to pbv without changing playback content*/
+        void openPlaybackView();
 
         /** Returns the activity. */
         FragmentActivity getActivity();
@@ -250,12 +255,24 @@ public class MediaActivityController extends ViewControllerBase {
         mFpv = activity.requireViewById(R.id.fpv);
 
         MediaItemsLiveData rootMediaItems = mediaItemsRepo.getRootMediaItems();
-        mRootLoadingController = BrowseViewController.newRootController(
-                mBrowseCallbacks, mBrowseArea, rootMediaItems);
+        MutableLiveData<Map<String, CustomBrowseAction>> globalBrowseActions =
+                mediaItemsRepo.getCustomBrowseActions();
+        mRootLoadingController =
+                BrowseViewController.newRootController(
+                        mBrowseCallbacks,
+                        mBrowseArea,
+                        rootMediaItems,
+                        mediaItemsRepo,
+                        globalBrowseActions);
         mRootLoadingController.getContent().setAlpha(1f);
 
-        mSearchResultsController = BrowseViewController.newSearchResultsController(
-                mBrowseCallbacks, mBrowseArea, mMediaItemsRepository.getSearchMediaItems());
+        mSearchResultsController =
+                BrowseViewController.newSearchResultsController(
+                        mBrowseCallbacks,
+                        mBrowseArea,
+                        mMediaItemsRepository.getSearchMediaItems(),
+                        mediaItemsRepo,
+                        globalBrowseActions);
 
         boolean showingSearch = mViewModel.isShowingSearchResults();
         ViewUtils.setVisible(mSearchResultsController.getContent(), showingSearch);
@@ -353,6 +370,12 @@ public class MediaActivityController extends ViewControllerBase {
         }
 
         @Override
+        public void openPlaybackView() {
+            hideKeyboard();
+            mCallbacks.openPlaybackView();
+        }
+
+        @Override
         public void onChildrenNodesRemoved(@NonNull BrowseViewController controller,
                 @NonNull Collection<MediaItemMetadata> removedNodes) {
             if (mBrowseStack.contains(controller.getParentItem())) {
@@ -425,10 +448,19 @@ public class MediaActivityController extends ViewControllerBase {
     @NonNull
     private BrowseViewController getControllerForItem(@NonNull MediaItemMetadata item) {
         BrowseViewController controller = mBrowseViewControllersByNode.get(item);
+        MutableLiveData<Map<String, CustomBrowseAction>> globalBrowseActions =
+                mMediaItemsRepository.getCustomBrowseActions();
         if (controller == null) {
-            controller = BrowseViewController.newBrowseController(mBrowseCallbacks, mBrowseArea,
-                    item, mMediaItemsRepository.getMediaChildren(item.getId()), mRootBrowsableHint,
-                    mRootPlayableHint);
+            controller =
+                    BrowseViewController.newBrowseController(
+                            mBrowseCallbacks,
+                            mBrowseArea,
+                            item,
+                            mMediaItemsRepository.getMediaChildren(item.getId()),
+                            mMediaItemsRepository,
+                            globalBrowseActions,
+                            mRootBrowsableHint,
+                            mRootPlayableHint);
 
             if (mCarUiInsets != null) {
                 controller.onCarUiInsetsChanged(mCarUiInsets);
