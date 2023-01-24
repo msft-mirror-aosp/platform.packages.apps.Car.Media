@@ -377,7 +377,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
     }
 
     private void showToast(String message, @Nullable Drawable icon) {
-        mToast = Toast.makeText(this.getApplicationContext(), message, Toast.LENGTH_LONG);
+        mToast = Toast.makeText(this, message, Toast.LENGTH_LONG);
         int offset = getResources().getDimensionPixelOffset(R.dimen.toast_error_offset_y);
         mToast.setGravity(Gravity.BOTTOM, 0, offset);
 
