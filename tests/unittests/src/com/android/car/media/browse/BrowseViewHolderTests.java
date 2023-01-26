@@ -35,12 +35,14 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.android.car.apps.common.imaging.ImageBinder;
 import com.android.car.media.R;
+import com.android.car.media.common.CustomBrowseAction;
 import com.android.car.media.common.MediaItemMetadata;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Collections;
 import java.util.List;
 
 @RunWith(AndroidJUnit4.class)
@@ -49,6 +51,7 @@ public class BrowseViewHolderTests {
     Context mContext;
     BrowseViewHolder mBrowseViewHolder;
     BrowseViewData mBrowseViewData;
+    List<CustomBrowseAction> mCustomBrowseActions = Collections.emptyList();
     View mView;
     List<MediaItemMetadata> mItems;
 
@@ -59,7 +62,7 @@ public class BrowseViewHolderTests {
         mView = LayoutInflater.from(mContext).inflate(layoutId, null, false);
         mBrowseViewHolder = new BrowseViewHolder(mView, ImageBinder.PlaceholderType.FOREGROUND);
         mItems = generateTestItems();
-        mBrowseViewData = new BrowseViewData(mItems.get(0), LIST_ITEM, null, null);
+        mBrowseViewData = new BrowseViewData(mItems.get(0), LIST_ITEM, mCustomBrowseActions, null);
     }
 
     @Test
@@ -93,7 +96,7 @@ public class BrowseViewHolderTests {
 
     @Test
     public void onBindDownloaded() {
-        mBrowseViewData = new BrowseViewData(mItems.get(2), LIST_ITEM, null, null);
+        mBrowseViewData = new BrowseViewData(mItems.get(2), LIST_ITEM, mCustomBrowseActions, null);
         mBrowseViewHolder.bind(mContext, mBrowseViewData);
         ImageView imageView = mView.findViewById(R.id.download_icon_with_title);
         ImageView imageViewSubtitle = mView.findViewById(R.id.download_icon_with_subtitle);
@@ -103,7 +106,7 @@ public class BrowseViewHolderTests {
 
     @Test
     public void onBindExplicit() {
-        mBrowseViewData = new BrowseViewData(mItems.get(2), LIST_ITEM, null, null);
+        mBrowseViewData = new BrowseViewData(mItems.get(2), LIST_ITEM, mCustomBrowseActions, null);
         mBrowseViewHolder.bind(mContext, mBrowseViewData);
         ImageView imageView = mView.findViewById(R.id.explicit_icon_with_title);
         ImageView imageViewSubtitle = mView.findViewById(R.id.explicit_icon_with_subtitle);
@@ -113,25 +116,25 @@ public class BrowseViewHolderTests {
 
     @Test
     public void onBindNewIndicator() {
-        mBrowseViewData = new BrowseViewData(mItems.get(2), LIST_ITEM, null, null);
+        mBrowseViewData = new BrowseViewData(mItems.get(2), LIST_ITEM, mCustomBrowseActions, null);
         mBrowseViewHolder.bind(mContext, mBrowseViewData);
         ImageView newDot = mView.findViewById(R.id.browse_item_progress_new);
         assertEquals(View.VISIBLE, newDot.getVisibility());
 
-        mBrowseViewData = new BrowseViewData(mItems.get(3), LIST_ITEM, null, null);
+        mBrowseViewData = new BrowseViewData(mItems.get(3), LIST_ITEM, mCustomBrowseActions, null);
         mBrowseViewHolder.bind(mContext, mBrowseViewData);
         assertEquals(View.GONE, newDot.getVisibility());
     }
 
     @Test
     public void onBindProgressUI() {
-        mBrowseViewData = new BrowseViewData(mItems.get(2), LIST_ITEM, null, null);
+        mBrowseViewData = new BrowseViewData(mItems.get(2), LIST_ITEM, mCustomBrowseActions, null);
         mBrowseViewHolder.bind(mContext, mBrowseViewData);
         ProgressBar progressBar = mView.findViewById(R.id.browse_item_progress_bar);
         assertEquals(View.VISIBLE, progressBar.getVisibility());
         assertEquals((int) (mItems.get(2).getProgress() * 100), progressBar.getProgress());
 
-        mBrowseViewData = new BrowseViewData(mItems.get(4), LIST_ITEM, null, null);
+        mBrowseViewData = new BrowseViewData(mItems.get(4), LIST_ITEM, mCustomBrowseActions, null);
         mBrowseViewHolder.bind(mContext, mBrowseViewData);
         assertEquals(View.GONE, progressBar.getVisibility());
         assertEquals((int) (mItems.get(4).getProgress() * 100), progressBar.getProgress());
@@ -139,9 +142,10 @@ public class BrowseViewHolderTests {
 
     @Test
     public void updateMediaItemMetaData() {
-        mBrowseViewData = new BrowseViewData(mItems.get(2), LIST_ITEM, null, null);
+        mBrowseViewData = new BrowseViewData(mItems.get(2), LIST_ITEM, mCustomBrowseActions, null);
         mBrowseViewHolder.bind(mContext, mBrowseViewData);
-        BrowseViewData bvd = new BrowseViewData(mItems.get(3), ICON_LIST_ITEM, null, null);
+        BrowseViewData bvd = new BrowseViewData(mItems.get(3), ICON_LIST_ITEM, mCustomBrowseActions,
+                null);
         mBrowseViewHolder.update(bvd, BrowseAdapter.MediaItemUpdateType.PROGRESS);
         ProgressBar progressBar = mView.findViewById(R.id.browse_item_progress_bar);
         ImageView newDot = mView.findViewById(R.id.browse_item_progress_new);

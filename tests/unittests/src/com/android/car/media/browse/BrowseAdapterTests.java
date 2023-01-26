@@ -41,6 +41,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -65,6 +66,7 @@ public class BrowseAdapterTests extends BaseMockitoTest {
     public void setup() {
         Context context = ApplicationProvider.getApplicationContext();
         mBrowseAdapter = new BrowseAdapter(context);
+        mBrowseAdapter.setGlobalCustomActions(Collections.emptyMap());
     }
 
     @Test
