@@ -49,7 +49,7 @@
 
     <!-- Views to show when the queue is visible (to hide when the queue becomes invisible). -->
     <integer-array name="playback_views_to_show_when_queue_is_visible">
-        <item>@id/queue_list</item>
+        <item>@id/queue_fragment_container</item>
         <item>@id/background_scrim</item>
     </integer-array>
 
