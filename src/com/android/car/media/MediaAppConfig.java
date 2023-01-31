@@ -35,4 +35,5 @@ public class MediaAppConfig {
                 com.android.car.media.common.R.integer.media_items_bitmap_max_size_px);
         return new Size(max, max);
     }
+
 }

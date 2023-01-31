@@ -31,7 +31,7 @@ import java.util.Set;
  * Applies the insets computed by the car-ui-lib to the spacer views in ui_guides.xml. This allows
  * the Media app to have different instances of the application bar.
  */
-class GuidelinesUpdater implements InsetsChangedListener {
+public class GuidelinesUpdater implements InsetsChangedListener {
 
     private final View mGuidedView;
     private final Set<InsetsChangedListener> mListeners = new HashSet<>();

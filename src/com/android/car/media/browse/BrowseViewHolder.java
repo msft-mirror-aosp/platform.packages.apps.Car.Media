@@ -19,6 +19,7 @@ package com.android.car.media.browse;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Size;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -31,9 +32,13 @@ import com.android.car.apps.common.imaging.ImageBinder;
 import com.android.car.apps.common.imaging.ImageViewBinder;
 import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.media.MediaAppConfig;
+import com.android.car.media.R;
+import com.android.car.media.common.CustomBrowseAction;
 import com.android.car.media.common.MediaItemMetadata;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Generic {@link RecyclerView.ViewHolder} to use for all views in the {@link BrowseAdapter}
@@ -50,8 +55,12 @@ public class BrowseViewHolder extends RecyclerView.ViewHolder {
     private final ImageView mSubTitleExplicitIcon;
     private final ProgressBar mProgressbar;
     private final ImageView mNewMediaDot;
+    private final ViewGroup mCustomActionsContainer;
 
+    private final Size mMaxArtSize;
     private final ImageViewBinder<MediaItemMetadata.ArtworkRef> mAlbumArtBinder;
+    private final List<ImageViewBinder<CustomBrowseAction.BrowseActionArtRef>>
+            mBrowseActionIcons;
 
     /**
      * Creates a {@link BrowseViewHolder} for the given view.
@@ -74,77 +83,93 @@ public class BrowseViewHolder extends RecyclerView.ViewHolder {
         mProgressbar = itemView.findViewById(com.android.car.media.R.id.browse_item_progress_bar);
         mNewMediaDot = itemView.findViewById(com.android.car.media.R.id.browse_item_progress_new);
 
-        Size maxArtSize = MediaAppConfig.getMediaItemsBitmapMaxSize(itemView.getContext());
-        mAlbumArtBinder = new ImageViewBinder<>(placeholderType, maxArtSize, mAlbumArt, false);
+        mMaxArtSize = MediaAppConfig.getMediaItemsBitmapMaxSize(itemView.getContext());
+        mAlbumArtBinder = new ImageViewBinder<>(placeholderType, mMaxArtSize, mAlbumArt, false);
+        mCustomActionsContainer =
+                itemView.findViewById(com.android.car.media.R.id.browse_item_actions_container);
+        mBrowseActionIcons = new ArrayList<>();
     }
-
 
     /**
      * Updates this {@link BrowseViewHolder} with the given data
      */
     public void bind(Context context, BrowseViewData data) {
 
-        boolean hasMediaItem = data.mMediaItem != null;
-        boolean hasMediaItemExtras = hasMediaItem && data.mMediaItem.getExtras() != null;
-        boolean hasUpdatedMediaItemExtras = data.mUpdatedMediaItem != null;
-        boolean showSubtitle = hasMediaItem && !TextUtils.isEmpty(data.mMediaItem.getSubtitle());
+        MediaItemMetadata metadata = data.mMediaItem;
+        boolean hasMediaItem = metadata != null;
+        boolean hasMediaItemExtras = hasMediaItem && metadata.getExtras() != null;
+        boolean showSubtitle = hasMediaItem && !TextUtils.isEmpty(metadata.getSubtitle());
+        boolean hasBrowseCustomActions = !data.mCustomBrowseActions.isEmpty();
 
         if (mTitle != null) {
             mTitle.setText(data.mText != null ? data.mText :
-                    hasMediaItem ? data.mMediaItem.getTitle() : null);
+                    hasMediaItem ? metadata.getTitle() : null);
         }
         if (mSubtitle != null) {
-            mSubtitle.setText(hasMediaItem ? data.mMediaItem.getSubtitle() : null);
+            mSubtitle.setText(hasMediaItem ? metadata.getSubtitle() : null);
             ViewUtils.setVisible(mSubtitle, showSubtitle);
         }
 
-        mAlbumArtBinder.setImage(context, hasMediaItem ? data.mMediaItem.getArtworkKey() : null);
+        mAlbumArtBinder.setImage(context, hasMediaItem ? metadata.getArtworkKey() : null);
 
-        if (mContainer != null && data.mOnClickListener != null) {
-            mContainer.setOnClickListener(data.mOnClickListener);
+        if (mContainer != null && data.mCallback != null) {
+            mContainer.setOnClickListener(v -> data.mCallback.onMediaItemClicked(data));
         }
-        ViewUtils.setVisible(mRightArrow, hasMediaItem && data.mMediaItem.isBrowsable());
+        ViewUtils.setVisible(mRightArrow, hasMediaItem && metadata.isBrowsable());
 
         // Adjust the positioning of the explicit and downloaded icons. If there is a subtitle, then
         // the icons should show on the subtitle row, otherwise they should show on the title row.
-        boolean downloaded = hasMediaItem && data.mMediaItem.isDownloaded();
-        boolean explicit = hasMediaItem && data.mMediaItem.isExplicit();
+        boolean downloaded = hasMediaItem && metadata.isDownloaded();
+        boolean explicit = hasMediaItem && metadata.isExplicit();
         ViewUtils.setVisible(mTitleDownloadIcon, !showSubtitle && downloaded);
         ViewUtils.setVisible(mTitleExplicitIcon, !showSubtitle && explicit);
         ViewUtils.setVisible(mSubTitleDownloadIcon, showSubtitle && downloaded);
         ViewUtils.setVisible(mSubTitleExplicitIcon, showSubtitle && explicit);
 
-        if (hasMediaItemExtras && !hasUpdatedMediaItemExtras) {
-            bindProgressUI(data.mMediaItem);
+        if (hasMediaItemExtras) {
+            bindProgressUI(metadata);
         }
 
-        if (hasUpdatedMediaItemExtras) {
-            bindProgressUI(data.mUpdatedMediaItem);
+        if (hasBrowseCustomActions) {
+            ViewUtils.setVisible(mCustomActionsContainer, true);
+            bindBrowseCustomActions(context, data);
+        } else {
+            ViewUtils.setVisible(mCustomActionsContainer, false);
         }
     }
 
     /**
-     * Handles updated {@link MediaItemMetadata} for a partial bind
-     * Partial bind is
-     * {@link androidx.recyclerview.widget.ListAdapter#onBindViewHolder(RecyclerView.ViewHolder,
-     * int, List)}
+     * Handles updated {@link BrowseViewData} for a partial bind Partial bind is {@link
+     * androidx.recyclerview.widget.ListAdapter#onBindViewHolder(RecyclerView.ViewHolder, int,
+     * List)}
+     *
+     * <p>Called from {@link DiffUtil.ItemCallback#getChangePayload(Object, Object)} where items
+     * same but contents were different and create payload for partial bind
+     *
+     * <p>Or called from {@link
+     * androidx.recyclerview.widget.RecyclerView.AdapterDataObserver#onItemRangeChanged(int, int,
+     * Object)} Where we check if notifyItemChanged() has a payload or not and then call a partial
+     * bind
      *
      * <p>
-     * Called from {@link DiffUtil.ItemCallback#getChangePayload(Object, Object)} where
-     * items same but contents were different and create payload for partial bind
-     * </p>
-     * <p>
-     * Or called from
-     * {@link androidx.recyclerview.widget.RecyclerView.AdapterDataObserver#onItemRangeChanged(int,
-     * int, Object)}
-     * Where we check if notifyItemChanged() has a payload or not and then call a partial bind
-     * <p/>
      */
-    public void update(MediaItemMetadata mediaItemMetadata) {
-        boolean hasMediaItem = mediaItemMetadata != null;
-        boolean hasMediaItemExtras = hasMediaItem && mediaItemMetadata.getExtras() != null;
-        if (hasMediaItemExtras) {
-            bindProgressUI(mediaItemMetadata);
+    public void update(
+            BrowseViewData browseViewData, BrowseAdapter.MediaItemUpdateType updateType) {
+        if (updateType == null) {
+            bind(itemView.getContext(), browseViewData);
+            return;
+        }
+        switch (updateType) {
+            case PROGRESS:
+                bindProgressUI(browseViewData.mMediaItem);
+                break;
+            case BROWSE_ACTIONS:
+                Context context = itemView.getContext();
+                bindBrowseCustomActions(context, browseViewData);
+                break;
+            default:
+                bind(itemView.getContext(), browseViewData);
+                break;
         }
     }
 
@@ -159,11 +184,57 @@ public class BrowseViewHolder extends RecyclerView.ViewHolder {
         BrowseAdapterUtils.setPlaybackProgressIndicator(mProgressbar, progress);
     }
 
+    private void bindBrowseCustomActions(Context context, BrowseViewData browseViewData) {
+        mCustomActionsContainer.removeAllViews();
+        mBrowseActionIcons.forEach((it) -> it.maybeCancelLoading(context));
+        mBrowseActionIcons.clear();
+        int maxVisibleActions = context.getResources()
+                .getInteger(R.integer.max_visible_actions);
+        for (CustomBrowseAction customBrowseAction :
+                browseViewData.mCustomBrowseActions.stream()
+                        .limit(maxVisibleActions)
+                        .collect(Collectors.toList())) {
+            View customActionView =
+                    LayoutInflater.from(context)
+                            .inflate(R.layout.browse_custom_action, null);
+            customActionView.setOnClickListener(
+                    (v) ->
+                            browseViewData.mCallback.onBrowseActionClick(
+                                    customBrowseAction, browseViewData));
+            ImageView imageView =
+                    customActionView.findViewById(R.id.browse_item_custom_action);
+            ImageViewBinder<CustomBrowseAction.BrowseActionArtRef> viewBinder =
+                    new ImageViewBinder(mMaxArtSize, imageView);
+            viewBinder.setImage(context, customBrowseAction.getArtRef());
+            mBrowseActionIcons.add(viewBinder);
+            mCustomActionsContainer.addView(customActionView);
+        }
+
+        if (browseViewData.mCustomBrowseActions.size() > maxVisibleActions) {
+            View customActionView =
+                    LayoutInflater.from(context)
+                            .inflate(R.layout.browse_custom_action, null);
+            customActionView.setOnClickListener(
+                    v ->
+                            browseViewData.mCallback.onOverflowClicked(
+                                    browseViewData.mCustomBrowseActions
+                                            .subList(maxVisibleActions,
+                                                    browseViewData.mCustomBrowseActions.size()),
+                                    browseViewData));
+            ImageView imageView =
+                    customActionView.findViewById(R.id.browse_item_custom_action);
+            imageView.setImageResource(com.android.car.media.R.drawable.ic_more_vert);
+            mCustomActionsContainer.addView(customActionView);
+        }
+    }
+
     void onViewAttachedToWindow(Context context) {
         mAlbumArtBinder.maybeRestartLoading(context);
+        mBrowseActionIcons.forEach((it) -> it.maybeRestartLoading(context));
     }
 
     void onViewDetachedFromWindow(Context context) {
         mAlbumArtBinder.maybeCancelLoading(context);
+        mBrowseActionIcons.forEach((it) -> it.maybeCancelLoading(context));
     }
 }

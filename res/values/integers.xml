@@ -49,7 +49,7 @@
 
     <!-- Views to show when the queue is visible (to hide when the queue becomes invisible). -->
     <integer-array name="playback_views_to_show_when_queue_is_visible">
-        <item>@id/queue_list</item>
+        <item>@id/queue_fragment_container</item>
         <item>@id/background_scrim</item>
     </integer-array>
 
@@ -62,5 +62,13 @@
     becomes invisible). The visibility of these views will be changed without any delay to avoid
     visual glitch. -->
     <integer-array name="playback_views_to_show_immediately_when_queue_is_visible"/>
+
+    <!-- The maximum number of actions to show per item in the browse list view
+    Items beyond this limit will be in the overflow. -->
+    <integer name="max_visible_actions">2</integer>
+
+    <!-- The maximum number of actions to show in the actions header
+    Items beyond this limit will be in the overflow. -->
+    <integer name="max_visible_actions_header">2</integer>
 
 </resources>

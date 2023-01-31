@@ -41,6 +41,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -65,6 +66,7 @@ public class BrowseAdapterTests extends BaseMockitoTest {
     public void setup() {
         Context context = ApplicationProvider.getApplicationContext();
         mBrowseAdapter = new BrowseAdapter(context);
+        mBrowseAdapter.setGlobalCustomActions(Collections.emptyMap());
     }
 
     @Test
@@ -73,12 +75,14 @@ public class BrowseAdapterTests extends BaseMockitoTest {
 
         ArrayList<BrowseViewData> testListPrev = new ArrayList<>();
         testListPrev.add(
-                new BrowseViewData("Previous BVD list item", BrowseItemViewType.LIST_ITEM, null));
+                new BrowseViewData(
+                        "Previous BVD list item", BrowseItemViewType.LIST_ITEM, null, null));
         mBrowseAdapter.onCurrentListChanged(null, testListPrev);
 
         ArrayList<BrowseViewData> testListCurr = new ArrayList<>();
         testListCurr.add(
-                new BrowseViewData("Current BVD grid item", BrowseItemViewType.GRID_ITEM, null));
+                new BrowseViewData(
+                        "Current BVD grid item", BrowseItemViewType.GRID_ITEM, null, null));
         mBrowseAdapter.onCurrentListChanged(testListPrev, testListCurr);
 
         verify(mOnListChangedListener, atLeast(1)).onListChanged(mPrevListCaptor.capture(),
@@ -155,11 +159,11 @@ public class BrowseAdapterTests extends BaseMockitoTest {
         mBrowseAdapter.submitItems(generateParentItem(), itemList);
 
         List<BrowseViewData> items = mBrowseAdapter.getCurrentList();
-        items.get(0).mOnClickListener.onClick(null);
-        items.get(1).mOnClickListener.onClick(null);
-        items.get(2).mOnClickListener.onClick(null);
+        items.get(0).mCallback.onMediaItemClicked(items.get(0));
+        items.get(1).mCallback.onMediaItemClicked(items.get(1));
+        items.get(2).mCallback.onMediaItemClicked(items.get(2));
 
-        verify(mObserver, atLeast(1)).onTitleClicked();
+        verify(mObserver, atLeast(1)).onHeaderItemClicked();
         verify(mObserver, atLeast(1)).onBrowsableItemClicked(any());
         verify(mObserver, atLeast(1)).onPlayableItemClicked(any());
     }

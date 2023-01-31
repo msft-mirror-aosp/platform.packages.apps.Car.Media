@@ -377,7 +377,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
     }
 
     private void showToast(String message, @Nullable Drawable icon) {
-        mToast = Toast.makeText(this.getApplicationContext(), message, Toast.LENGTH_LONG);
+        mToast = Toast.makeText(this, message, Toast.LENGTH_LONG);
         int offset = getResources().getDimensionPixelOffset(R.dimen.toast_error_offset_y);
         mToast.setGravity(Gravity.BOTTOM, 0, offset);
 
@@ -565,17 +565,21 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
     @Override
     public void onPlayableItemClicked(@NonNull MediaItemMetadata item) {
         mBrowsePlaybackController.playItem(item);
-        boolean switchToPlayback = getResources().getBoolean(
-                R.bool.switch_to_playback_view_when_playable_item_is_clicked);
-        if (switchToPlayback) {
-            changeMode(Mode.PLAYBACK);
-        }
-        setIntent(null);
+        maybeOpenPlayback();
     }
 
     @Override
     public void onBrowseEmptyListPlayItemClicked() {
         mBrowsePlaybackController.play();
+        maybeOpenPlayback();
+    }
+
+    @Override
+    public void openPlaybackView() {
+        maybeOpenPlayback();
+    }
+
+    private void maybeOpenPlayback() {
         boolean switchToPlayback = getResources().getBoolean(
                 R.bool.switch_to_playback_view_when_playable_item_is_clicked);
         if (switchToPlayback) {

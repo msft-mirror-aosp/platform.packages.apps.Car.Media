@@ -31,11 +31,13 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.car.media.common.CustomBrowseAction;
 import com.android.car.media.common.MediaItemMetadata;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -62,14 +64,25 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
         void onListChanged(List<BrowseViewData> previousList, List<BrowseViewData> currentList);
     }
 
+    /**
+     * Type of update for the media item.
+     * Progress will update the progress UI
+     * Browse actions will update the browse actions ui
+     */
+    public enum MediaItemUpdateType{
+        PROGRESS,
+        BROWSE_ACTIONS
+    }
+
     @NonNull
     private final Context mContext;
     @NonNull
-    private List<Observer> mObservers = new ArrayList<>();
+    private final List<Observer> mObservers = new ArrayList<>();
     @Nullable
     private CharSequence mTitle;
     @Nullable
     private MediaItemMetadata mParentMediaItem;
+    private Map<String, CustomBrowseAction> mGlobalCustomBrowseActions;
 
     private BrowseItemViewType mRootBrowsableViewType = BrowseItemViewType.LIST_ITEM;
     private BrowseItemViewType mRootPlayableViewType = BrowseItemViewType.LIST_ITEM;
@@ -79,29 +92,35 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
     private static final DiffUtil.ItemCallback<BrowseViewData> DIFF_CALLBACK =
             new DiffUtil.ItemCallback<BrowseViewData>() {
                 @Override
-                public boolean areItemsTheSame(@NonNull BrowseViewData oldItem,
-                        @NonNull BrowseViewData newItem) {
+                public boolean areItemsTheSame(
+                        @NonNull BrowseViewData oldItem, @NonNull BrowseViewData newItem) {
                     return Objects.equals(
-                            oldItem.mMediaItem != null ? oldItem.mMediaItem.getId() : null,
-                            newItem.mMediaItem != null ? newItem.mMediaItem.getId() : null)
+                                    oldItem.mMediaItem != null ? oldItem.mMediaItem.getId() : null,
+                                    newItem.mMediaItem != null ? newItem.mMediaItem.getId() : null)
                             && Objects.equals(oldItem.mText, newItem.mText);
                 }
 
                 @Override
-                public boolean areContentsTheSame(@NonNull BrowseViewData oldItem,
-                        @NonNull BrowseViewData newItem) {
+                public boolean areContentsTheSame(
+                        @NonNull BrowseViewData oldItem, @NonNull BrowseViewData newItem) {
                     return Objects.equals(oldItem, newItem);
                 }
 
                 @Nullable
                 @Override
-                public Object getChangePayload(@NonNull BrowseViewData oldItem,
-                        @NonNull BrowseViewData newItem) {
-                    if (oldItem == newItem || Objects.equals(oldItem.mUpdatedMediaItem,
-                            newItem.mUpdatedMediaItem)) {
+                public Object getChangePayload(
+                        @NonNull BrowseViewData oldItem, @NonNull BrowseViewData newItem) {
+                    if (oldItem == newItem || Objects.equals(oldItem, newItem)) {
                         return super.getChangePayload(oldItem, newItem);
                     } else {
-                        return newItem.mUpdatedMediaItem;
+                        if (!newItem.mCustomBrowseActions.equals(oldItem.mCustomBrowseActions)) {
+                            return MediaItemUpdateType.BROWSE_ACTIONS;
+                        }
+                        if (Math.abs(newItem.mMediaItem.getProgress()
+                                                - oldItem.mMediaItem.getProgress()) > .005) {
+                            return MediaItemUpdateType.PROGRESS;
+                        }
+                        return null;
                     }
                 }
             };
@@ -109,26 +128,68 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
     /**
      * An {@link BrowseAdapter} observer.
      */
-    public static abstract class Observer {
+    public abstract static class Observer {
 
         /**
          * Callback invoked when a user clicks on a playable item.
          */
         protected void onPlayableItemClicked(@NonNull MediaItemMetadata item) {
         }
-
         /**
          * Callback invoked when a user clicks on a browsable item.
          */
         protected void onBrowsableItemClicked(@NonNull MediaItemMetadata item) {
         }
 
+        /** Callback invoked when a user clicks on a browse custom action */
+        protected void onBrowseCustomActionClicked(
+                @NonNull CustomBrowseAction customBrowseAction, String mediaID) {}
+
+        /** Callback invoked when a user clicks on the browse custom action overflow */
+        protected void onBrowseCustomActionOverflowClicked(
+                @NonNull List<CustomBrowseAction> overflowActions, String mediaID) {}
+
         /**
-         * Callback invoked when the user clicks on the title of the queue.
+         * Callback invoked when the user clicks on a header type item.
          */
-        protected void onTitleClicked() {
+        protected void onHeaderItemClicked() {
         }
     }
+
+    private final BrowseViewData.BrowseViewDataCallback mCallback =
+            new BrowseViewData.BrowseViewDataCallback() {
+        @Override
+        public void onMediaItemClicked(BrowseViewData item) {
+            BrowseAdapter.this.notify(observer -> {
+                if (item.mViewType == BrowseItemViewType.HEADER) {
+                    observer.onHeaderItemClicked();
+                } else {
+                    if (item.mMediaItem.isPlayable()) {
+                        observer.onPlayableItemClicked(item.mMediaItem);
+                    }
+                    if (item.mMediaItem.isBrowsable()) {
+                        observer.onBrowsableItemClicked(item.mMediaItem);
+                    }
+                }
+            });
+        }
+
+        @Override
+        public void onBrowseActionClick(
+                CustomBrowseAction action, BrowseViewData browseViewData) {
+            BrowseAdapter.this.notify(observer ->
+                    observer.onBrowseCustomActionClicked(
+                            action, browseViewData.mMediaItem.getId()));
+        }
+
+        @Override
+        public void onOverflowClicked(
+                List<CustomBrowseAction> items, BrowseViewData browseViewData) {
+            BrowseAdapter.this.notify(
+                    observer -> observer.onBrowseCustomActionOverflowClicked(
+                            items, browseViewData.mMediaItem.getId()));
+        }
+    };
 
     /**
      * Creates a {@link BrowseAdapter} that displays the children of the given media tree node.
@@ -167,6 +228,11 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
         mRootPlayableViewType = fromMediaHint(hintValue);
     }
 
+    /** Sets the list of custom browse actions */
+    public void setGlobalCustomActions(Map<String, CustomBrowseAction> customBrowseActions) {
+        this.mGlobalCustomBrowseActions = customBrowseActions;
+    }
+
     public int getSpanSize(int position, int maxSpanSize) {
         BrowseItemViewType viewType = getItem(position).mViewType;
         return viewType.getSpanSize(maxSpanSize);
@@ -196,14 +262,24 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
     @Override
     public void onBindViewHolder(@NonNull BrowseViewHolder holder, int position,
             @NonNull List<Object> payloads) {
-        //We are only checking for MediaMetaData for now, since this is the only payload we are
-        // setting in getChangePayload
-        if (payloads.isEmpty() || !(payloads.get(0) instanceof MediaItemMetadata)) {
+        if (payloads.isEmpty()) {
             BrowseViewData viewData = getItem(position);
             holder.bind(mContext, viewData);
-        } else {
-            MediaItemMetadata mediaMetadata = (MediaItemMetadata) payloads.get(0);
-            holder.update(mediaMetadata);
+        }
+        // These can be merged into a list, a few notify change calls can happen at once,
+        // and the payloads will be merged into a single payload list
+        for (Object payload : payloads) {
+            if (payload instanceof BrowseViewData) {
+                BrowseViewData browseViewData = (BrowseViewData) payload;
+                holder.update(browseViewData, null);
+            } else if (payload instanceof MediaItemUpdateType) {
+                BrowseViewData viewData = getItem(position);
+                MediaItemUpdateType updateType = (MediaItemUpdateType) payload;
+                holder.update(viewData, updateType);
+            } else {
+                BrowseViewData viewData = getItem(position);
+                holder.bind(mContext, viewData);
+            }
         }
     }
 
@@ -252,22 +328,20 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
     private class ItemsBuilder {
         private List<BrowseViewData> result = new ArrayList<>();
 
-        void addItem(MediaItemMetadata item,
-                BrowseItemViewType viewType, Consumer<Observer> notification) {
-            View.OnClickListener listener = notification != null ?
-                    view -> BrowseAdapter.this.notify(notification) :
-                    null;
-            result.add(new BrowseViewData(item, viewType, listener));
+        void addItem(
+                MediaItemMetadata item,
+                BrowseItemViewType viewType,
+                @NonNull List<CustomBrowseAction> customActions) {
+            result.add(new BrowseViewData(item, viewType, customActions, mCallback));
         }
 
-        void addTitle(CharSequence title, Consumer<Observer> notification) {
+        void addTitle(CharSequence title) {
             if (title == null) {
                 title = "";
             }
-            View.OnClickListener listener = notification != null ?
-                    view -> BrowseAdapter.this.notify(notification) :
-                    null;
-            result.add(new BrowseViewData(title, BrowseItemViewType.HEADER, listener));
+            result.add(
+                    new BrowseViewData(
+                            title, BrowseItemViewType.HEADER, Collections.emptyList(), mCallback));
         }
 
         List<BrowseViewData> build() {
@@ -285,30 +359,35 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
         if (Log.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "Generating browse view from:");
             for (MediaItemMetadata item : items) {
-                Log.v(TAG, String.format("[%s%s] '%s' (%s)",
-                        item.isBrowsable() ? "B" : " ",
-                        item.isPlayable() ? "P" : " ",
-                        item.getTitle(),
-                        item.getId()));
+                Log.v(TAG,
+                        String.format(
+                                "[%s%s] '%s' (%s)",
+                                item.isBrowsable() ? "B" : " ",
+                                item.isPlayable() ? "P" : " ",
+                                item.getTitle(),
+                                item.getId()));
             }
         }
 
         if (mTitle != null) {
-            itemsBuilder.addTitle(mTitle, Observer::onTitleClicked);
+            itemsBuilder.addTitle(mTitle);
         }
         String currentTitleGrouping = null;
         for (MediaItemMetadata item : items) {
+            List<CustomBrowseAction> customBrowseActions =
+                    buildBrowseActions(mContext, item);
+
             String titleGrouping = item.getTitleGrouping();
             if (!Objects.equals(currentTitleGrouping, titleGrouping)) {
                 currentTitleGrouping = titleGrouping;
-                itemsBuilder.addTitle(titleGrouping, null);
+                itemsBuilder.addTitle(titleGrouping);
             }
             if (item.isBrowsable()) {
-                itemsBuilder.addItem(item, getBrowsableViewType(mParentMediaItem, item),
-                        observer -> observer.onBrowsableItemClicked(item));
+                itemsBuilder.addItem(
+                        item, getBrowsableViewType(mParentMediaItem, item), customBrowseActions);
             } else if (item.isPlayable()) {
-                itemsBuilder.addItem(item, getPlayableViewType(mParentMediaItem, item),
-                        observer -> observer.onPlayableItemClicked(item));
+                itemsBuilder.addItem(
+                        item, getPlayableViewType(mParentMediaItem, item), customBrowseActions);
             }
         }
 
@@ -387,8 +466,7 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
                             } else {
                                 return false;
                             }
-                }
-                )
+                })
                 .findFirst()
                 .orElse(null);
     }
@@ -397,8 +475,6 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
      * <p>
      * This should call a partial bind with the new metadata as the diff payload,
      * meaning it will use bind with payload when view is visible or full bind when not.
-     * the payload will then be used to only update the progress bar and not the
-     * whole item's UI.
      * Use {@link androidx.recyclerview.widget.RecyclerView.AdapterDataObservable} to
      * listen to when there is a payload change called here.
      *
@@ -414,12 +490,25 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
      * ways here where we can use a partial bind for performance.
      * </p>
      */
-    void updateItemMetaData(MediaItemMetadata mediaItemMetadata) {
+    void updateItemMetaData(MediaItemMetadata mediaItemMetadata, MediaItemUpdateType updateType) {
         BrowseViewData browseViewData = getMediaByMetaData(mediaItemMetadata.getId());
         if (browseViewData != null) {
+            if (updateType == MediaItemUpdateType.BROWSE_ACTIONS) {
+                List<CustomBrowseAction> newActions =
+                        buildBrowseActions(mContext, mediaItemMetadata);
+                browseViewData.mCustomBrowseActions.clear();
+                browseViewData.mCustomBrowseActions.addAll(newActions);
+            }
             int position = getCurrentList().indexOf(browseViewData);
-            browseViewData.mUpdatedMediaItem = mediaItemMetadata;
-            notifyItemChanged(position, mediaItemMetadata);
+            notifyItemChanged(position, updateType);
         }
+    }
+
+    private List<CustomBrowseAction> buildBrowseActions(
+            Context context, MediaItemMetadata mediaItemMetadata) {
+        return BrowseAdapterUtils.buildBrowseCustomActions(
+                context,
+                mediaItemMetadata,
+                mGlobalCustomBrowseActions);
     }
 }

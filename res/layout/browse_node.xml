@@ -29,8 +29,16 @@
         android:layout_marginTop="@dimen/car_ui_toolbar_first_row_height"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-    />
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.android.car.media.browse.actionbar.BrowseActionsHeader
+        android:id="@+id/toolbar_container"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/car_ui_toolbar_first_row_height"
+        app:layout_constraintTop_toBottomOf="@+id/ui_content_top_guideline2"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="@dimen/media_browse_header_action_margin"
+        android:visibility="gone" />
 
     <ImageView
         android:id="@+id/error_icon"
@@ -64,8 +72,7 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.25"
-        />
+        app:layout_constraintGuide_percent="0.25" />
 
     <com.android.car.ui.FocusArea
         android:id="@+id/focus_area"
@@ -86,5 +93,4 @@
             app:layoutStyle="grid"
             app:numOfColumns="@integer/num_browse_columns"/>
     </com.android.car.ui.FocusArea>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -98,8 +98,9 @@ public class LimitedBrowseAdapter extends DelegatingContentLimitingAdapter<Brows
      * Wrapper for {@link BrowseAdapter#updateItemMetaData(MediaItemMetadata)}
      * @param mediaItemMetadata
      */
-    public void updateItemMetaData(MediaItemMetadata mediaItemMetadata) {
-        mBrowseAdapter.updateItemMetaData(mediaItemMetadata);
+    public void updateItemMetaData(MediaItemMetadata mediaItemMetadata,
+                                   BrowseAdapter.MediaItemUpdateType updateType) {
+        mBrowseAdapter.updateItemMetaData(mediaItemMetadata, updateType);
     }
 
     private int validateAnchor() {

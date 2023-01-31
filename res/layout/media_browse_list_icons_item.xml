@@ -78,7 +78,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/subtitle"
         app:layout_constraintStart_toEndOf="@+id/explicit_icon_with_title"
-        app:layout_constraintEnd_toStartOf="@+id/right_arrow"/>
+        app:layout_constraintEnd_toStartOf="@+id/text_end_guideline"/>
 
     <ImageView
         android:id="@+id/download_icon_with_subtitle"
@@ -111,8 +111,7 @@
         app:layout_constraintTop_toBottomOf="@+id/title"
         app:layout_constraintBottom_toBottomOf="@+id/browse_item_progress_bar"
         app:layout_constraintStart_toEndOf="@+id/explicit_icon_with_subtitle"
-        app:layout_constraintEnd_toStartOf="@+id/right_arrow"/>
-
+        app:layout_constraintEnd_toStartOf="@+id/text_end_guideline"/>
 
     <ProgressBar
         android:id="@+id/browse_item_progress_bar"
@@ -121,38 +120,54 @@
         android:layout_height="@dimen/media_browse_progress_bar_height"
         android:layout_marginBottom="@dimen/media_browse_progress_bar_bottom_list_margin"
         android:layout_marginEnd="@dimen/media_browse_progress_bar_bottom_list_margin"
-        app:layout_goneMarginEnd="@dimen/media_browse_progress_bar_gone_list_margin"
+        app:layout_constraintStart_toEndOf="@+id/explicit_icon_with_title"
+        app:layout_constraintEnd_toStartOf="@+id/text_end_guideline"
         app:layout_constraintTop_toBottomOf="@+id/subtitle"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/explicit_icon_with_title"
+        android:visibility="gone"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/text_end_guideline"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.75"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <LinearLayout
+        android:id="@+id/browse_item_actions_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/browse_item_progress_new"
         android:visibility="gone"/>
 
     <ImageView
         android:id="@+id/browse_item_progress_new"
         android:src="@drawable/browser_progress_new_indicator"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/media_browse_progress_indicator_margin"
-        android:layout_gravity="center_vertical"
+        android:layout_width="@dimen/media_browse_list_item_icons_size"
+        android:layout_height="@dimen/media_browse_list_item_icons_size"
+        android:scaleType="centerInside"
+        app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/right_arrow"
-        app:layout_goneMarginEnd="@dimen/media_browse_progress_bar_gone_list_margin"
         android:visibility="gone"/>
 
     <ImageView
         android:id="@+id/right_arrow"
         style="@style/BrowseListItemRightArrowStyle"
-        android:layout_width="@dimen/media_browse_list_item_arrow_size"
-        android:layout_height="@dimen/media_browse_list_item_arrow_size"
+        android:layout_width="@dimen/media_browse_list_item_icons_size"
+        android:layout_height="@dimen/media_browse_list_item_icons_size"
         android:layout_marginTop="@dimen/media_browse_subtitle_margin_top"
-        android:layout_gravity="center_vertical"
-        android:scaleType="centerCrop"
-        android:includeFontPadding="false"
+        android:scaleType="centerInside"
+        app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/title"/>
+        android:visibility="gone"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
