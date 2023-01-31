@@ -96,24 +96,14 @@
         android:layout_height="@dimen/fragment_playback_queue_overlap_bottom"
         app:layout_constraintTop_toTopOf="@+id/control_bar_first_row_guideline"/>
 
-    <com.android.car.ui.FocusArea
-        android:id="@+id/queue_container"
+    <FrameLayout
+        android:id="@+id/queue_fragment_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:visibility="gone"
         app:layout_constraintTop_toTopOf="@+id/queue_list_top_constraint"
-        app:layout_constraintBottom_toBottomOf="@+id/queue_list_bottom_constraint">
-        <com.android.car.ui.recyclerview.CarUiRecyclerView
-            android:id="@+id/queue_list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="gone"
-            android:fadeScrollbars="true"
-            android:scrollbars="vertical"
-            android:requiresFadingEdge="vertical"
-            android:fadingEdgeLength="@dimen/queue_fading_edge_length"/>
-        <!-- NOTE: we must specify :scrollbars before :requiresFadingEdge to avoid a crash on R
-                (see b/253505704). -->
-    </com.android.car.ui.FocusArea>
+        app:layout_constraintBottom_toBottomOf="@+id/queue_list_bottom_constraint"
+        />
 
     <include
         layout="@layout/scrim_overlay"

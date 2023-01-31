@@ -124,6 +124,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="queue_list_item_title"/>
       <item type="id" name="queue_list_item_titles_container"/>
       <item type="id" name="queue_list_top_constraint"/>
+      <item type="id" name="queue_fragment_container"/>
       <item type="id" name="right_arrow"/>
       <item type="id" name="separator"/>
       <item type="id" name="spacer"/>
@@ -161,6 +162,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="layout" name="fragment_browse"/>
       <item type="layout" name="fragment_error"/>
       <item type="layout" name="fragment_playback"/>
+      <item type="layout" name="fragment_playback_queue"/>
       <item type="layout" name="media_activity"/>
       <item type="layout" name="media_browse_grid_icons_item"/>
       <item type="layout" name="media_browse_grid_item"/>
