@@ -56,7 +56,6 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="drawable" name="ic_expand_more"/>
       <item type="drawable" name="ic_explicit_black"/>
       <item type="drawable" name="ic_file_download_done_black"/>
-      <item type="drawable" name="ic_more_vert"/>
       <item type="drawable" name="ic_queue_button"/>
       <item type="drawable" name="ic_search"/>
       <item type="drawable" name="ic_settings"/>
@@ -72,7 +71,6 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="background_scrim"/>
       <item type="id" name="browse_content_area"/>
       <item type="id" name="browse_item_actions_container"/>
-      <item type="id" name="browse_item_actions_overflow"/>
       <item type="id" name="browse_item_custom_action"/>
       <item type="id" name="browse_item_custom_action_divider"/>
       <item type="id" name="browse_item_progress_bar"/>

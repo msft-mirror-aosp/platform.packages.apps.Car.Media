@@ -130,7 +130,7 @@ public class BrowseViewHolder extends RecyclerView.ViewHolder {
             bindProgressUI(metadata);
         }
 
-        if (hasBrowseCustomActions) {
+        if (hasBrowseCustomActions && !metadata.isBrowsable()) {
             ViewUtils.setVisible(mCustomActionsContainer, true);
             bindBrowseCustomActions(context, data);
         } else {
@@ -188,21 +188,23 @@ public class BrowseViewHolder extends RecyclerView.ViewHolder {
         mCustomActionsContainer.removeAllViews();
         mBrowseActionIcons.forEach((it) -> it.maybeCancelLoading(context));
         mBrowseActionIcons.clear();
-        int maxVisibleActions = context.getResources()
-                .getInteger(R.integer.max_visible_actions);
+
+        int maxVisibleActions = context.getResources().getInteger(R.integer.max_visible_actions);
+        int numActions = browseViewData.mCustomBrowseActions.size();
+        boolean willOverflow = numActions > maxVisibleActions;
+        int actionsToShow = willOverflow ? Math.max(0, maxVisibleActions - 1) : maxVisibleActions;
+
         for (CustomBrowseAction customBrowseAction :
-                browseViewData.mCustomBrowseActions.stream()
-                        .limit(maxVisibleActions)
-                        .collect(Collectors.toList())) {
+                        browseViewData.mCustomBrowseActions.stream()
+                            .limit(actionsToShow)
+                            .collect(Collectors.toList())) {
             View customActionView =
-                    LayoutInflater.from(context)
-                            .inflate(R.layout.browse_custom_action, null);
+                    LayoutInflater.from(context).inflate(R.layout.browse_custom_action, null);
             customActionView.setOnClickListener(
                     (v) ->
-                            browseViewData.mCallback.onBrowseActionClick(
-                                    customBrowseAction, browseViewData));
-            ImageView imageView =
-                    customActionView.findViewById(R.id.browse_item_custom_action);
+                    browseViewData.mCallback.onBrowseActionClick(
+                        customBrowseAction, browseViewData));
+            ImageView imageView = customActionView.findViewById(R.id.browse_item_custom_action);
             ImageViewBinder<CustomBrowseAction.BrowseActionArtRef> viewBinder =
                     new ImageViewBinder(mMaxArtSize, imageView);
             viewBinder.setImage(context, customBrowseAction.getArtRef());
@@ -210,20 +212,16 @@ public class BrowseViewHolder extends RecyclerView.ViewHolder {
             mCustomActionsContainer.addView(customActionView);
         }
 
-        if (browseViewData.mCustomBrowseActions.size() > maxVisibleActions) {
+        if (willOverflow) {
             View customActionView =
                     LayoutInflater.from(context)
-                            .inflate(R.layout.browse_custom_action, null);
-            customActionView.setOnClickListener(
-                    v ->
-                            browseViewData.mCallback.onOverflowClicked(
-                                    browseViewData.mCustomBrowseActions
-                                            .subList(maxVisibleActions,
-                                                    browseViewData.mCustomBrowseActions.size()),
-                                    browseViewData));
+                    .inflate(R.layout.browse_custom_action, null);
+            customActionView.setOnClickListener(v -> browseViewData.mCallback.onOverflowClicked(
+                    browseViewData.mCustomBrowseActions.subList(actionsToShow, numActions),
+                    browseViewData));
             ImageView imageView =
                     customActionView.findViewById(R.id.browse_item_custom_action);
-            imageView.setImageResource(com.android.car.media.R.drawable.ic_more_vert);
+            imageView.setImageResource(R.drawable.car_ui_icon_overflow_menu);
             mCustomActionsContainer.addView(customActionView);
         }
     }
