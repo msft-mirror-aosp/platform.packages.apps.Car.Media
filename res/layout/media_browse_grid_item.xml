@@ -125,29 +125,6 @@
         app:layout_constraintTop_toBottomOf="@+id/subtitle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/browse_item_actions_container"
-        android:visibility="gone"/>
-
-    <LinearLayout
-        android:id="@+id/browse_item_actions_container"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintHorizontal_chainStyle="spread_inside"
-        app:layout_constraintStart_toEndOf="@+id/browse_item_progress_bar"
-        app:layout_constraintTop_toBottomOf="@+id/subtitle"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/browse_item_actions_overflow"
-        android:visibility="gone"/>
-
-    <ImageView
-        android:id="@+id/browse_item_actions_overflow"
-        android:src="@drawable/car_ui_icon_overflow_menu"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintHorizontal_chainStyle="spread_inside"
-        app:layout_constraintStart_toEndOf="@+id/browse_item_actions_container"
-        app:layout_constraintTop_toBottomOf="@+id/subtitle"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/browse_item_progress_new"
         android:visibility="gone"/>
 

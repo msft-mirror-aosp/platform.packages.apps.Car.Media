@@ -31,7 +31,6 @@ import com.android.car.media.common.CustomBrowseAction;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link ActionsHeader}
@@ -43,8 +42,16 @@ public class BrowseActionsHeader extends LinearLayout implements ActionsHeader {
     private OverflowClickListener mOverflowClickListener;
     private List<CustomBrowseAction> mActions = new ArrayList<>();
 
+    private LinearLayout mActionsContainer;
+
     public BrowseActionsHeader(Context context, AttributeSet attributeSet) {
         super(context, attributeSet);
+        initView();
+    }
+
+    private void initView() {
+        inflate(getContext(), R.layout.media_browse_header_item, this);
+        mActionsContainer = (LinearLayout) findViewById(R.id.browse_item_actions_container);
     }
 
     @Override
@@ -64,28 +71,27 @@ public class BrowseActionsHeader extends LinearLayout implements ActionsHeader {
     }
 
     private void setHeaderActions(List<CustomBrowseAction> actions) {
-        removeAllViews();
+        mActionsContainer.removeAllViews();
         final int maxVisibleActions = getResources()
                 .getInteger(R.integer.max_visible_actions_header);
         final Size mMaxArtSize = MediaAppConfig
                 .getMediaItemsBitmapMaxSize(getContext());
-        actions.stream()
-                .limit(maxVisibleActions)
-                .collect(Collectors.toList())
-                .forEach(
-                        action -> {
-                            View actionView =
-                                    LayoutInflater.from(getContext())
-                                            .inflate(R.layout.browse_custom_action, null);
-                            ImageView icon =
-                                    actionView.findViewById(R.id.browse_item_custom_action);
-                            actionView.setOnClickListener(
-                                    item -> mActionClickListener.onActionClicked(action));
-                            ImageViewBinder<CustomBrowseAction.BrowseActionArtRef> imageBinder =
-                                    new ImageViewBinder<>(mMaxArtSize, icon);
-                            imageBinder.setImage(getContext(), action.getArtRef());
-                            addView(actionView);
-                        });
+        for (int i = 0; i < Math.min(maxVisibleActions, actions.size()); i++) {
+            CustomBrowseAction action = actions.get(i);
+            View actionView =
+                    LayoutInflater.from(getContext()).inflate(R.layout.browse_custom_action, null);
+            if (i == 0) {
+                actionView.findViewById(R.id.browse_item_custom_action_divider)
+                    .setVisibility(View.GONE);
+            }
+            ImageView icon = actionView.findViewById(R.id.browse_item_custom_action);
+            actionView.setOnClickListener(
+                    item -> mActionClickListener.onActionClicked(action));
+            ImageViewBinder<CustomBrowseAction.BrowseActionArtRef> imageBinder =
+                    new ImageViewBinder<>(mMaxArtSize, icon);
+            imageBinder.setImage(getContext(), action.getArtRef());
+            mActionsContainer.addView(actionView);
+        }
 
         if (actions.size() > maxVisibleActions) {
             View actionView =
@@ -96,7 +102,7 @@ public class BrowseActionsHeader extends LinearLayout implements ActionsHeader {
                             mOverflowClickListener.onOverFlowCLicked(
                                     actions.subList(maxVisibleActions, actions.size())));
             icon.setImageResource(R.drawable.car_ui_icon_overflow_menu);
-            addView(actionView);
+            mActionsContainer.addView(actionView);
         }
     }
 

@@ -129,26 +129,29 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.65"
+        app:layout_constraintGuide_percent="0.75"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
-
-    <LinearLayout
-        android:id="@+id/browse_item_actions_container"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintHorizontal_chainStyle="packed"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/browse_item_progress_new"
-        android:visibility="gone"/>
 
     <ImageView
         android:id="@+id/browse_item_progress_new"
         android:src="@drawable/browser_progress_new_indicator"
         android:layout_width="@dimen/media_browse_list_item_icons_size"
         android:layout_height="@dimen/media_browse_list_item_icons_size"
-        android:scaleType="centerInside"
+        android:layout_marginStart="@dimen/media_browse_list_item_icon_margin"
+        android:layout_marginEnd="@dimen/media_browse_list_item_icon_margin"
+        android:padding="@dimen/media_browse_list_item_icons_no_touch_padding"
+        android:scaleType="fitCenter"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/browse_item_actions_container"
+        android:visibility="gone"/>
+
+    <LinearLayout
+        android:id="@+id/browse_item_actions_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -161,7 +164,9 @@
         android:layout_width="@dimen/media_browse_list_item_icons_size"
         android:layout_height="@dimen/media_browse_list_item_icons_size"
         android:layout_marginTop="@dimen/media_browse_subtitle_margin_top"
-        android:scaleType="centerInside"
+        android:layout_marginStart="@dimen/media_browse_list_item_icon_margin"
+        android:layout_marginEnd="@dimen/media_browse_list_item_icon_margin"
+        android:scaleType="fitCenter"
         app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"

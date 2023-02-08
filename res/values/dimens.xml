@@ -114,19 +114,18 @@
 
     <!-- media_browse_header_item.xml -->
     <dimen name="media_browse_header_item_height">76dp</dimen>
-    <dimen name="media_browse_header_item_margin_x">0dp</dimen>
-    <dimen name="media_browse_header_action_margin">76dp</dimen>
+    <dimen name="media_browse_header_action_margin">88dp</dimen>
 
     <!-- media_browse_list_[icons_]item.xml -->
     <dimen name="media_browse_list_item_height">116dp</dimen>
     <dimen name="media_browse_list_item_thumbnail_size">76dp</dimen>
     <dimen name="media_browse_list_item_text_margin_x">148dp</dimen>
     <dimen name="media_browse_list_item_icon_margin_start">0dp</dimen>
+    <dimen name="media_browse_list_item_icon_margin">16dp</dimen>
+    <dimen name="media_browse_list_item_icons_no_touch_padding">12dp</dimen>
+    <dimen name="media_browse_list_item_icons_size">@dimen/car_ui_primary_icon_size</dimen>
     <dimen name="media_browse_list_item_thumbnail_margin_bottom">4dp</dimen>
-    <dimen name="media_browse_list_item_icons_size">76dp</dimen>
-    <dimen name="media_browse_list_item_action_padding">16dp</dimen>
-    <dimen name="media_browse_list_item_action_space">22dp</dimen>
-    <dimen name="media_browse_list_item_action_width">88dp</dimen>
+
 
     <dimen name="media_browse_list_icons_item_art_margin_start">@dimen/car_ui_padding_3</dimen>
     <dimen name="media_browse_list_icons_item_text_margin_x">112dp</dimen>
