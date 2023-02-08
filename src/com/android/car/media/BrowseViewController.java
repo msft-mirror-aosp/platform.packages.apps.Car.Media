@@ -667,12 +667,13 @@ public class BrowseViewController {
     public void onCarUiInsetsChanged(@NonNull Insets insets) {
         int actionHeaderOffset = 0;
         if (mActionBar != null && mActionBar.isShown()) {
-            actionHeaderOffset = mActionBar.getHeight();
+            Resources res = getActivity().getResources();
+            actionHeaderOffset = res.getDimensionPixelSize(R.dimen.media_browse_header_item_height);
         }
         int leftPadding = mBrowseList.getPaddingLeft();
         int rightPadding = mBrowseList.getPaddingRight();
-        int bottomPadding = mBrowseList.getPaddingBottom() + actionHeaderOffset / 2;
-        int topPadding = insets.getTop() + actionHeaderOffset / 2;
+        int bottomPadding = mBrowseList.getPaddingBottom() + actionHeaderOffset;
+        int topPadding = insets.getTop() + actionHeaderOffset;
         mBrowseList.setPadding(leftPadding, topPadding, rightPadding, bottomPadding);
         if (bottomPadding > mFocusAreaHighlightBottomPadding) {
             mFocusAreaHighlightBottomPadding = bottomPadding;
