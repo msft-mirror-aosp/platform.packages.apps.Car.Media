@@ -121,13 +121,13 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="playback_seek_bar_container"/>
       <item type="id" name="progress_text_container"/>
       <item type="id" name="queue_container"/>
+      <item type="id" name="queue_fragment_container"/>
       <item type="id" name="queue_list"/>
       <item type="id" name="queue_list_bottom_constraint"/>
       <item type="id" name="queue_list_item_subtitle"/>
       <item type="id" name="queue_list_item_title"/>
       <item type="id" name="queue_list_item_titles_container"/>
       <item type="id" name="queue_list_top_constraint"/>
-      <item type="id" name="queue_fragment_container"/>
       <item type="id" name="right_arrow"/>
       <item type="id" name="separator"/>
       <item type="id" name="spacer"/>
@@ -201,6 +201,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="style" name="MediaIconContainerStyle"/>
       <item type="style" name="MediaTintableIconContainerStyle"/>
       <item type="style" name="MetadataContainerStyle"/>
+      <item type="style" name="MetadataPlaybackSubtitleClickableStyle"/>
       <item type="style" name="MetadataPlaybackSubtitleStyle"/>
       <item type="style" name="MetadataPlaybackTitleStyle"/>
       <item type="style" name="QueueListItemSubtitleStyle"/>

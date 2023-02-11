@@ -34,7 +34,7 @@ public class BrowseTestUtils {
                 .setSubtitle("Parent")
                 .setDescription("Parent item desc")
                 .setMediaId("ParentItem");
-        return new MediaItemMetadata(builder.build(), 0L, true, false, "Parent", "Parent");
+        return new MediaItemMetadata(builder.build(), 0L, true, false, null);
     }
 
     public static List<MediaItemMetadata> generateTestItems() {
@@ -44,14 +44,14 @@ public class BrowseTestUtils {
                 .setDescription("Test item 1 desc")
                 .setMediaId("TestItem1");
         MediaItemMetadata browsableItem = new MediaItemMetadata(builder.build(), 1L, true, false,
-                "Item1", "Test1");
+                null);
 
         builder.setTitle("TestItem2")
                 .setSubtitle("Tester2")
                 .setDescription("Test item 2 desc")
                 .setMediaId("TestItem2");
         MediaItemMetadata playableItem = new MediaItemMetadata(builder.build(), 2L, false, true,
-                "Item2", "Test2");
+                null);
 
 
         Bundle extras = new Bundle();
@@ -66,8 +66,7 @@ public class BrowseTestUtils {
                 .setMediaId("TestItem3")
                 .setExtras(extras);
         MediaItemMetadata downloadedExplicitNewProgress = new MediaItemMetadata(builder.build(), 3L,
-                false, true,
-                "Item3", "Test3");
+                false, true, null);
 
         Bundle newExtras = new Bundle();
         newExtras.putLong("android.media.extra.DOWNLOAD_STATUS", 2L);
@@ -81,9 +80,7 @@ public class BrowseTestUtils {
                 .setMediaId("TestItem3")
                 .setExtras(newExtras);
         MediaItemMetadata downloadedExplicitNewProgress2 = new MediaItemMetadata(builder.build(),
-                3L,
-                false, true,
-                "Item3", "Test3");
+                3L, false, true, null);
 
         Bundle finishedPlayExtras = new Bundle();
         finishedPlayExtras.putLong("android.media.extra.DOWNLOAD_STATUS", 2L);
@@ -97,9 +94,7 @@ public class BrowseTestUtils {
                 .setMediaId("TestItem3")
                 .setExtras(finishedPlayExtras);
         MediaItemMetadata downloadedExplicitNewProgress3 = new MediaItemMetadata(builder.build(),
-                3L,
-                false, true,
-                "Item3", "Test3");
+                3L, false, true, null);
 
         List<MediaItemMetadata> itemList = new ArrayList<>();
         itemList.add(browsableItem);
