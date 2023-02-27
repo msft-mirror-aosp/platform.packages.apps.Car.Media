@@ -44,4 +44,10 @@
 
     <!-- Controls whether to show the tabs when the navigation button is visible. -->
     <bool name="show_persistent_tabs">false</bool>
+
+    <!-- Whether the media source logo should be used for the app selector button in the playback
+       view. If the flag is set to 'true', the main logo (which by default appears on the left
+       hand side on toolbar) will be hidden. -->
+    <bool name="use_media_source_logo_for_app_selector_in_playback_view">false</bool>
+
 </resources>

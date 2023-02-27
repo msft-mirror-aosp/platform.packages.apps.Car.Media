@@ -114,15 +114,18 @@
 
     <!-- media_browse_header_item.xml -->
     <dimen name="media_browse_header_item_height">76dp</dimen>
-    <dimen name="media_browse_header_item_margin_x">0dp</dimen>
+    <dimen name="media_browse_header_action_margin">88dp</dimen>
 
     <!-- media_browse_list_[icons_]item.xml -->
     <dimen name="media_browse_list_item_height">116dp</dimen>
     <dimen name="media_browse_list_item_thumbnail_size">76dp</dimen>
     <dimen name="media_browse_list_item_text_margin_x">148dp</dimen>
     <dimen name="media_browse_list_item_icon_margin_start">0dp</dimen>
-    <dimen name="media_browse_list_item_arrow_size">@dimen/car_ui_primary_icon_size</dimen>
+    <dimen name="media_browse_list_item_icon_margin">16dp</dimen>
+    <dimen name="media_browse_list_item_icons_no_touch_padding">12dp</dimen>
+    <dimen name="media_browse_list_item_icons_size">@dimen/car_ui_primary_icon_size</dimen>
     <dimen name="media_browse_list_item_thumbnail_margin_bottom">4dp</dimen>
+
 
     <dimen name="media_browse_list_icons_item_art_margin_start">@dimen/car_ui_padding_3</dimen>
     <dimen name="media_browse_list_icons_item_text_margin_x">112dp</dimen>
@@ -133,8 +136,6 @@
 
     <!-- media browse playback progress bar -->
     <dimen name="media_browse_progress_bar_height">12dp</dimen>
-    <dimen name="media_browse_progress_bar_gone_list_margin">80dp</dimen>
-    <dimen name="media_browse_progress_bar_gone_grid_margin">24dp</dimen>
     <dimen name="media_browse_progress_bar_end_list_margin">16dp</dimen>
     <dimen name="media_browse_progress_bar_end_grid_margin">8dp</dimen>
     <dimen name="media_browse_progress_bar_top_list_margin">8dp</dimen>
@@ -142,8 +143,6 @@
     <dimen name="media_browse_progress_bar_bottom_list_margin">8dp</dimen>
     <dimen name="media_browse_progress_bar_bottom_grid_margin">8dp</dimen>
     <dimen name="media_browse_progress_indicator_size">16dp</dimen>
-    <dimen name="media_browse_progress_indicator_margin">8dp</dimen>
-    <dimen name="media_browse_progress_indicator_gone_margin">52dp</dimen>
 
     <!-- metadata_normal.xml -->
     <dimen name="metadata_title_subtitle_margin">@dimen/car_ui_padding_2</dimen>
