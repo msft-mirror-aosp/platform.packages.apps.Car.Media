@@ -34,6 +34,9 @@
         <item name="android:includeFontPadding">false</item>
     </style>
 
+    <style name="MetadataPlaybackSubtitleClickableStyle" parent="MetadataPlaybackSubtitleStyle">
+    </style>
+
     <style name="MetadataContainerStyle">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
