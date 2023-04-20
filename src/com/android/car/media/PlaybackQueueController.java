@@ -34,6 +34,7 @@ import android.widget.TextView;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Preconditions;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.DefaultItemAnimator;
@@ -48,6 +49,7 @@ import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.ui.recyclerview.CarUiRecyclerView;
 import com.android.car.ui.recyclerview.ContentLimiting;
 import com.android.car.ui.recyclerview.ScrollingLimitedViewHolder;
+import com.android.car.uxr.CarUxRestrictionsAppConfig;
 import com.android.car.uxr.LifeCycleObserverUxrContentLimiter;
 import com.android.car.uxr.UxrContentLimiterImpl;
 
@@ -179,6 +181,13 @@ public class PlaybackQueueController {
         }
     }
 
+    /** Returns the maximum number of items in the queue under driving restrictions. */
+    public static int getMaxItemsWhileRestricted(Context context) {
+        Integer maxItems = CarUxRestrictionsAppConfig.getContentLimit(context,
+                R.xml.uxr_config, R.id.playback_fragment_now_playing_list_uxr_config);
+        Preconditions.checkNotNull(maxItems, "Misconfigured list limits.");
+        return (maxItems <= 0) ? -1 : UxrPivotFilterImpl.adjustMaxItems(maxItems);
+    }
 
     private class QueueItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             implements ContentLimiting {

@@ -22,10 +22,23 @@ import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK;
 import static androidx.recyclerview.widget.RecyclerView.NO_POSITION;
 
 import static com.android.car.apps.common.util.ViewUtils.removeFromParent;
+import static com.android.car.media.browse.BrowseItemViewType.GRID_ITEM;
+import static com.android.car.media.browse.BrowseItemViewType.ICON_GRID_ITEM;
+import static com.android.car.media.browse.BrowseItemViewType.ICON_LIST_ITEM;
+import static com.android.car.media.browse.BrowseItemViewType.LIST_ITEM;
 import static com.android.car.media.common.MediaConstants.BROWSE_CUSTOM_ACTIONS_MEDIA_ITEM_ID;
+import static com.android.car.media.common.MediaConstants.KEY_HINT_HOST_PACKAGE_NAME;
+import static com.android.car.media.common.MediaConstants.KEY_HINT_VIEW_HEIGHT_PIXELS;
+import static com.android.car.media.common.MediaConstants.KEY_HINT_VIEW_MAX_CATEGORY_GRID_ITEMS_COUNT_PER_ROW;
+import static com.android.car.media.common.MediaConstants.KEY_HINT_VIEW_MAX_CATEGORY_LIST_ITEMS_COUNT_PER_ROW;
+import static com.android.car.media.common.MediaConstants.KEY_HINT_VIEW_MAX_GRID_ITEMS_COUNT_PER_ROW;
+import static com.android.car.media.common.MediaConstants.KEY_HINT_VIEW_MAX_ITEMS_WHILE_RESTRICTED;
+import static com.android.car.media.common.MediaConstants.KEY_HINT_VIEW_MAX_LIST_ITEMS_COUNT_PER_ROW;
+import static com.android.car.media.common.MediaConstants.KEY_HINT_VIEW_WIDTH_PIXELS;
 import static com.android.car.ui.recyclerview.CarUiRecyclerView.SCROLL_STATE_DRAGGING;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
@@ -46,6 +59,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
+import androidx.core.util.Preconditions;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsAnimationCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -79,8 +93,10 @@ import com.android.car.ui.AlertDialogBuilder;
 import com.android.car.ui.FocusArea;
 import com.android.car.ui.baselayout.Insets;
 import com.android.car.ui.recyclerview.CarUiContentListItem;
+import com.android.car.ui.recyclerview.CarUiLayoutStyle;
 import com.android.car.ui.recyclerview.CarUiListItemAdapter;
 import com.android.car.ui.recyclerview.CarUiRecyclerView;
+import com.android.car.uxr.CarUxRestrictionsAppConfig;
 import com.android.car.uxr.LifeCycleObserverUxrContentLimiter;
 import com.android.car.uxr.UxrContentLimiterImpl;
 
@@ -105,6 +121,7 @@ public class BrowseViewController {
     private static final String TAG = "BrowseViewController";
 
     private final Callbacks mCallbacks;
+    private final ViewGroup mContainer;
     private final FocusArea mFocusArea;
     private final MediaItemMetadata mParentItem;
     private List<CustomBrowseAction> mParentActions;
@@ -291,16 +308,14 @@ public class BrowseViewController {
             MediaItemsRepository mediaRepo,
             int rootBrowsableHint,
             int rootPlayableHint) {
-        return new BrowseViewController(callbacks, container, parentItem,
-                mediaRepo.getMediaChildren(parentItem.getId()), rootBrowsableHint, rootPlayableHint,
-                mediaRepo, true);
+        return new BrowseViewController(callbacks, container, parentItem, null, rootBrowsableHint,
+                rootPlayableHint, mediaRepo, true);
     }
 
     /** Creates a controller to display the top results of a search query (in a list). */
     static BrowseViewController newSearchResultsController(
             Callbacks callbacks, ViewGroup container, MediaItemsRepository mediaRepo) {
-        return new BrowseViewController(callbacks, container, null, mediaRepo.getSearchMediaItems(),
-                0, 0, mediaRepo, true);
+        return new BrowseViewController(callbacks, container, null, null, 0, 0, mediaRepo, true);
     }
 
     /**
@@ -309,11 +324,41 @@ public class BrowseViewController {
      * messages.
      */
     static BrowseViewController newRootController(
+            String rootId,
             Callbacks callbacks,
             ViewGroup container,
             MediaItemsRepository mediaRepo) {
-        return new BrowseViewController(callbacks, container, null, mediaRepo.getRootMediaItems(),
-                0, 0, mediaRepo, false);
+        return new BrowseViewController(callbacks, container, null, rootId, 0, 0, mediaRepo, false);
+    }
+
+    private static Bundle createItemSubscriptionOptions(View myView, CarUiRecyclerView browseList) {
+        Context ctx = myView.getContext();
+        Bundle options = new Bundle();
+        options.putString(KEY_HINT_HOST_PACKAGE_NAME, ctx.getPackageName());
+        options.putInt(KEY_HINT_VIEW_WIDTH_PIXELS, myView.getWidth());
+        options.putInt(KEY_HINT_VIEW_HEIGHT_PIXELS, myView.getHeight());
+        options.putInt(KEY_HINT_VIEW_MAX_ITEMS_WHILE_RESTRICTED, getMaxItemsWhileDriving(ctx));
+
+        CarUiLayoutStyle style = browseList.getLayoutStyle();
+        Preconditions.checkNotNull(style, "browseList.getLayoutStyle is null!");
+        int maxSpans = style.getSpanCount();
+        int maxListItems = maxSpans / LIST_ITEM.getSpanSize(maxSpans);
+        int maxCatListItems = maxSpans / ICON_LIST_ITEM.getSpanSize(maxSpans);
+        int maxGridItems = maxSpans / GRID_ITEM.getSpanSize(maxSpans);
+        int maxCatGridItems = maxSpans / ICON_GRID_ITEM.getSpanSize(maxSpans);
+        options.putInt(KEY_HINT_VIEW_MAX_LIST_ITEMS_COUNT_PER_ROW, maxListItems);
+        options.putInt(KEY_HINT_VIEW_MAX_CATEGORY_LIST_ITEMS_COUNT_PER_ROW, maxCatListItems);
+        options.putInt(KEY_HINT_VIEW_MAX_GRID_ITEMS_COUNT_PER_ROW, maxGridItems);
+        options.putInt(KEY_HINT_VIEW_MAX_CATEGORY_GRID_ITEMS_COUNT_PER_ROW, maxCatGridItems);
+
+        return options;
+    }
+
+    private static int getMaxItemsWhileDriving(Context context) {
+        Integer maxItems = CarUxRestrictionsAppConfig.getContentLimit(context,
+                R.xml.uxr_config, R.id.browse_list_uxr_config);
+        Preconditions.checkNotNull(maxItems, "Misconfigured list limits.");
+        return maxItems;
     }
 
     /**
@@ -365,14 +410,14 @@ public class BrowseViewController {
             Callbacks callbacks,
             ViewGroup container,
             @Nullable MediaItemMetadata parentItem,
-            MediaItemsLiveData mediaItems,
+            @Nullable String rootId,
             int rootBrowsableHint,
             int rootPlayableHint,
             MediaItemsRepository mediaRepo,
             boolean displayMediaItems) {
         mCallbacks = callbacks;
+        mContainer = container;
         mParentItem = parentItem;
-        mMediaItems = mediaItems;
         mDisplayMediaItems = displayMediaItems;
         mMediaRepo = mediaRepo;
 
@@ -475,6 +520,15 @@ public class BrowseViewController {
         browseAdapter.setRootBrowsableViewType(rootBrowsableHint);
         browseAdapter.setRootPlayableViewType(rootPlayableHint);
         browseAdapter.setGlobalCustomActions(mGlobalActions);
+
+        Bundle options = createItemSubscriptionOptions(mContainer, mBrowseList);
+        if (parentItem != null) {
+            mMediaItems = mediaRepo.getMediaChildren(parentItem.getId(), options);
+        } else if (rootId != null) {
+            mMediaItems = mediaRepo.getMediaChildren(rootId, options);
+        } else {
+            mMediaItems = mediaRepo.getSearchMediaItems();
+        }
         mMediaItems.observe(activity, mItemsObserver);
 
     }
@@ -767,6 +821,12 @@ public class BrowseViewController {
         mFocusArea.setHighlightPadding(
                 leftPadding, topPadding, rightPadding, mFocusAreaHighlightBottomPadding);
         mFocusArea.setBoundsOffset(leftPadding, topPadding, rightPadding, bottomPadding);
+    }
+
+    /** Should preferably be called on the SearchResultsController. */
+    void updateSearchQuery(@Nullable String query) {
+        Bundle options = createItemSubscriptionOptions(mContainer, mBrowseList);
+        mMediaRepo.setSearchQuery(query, options);
     }
 
     void onPlaybackControlsChanged(boolean visible) {

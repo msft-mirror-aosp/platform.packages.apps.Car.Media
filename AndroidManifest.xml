@@ -36,6 +36,7 @@
     </queries>
 
     <application
+        android:name=".CarMediaApp"
         android:label="Media Center"
         android:theme="@style/Theme.Media"
         android:icon="@drawable/ic_music"

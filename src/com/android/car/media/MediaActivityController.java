@@ -219,10 +219,6 @@ public class MediaActivityController extends ViewControllerBase {
         }
     }
 
-    private void updateSearchQuery(@Nullable String query) {
-        mMediaItemsRepository.setSearchQuery(query);
-    }
-
     /**
      * Clears search state, removes any UI elements from previous results.
      */
@@ -251,8 +247,9 @@ public class MediaActivityController extends ViewControllerBase {
                 boolean canSearch = MediaBrowserViewModelImpl.getSupportsSearch(browser);
                 mAppBarController.setSearchSupported(canSearch);
                 if (mBrowseStack.size() <= 0) {
+                    String rootId = newBrowsingState.mBrowser.getRoot();
                     mBrowseStack.pushRoot(BrowseViewController.newRootController(
-                            mBrowseCallbacks, mBrowseArea, mMediaItemsRepository));
+                            rootId, mBrowseCallbacks, mBrowseArea, mMediaItemsRepository));
                 }
                 showCurrentNode(true);
                 break;
@@ -349,12 +346,13 @@ public class MediaActivityController extends ViewControllerBase {
     private BrowseViewController recreateController(BrowseStack.BrowseEntry entry) {
         switch (entry.mType) {
             case TREE_ROOT:
-                return BrowseViewController.newRootController(
+                return BrowseViewController.newRootController(mMediaItemsRepository.getRootId(),
                         mBrowseCallbacks, mBrowseArea, mMediaItemsRepository);
             case SEARCH_RESULTS:
-                updateSearchQuery(mViewModel.getSearchQuery());
-                return BrowseViewController.newSearchResultsController(
+                BrowseViewController result = BrowseViewController.newSearchResultsController(
                         mBrowseCallbacks, mBrowseArea, mMediaItemsRepository);
+                result.updateSearchQuery(mViewModel.getSearchQuery());
+                return result;
             default:
                 if (entry.mItem == null) {
                     Log.e(TAG, "Can't recreate controller for a null item!");
@@ -403,7 +401,14 @@ public class MediaActivityController extends ViewControllerBase {
                 Log.d(TAG, "onSearch: " + query);
             }
             mViewModel.setSearchQuery(query);
-            updateSearchQuery(query);
+
+            BrowseStack.BrowseEntry entry = mBrowseStack.peek();
+            if ((entry != null) && (entry.getController() != null)) {
+                BrowseViewController controller = entry.getController();
+                controller.updateSearchQuery(query);
+            } else {
+                Log.e(TAG, "onSearch needs entry and controller!! " + entry);
+            }
         }
     };
 

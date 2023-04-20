@@ -98,11 +98,16 @@ public class AppBarController {
         protected void onSearchSelection() {}
     }
 
+    /** Returns the maximum number of tabs that can be shown in the bar. */
+    public static int getMaxTabs(Context context) {
+        return context.getResources().getInteger(R.integer.max_tabs);
+    }
+
     public AppBarController(Context context, ToolbarController controller, @XmlRes int menuResId,
                             boolean useSourceLogoForAppSelector) {
         mToolbarController = controller;
         mApplicationContext = context.getApplicationContext();
-        mMaxTabs = context.getResources().getInteger(R.integer.max_tabs);
+        mMaxTabs = getMaxTabs(context);
 
 
         mUseSourceLogoForAppSelector = useSourceLogoForAppSelector;
