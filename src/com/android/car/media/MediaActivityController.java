@@ -47,6 +47,8 @@ import com.android.car.media.common.browse.MediaBrowserViewModelImpl;
 import com.android.car.media.common.browse.MediaItemsRepository;
 import com.android.car.media.common.source.MediaBrowserConnector.BrowsingState;
 import com.android.car.media.common.source.MediaSource;
+import com.android.car.media.extensions.analytics.event.AnalyticsEvent;
+import com.android.car.media.extensions.analytics.event.BrowseChangeEvent;
 import com.android.car.media.widgets.AppBarController;
 import com.android.car.ui.FocusParkingView;
 import com.android.car.ui.baselayout.Insets;
@@ -143,6 +145,7 @@ public class MediaActivityController extends ViewControllerBase {
     private boolean navigateBack() {
         boolean result = false;
         if (isStacked()) {
+            // Clean up previous
             hideAndDestroyStackEntry(mBrowseStack.pop());
 
             // Show the parent (if any)
@@ -222,14 +225,12 @@ public class MediaActivityController extends ViewControllerBase {
 
                 boolean canSearch = MediaBrowserViewModelImpl.getSupportsSearch(browser);
                 mAppBarController.setSearchSupported(canSearch);
-
                 if (mBrowseStack.size() <= 0) {
                     mBrowseStack.pushRoot(BrowseViewController.newRootController(
                             mBrowseCallbacks, mBrowseArea, mMediaItemsRepository));
                 }
                 showCurrentNode(true);
                 break;
-
             case DISCONNECTING:
             case REJECTED:
             case SUSPENDED:
@@ -294,6 +295,9 @@ public class MediaActivityController extends ViewControllerBase {
                 Log.d(TAG, "goToMediaItem S: " + source + " MI: " + mediaItem);
             }
 
+            mediaItemsRepo.getBrowsingState().getValue().getAnalyticsManager()
+                    .sendMediaClickedEvent(mediaItem.getId(), AnalyticsEvent.PLAYBACK);
+
             mCallbacks.changeMode(Mode.BROWSING);
 
             if (!Objects.equals(source, mViewModel.getMediaSourceValue())) {
@@ -338,6 +342,10 @@ public class MediaActivityController extends ViewControllerBase {
         @Override
         public void onTabSelected(MediaItemMetadata item) {
             if (mAcceptTabSelection && (item != null) && (item != getSelectedTab())) {
+                if (item.getId() != null) {
+                    mMediaItemsRepository.getAnalyticsManager()
+                            .sendMediaClickedEvent(item.getId(), AnalyticsEvent.BROWSE_TABS);
+                }
                 // Clear the entire stack, including search and links.
                 hideAndDestroyStackEntries(mBrowseStack.removeAllEntriesExceptRoot());
                 mBrowseStack.insertRootTab(item, createControllerForItem(item));
@@ -503,6 +511,24 @@ public class MediaActivityController extends ViewControllerBase {
 
         if (controller != null) {
             showHideContentAnimated(show, controller.getContent(), mViewAnimEndListener);
+            sendNodeChangeAnalytics(show, entry);
+        }
+    }
+
+    private void sendNodeChangeAnalytics(boolean show,
+            @NonNull BrowseStack.BrowseEntry browseEntry) {
+
+        BrowseViewController controller = browseEntry.getController();
+
+        if (controller != null) {
+            String currentId = null;
+            if (browseEntry.mItem != null) {
+                currentId = browseEntry.mItem.getId();
+            }
+            mMediaItemsRepository.getAnalyticsManager().sendBrowseChangeEvent(
+                    browseEntryTypeToAnalytic(browseEntry.mType),
+                    show ? AnalyticsEvent.SHOW : AnalyticsEvent.HIDE, currentId);
+            controller.onShow(show);
         }
     }
 
@@ -549,6 +575,28 @@ public class MediaActivityController extends ViewControllerBase {
         }
 
         showHideViewAnimated(show, content, mFadeDuration, listener);
+    }
+
+    @BrowseChangeEvent.BrowseMode
+    private int browseEntryTypeToAnalytic(BrowseStack.BrowseEntryType type) {
+        switch(type){
+            case TREE_TAB:
+                return BrowseChangeEvent.TREE_TAB;
+            case TREE_ROOT:
+                return BrowseChangeEvent.TREE_ROOT;
+            case TREE_BROWSE:
+                return BrowseChangeEvent.TREE_BROWSE;
+            case SEARCH_RESULTS:
+                return BrowseChangeEvent.SEARCH_RESULTS;
+            case SEARCH_BROWSE:
+                return BrowseChangeEvent.SEARCH_BROWSE;
+            case LINK:
+                return BrowseChangeEvent.LINK;
+            case LINK_BROWSE:
+                return BrowseChangeEvent.LINK_BROWSE;
+        }
+
+        return BrowseChangeEvent.UNKNOWN;
     }
 
     private void showSearchResults() {
@@ -609,6 +657,7 @@ public class MediaActivityController extends ViewControllerBase {
             View view = controller.getContent();
             mEntriesToDestroy.put(view, entry);
             showHideContentAnimated(false, view, mViewAnimEndListener);
+            sendNodeChangeAnalytics(false, entry);
         } else {
             entry.destroyController();
         }
@@ -644,7 +693,6 @@ public class MediaActivityController extends ViewControllerBase {
             return;
         }
         mTopItems = items;
-
         if (mTopItems == null || mTopItems.isEmpty()) {
             mAppBarController.setItems(null);
             mAppBarController.setActiveItem(null);
@@ -740,5 +788,4 @@ public class MediaActivityController extends ViewControllerBase {
         mCallbacks.onRootLoaded();
         updateTabs(items != null ? items : new ArrayList<>());
     }
-
 }

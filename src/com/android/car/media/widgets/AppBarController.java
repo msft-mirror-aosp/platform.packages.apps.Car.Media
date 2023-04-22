@@ -1,5 +1,8 @@
 package com.android.car.media.widgets;
 
+import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
+
+import android.app.Application;
 import android.car.drivingstate.CarUxRestrictions;
 import android.content.Context;
 import android.content.Intent;
@@ -14,7 +17,9 @@ import androidx.core.util.Preconditions;
 import com.android.car.media.MediaAppConfig;
 import com.android.car.media.R;
 import com.android.car.media.common.MediaItemMetadata;
+import com.android.car.media.common.browse.MediaItemsRepository;
 import com.android.car.media.common.source.MediaSource;
+import com.android.car.media.extensions.analytics.event.AnalyticsEvent;
 import com.android.car.ui.toolbar.MenuItem;
 import com.android.car.ui.toolbar.MenuItemXmlParserUtil;
 import com.android.car.ui.toolbar.NavButtonMode;
@@ -42,6 +47,7 @@ public class AppBarController {
 
     private final int mMaxTabs;
     private final ArrayList<TabBinder<MediaItemMetadata.ArtworkRef>> mTabs = new ArrayList<>();
+    private final ArrayList<String> mPrevTabs = new ArrayList<>();
     private final ToolbarController mToolbarController;
     private final Context mApplicationContext;
 
@@ -97,6 +103,7 @@ public class AppBarController {
         mToolbarController = controller;
         mApplicationContext = context.getApplicationContext();
         mMaxTabs = context.getResources().getInteger(R.integer.max_tabs);
+
 
         mUseSourceLogoForAppSelector = useSourceLogoForAppSelector;
         Intent appSelectorIntent = MediaSource.getSourceSelectorIntent(context, false);
@@ -177,6 +184,11 @@ public class AppBarController {
     public void setItems(@Nullable List<MediaItemMetadata> items) {
         if (items == null) {
             items = Collections.emptyList();
+            //Tabs are hidden when null.
+            MediaItemsRepository.get((Application) mApplicationContext,
+                    MEDIA_SOURCE_MODE_BROWSE).getAnalyticsManager().sendVisibleItemsEvents(
+                            null, AnalyticsEvent.BROWSE_TABS, AnalyticsEvent.HIDE,
+                    AnalyticsEvent.NONE, null);
         }
 
         for (TabBinder<MediaItemMetadata.ArtworkRef> tabBinder : mTabs) {
@@ -209,12 +221,38 @@ public class AppBarController {
     private void updateTabs() {
         if (!mShowPersistentTabs
                 && mToolbarController.getNavButtonMode() != NavButtonMode.DISABLED) {
+            List<String> currTabs = mTabs.stream().map(
+                    (tab) -> tab.getMediaItemMetadata().getId()).collect(Collectors.toList());
+            if (!mPrevTabs.isEmpty()) {
+                MediaItemsRepository.get((Application) mApplicationContext,
+                                MEDIA_SOURCE_MODE_BROWSE)
+                        .getAnalyticsManager().sendVisibleItemsEvents(null,
+                                AnalyticsEvent.BROWSE_TABS, AnalyticsEvent.HIDE,
+                                AnalyticsEvent.NONE, currTabs);
+            }
+            mPrevTabs.clear();
             mToolbarController.setTabs(Collections.emptyList());
         } else {
             mToolbarController.setTabs(mTabs.stream()
                             .map(TabBinder::getToolbarTab)
                             .collect(Collectors.toList()),
                     mSelectedTab);
+            if (mToolbarController.getSearchMode() == SearchMode.DISABLED) {
+                List<String> itemsSublist = mTabs
+                        .stream()
+                        .map(item -> item.getMediaItemMetadata().getId())
+                        .collect(Collectors.toCollection(ArrayList::new));
+
+                if (!itemsSublist.equals(mPrevTabs)) {
+                    MediaItemsRepository.get((Application) mApplicationContext,
+                                    MEDIA_SOURCE_MODE_BROWSE)
+                            .getAnalyticsManager().sendVisibleItemsEvents(null,
+                                    AnalyticsEvent.BROWSE_TABS, AnalyticsEvent.SHOW,
+                                    AnalyticsEvent.NONE, itemsSublist);
+                }
+                mPrevTabs.clear();
+                mPrevTabs.addAll(itemsSublist);
+            }
         }
     }
 

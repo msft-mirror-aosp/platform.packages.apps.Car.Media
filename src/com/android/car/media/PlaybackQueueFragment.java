@@ -18,6 +18,8 @@ package com.android.car.media;
 
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK;
 
+import static androidx.recyclerview.widget.RecyclerView.NO_POSITION;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Rect;
@@ -39,7 +41,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.android.car.apps.common.imaging.ImageViewBinder;
 import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.media.common.MediaItemMetadata;
+import com.android.car.media.common.browse.MediaItemsRepository;
 import com.android.car.media.common.playback.PlaybackViewModel;
+import com.android.car.media.extensions.analytics.event.AnalyticsEvent;
 import com.android.car.ui.recyclerview.CarUiRecyclerView;
 import com.android.car.ui.recyclerview.ContentLimiting;
 import com.android.car.ui.recyclerview.ScrollingLimitedViewHolder;
@@ -48,8 +52,11 @@ import com.android.car.uxr.UxrContentLimiterImpl;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 /**
@@ -63,10 +70,10 @@ public class PlaybackQueueFragment extends Fragment {
 
     private LifeCycleObserverUxrContentLimiter mUxrContentLimiter;
     private PlaybackViewModel mPlaybackViewModel;
+    private MediaItemsRepository mMediaItemsRepository;
     private QueueItemsAdapter mQueueAdapter;
     private CarUiRecyclerView mQueue;
     private PlaybackQueueCallback mPlaybackQueueCallback;
-
     private DefaultItemAnimator mItemAnimator;
 
     private PlaybackViewModel.PlaybackController mController;
@@ -268,6 +275,62 @@ public class PlaybackQueueFragment extends Fragment {
             notifyDataSetChanged();
         }
 
+        private int getFirstVisibleItemPosition() {
+            int firstItem = mQueue.findFirstCompletelyVisibleItemPosition();
+            if (firstItem == RecyclerView.NO_POSITION) {
+                firstItem = mQueue.findFirstVisibleItemPosition();
+            }
+            return firstItem;
+        }
+
+        private int getLastVisibleItemPosition() {
+            int lastItem = mQueue.findLastCompletelyVisibleItemPosition();
+            if (lastItem == RecyclerView.NO_POSITION) {
+                lastItem = mQueue.findLastVisibleItemPosition();
+            }
+            return lastItem;
+        }
+
+        /**
+         * Implements findFirstVisibleItemIndex with range filter
+         * <p>
+         *     Converts position in RV to index in adapter data.
+         * </p>
+         */
+        public int findFirstVisibleItemIndex() {
+            int rvPos = getFirstVisibleItemPosition();
+
+            if (rvPos == RecyclerView.NO_POSITION) return RecyclerView.NO_POSITION;
+
+            int indexInList = mUxrPivotFilter.positionToIndex(rvPos);
+            //-1 if a message is shown, so increment past message
+            if (indexInList == RecyclerView.NO_POSITION) {
+                rvPos++;
+                indexInList = mUxrPivotFilter.positionToIndex(rvPos);
+            }
+            return indexInList;
+        }
+
+        /**
+         * Implements findLastCompletelyVisibleItemPosition with range filter
+         * <p>
+         *     Converts position in RV to index in adapter data.
+         * </p>
+         */
+        public int findLastVisibleItemIndex() {
+            int rvPos = getLastVisibleItemPosition();
+
+            if (rvPos == RecyclerView.NO_POSITION) return RecyclerView.NO_POSITION;
+
+            int indexInList = mUxrPivotFilter.positionToIndex(rvPos);
+            //-1 if a message is shown, so decrement past message
+            if (indexInList == RecyclerView.NO_POSITION) {
+                rvPos--;
+                indexInList = mUxrPivotFilter.positionToIndex(rvPos);
+            }
+            return indexInList;
+        }
+
         // Updates mActiveItemPos, then scrolls the queue to mActiveItemPos.
         // It should be called when the active item (mActiveQueueItemId) changed or
         // the queue items (mQueueItems) changed.
@@ -439,6 +502,8 @@ public class PlaybackQueueFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mPlaybackViewModel = PlaybackViewModel.get(getActivity().getApplication(),
                 MEDIA_SOURCE_MODE_PLAYBACK);
+        mMediaItemsRepository = MediaItemsRepository.get(getActivity().getApplication(),
+                MEDIA_SOURCE_MODE_PLAYBACK);
 
         Resources res = getResources();
         mQueue = view.findViewById(R.id.queue_list);
@@ -500,7 +565,71 @@ public class PlaybackQueueFragment extends Fragment {
                     }
                 });
         mQueue.setAdapter(mQueueAdapter);
+        mQueue.addOnScrollListener(new CarUiRecyclerView.OnScrollListener() {
+            int mPrevFirstPos = 0;
+            int mPrevLastPost = 0;
 
+            @Override
+            public void onScrolled(CarUiRecyclerView recyclerView, int dx, int dy) {
+                //dx and dy are 0 when items in RV change or layout is requested. We should
+                // use this to trigger querying what is visible.
+                sendScrollEvent(dx != 0 || dy != 0);
+            }
+
+            @Override
+            public void onScrollStateChanged(CarUiRecyclerView recyclerView, int newState) {}
+
+            private void sendScrollEvent(boolean fromScroll) {
+                int currFirst = mQueueAdapter.findFirstVisibleItemIndex();
+                int currLast = mQueueAdapter.findLastVisibleItemIndex();
+
+                //If for any reason there are no visible items we have nothing to send.
+                if (currFirst == NO_POSITION
+                        || currLast == NO_POSITION) {
+                    return;
+                }
+
+                List<String> currItemsSublist = mQueueAdapter.mQueueItems
+                        .subList(currFirst, currLast + 1)
+                        .stream()
+                        .map(MediaItemMetadata::getId)
+                        .collect(Collectors.toCollection(ArrayList::new));
+
+                if (fromScroll) {
+                    Set<String> prev = mQueueAdapter.mQueueItems
+                            .subList(mPrevFirstPos, mPrevLastPost + 1)
+                            .stream()
+                            .map(MediaItemMetadata::getId).collect(Collectors.toSet());
+
+                    Set<String> delta = new HashSet<>(prev);
+                    currItemsSublist.forEach(delta::remove);
+                    prev.forEach(currItemsSublist::remove);
+
+                    if (!delta.isEmpty()) {
+                        mMediaItemsRepository.getAnalyticsManager().sendVisibleItemsEvents(
+                                null, AnalyticsEvent.QUEUE_LIST,
+                                AnalyticsEvent.HIDE, AnalyticsEvent.SCROLL,
+                                new ArrayList<>(delta));
+                    }
+                    if (!currItemsSublist.isEmpty()) {
+                        mMediaItemsRepository.getAnalyticsManager().sendVisibleItemsEvents(
+                                null, AnalyticsEvent.QUEUE_LIST,
+                                AnalyticsEvent.SHOW,  AnalyticsEvent.SCROLL,
+                                currItemsSublist);
+                    }
+                } else {
+                    mMediaItemsRepository.getAnalyticsManager().sendVisibleItemsEvents(
+                            null, AnalyticsEvent.QUEUE_LIST,
+                            AnalyticsEvent.SHOW, AnalyticsEvent.NONE,
+                            currItemsSublist);
+                }
+
+                mPrevFirstPos =
+                        mQueueAdapter.findFirstVisibleItemIndex();
+                mPrevLastPost =
+                        mQueueAdapter.findLastVisibleItemIndex();
+            }
+        });
         // Disable item changed animation.
         mItemAnimator = new DefaultItemAnimator();
         mItemAnimator.setSupportsChangeAnimations(false);

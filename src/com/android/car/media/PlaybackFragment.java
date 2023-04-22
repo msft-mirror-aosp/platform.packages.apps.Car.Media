@@ -18,7 +18,6 @@ package com.android.car.media;
 
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK;
 
-import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.PorterDuff;
@@ -53,14 +52,15 @@ import com.android.car.media.common.browse.MediaItemsRepository;
 import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.common.source.MediaSourceViewModel;
+import com.android.car.media.extensions.analytics.event.AnalyticsEvent;
 import com.android.car.media.widgets.AppBarController;
 import com.android.car.ui.core.CarUi;
 import com.android.car.ui.toolbar.MenuItem;
 import com.android.car.ui.toolbar.NavButtonMode;
 import com.android.car.ui.toolbar.ToolbarController;
 import com.android.car.ui.utils.DirectManipulationHelper;
-import com.android.car.uxr.LifeCycleObserverUxrContentLimiter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -72,7 +72,6 @@ import java.util.List;
 public class PlaybackFragment extends Fragment {
     private static final String TAG = "PlaybackFragment";
 
-    private LifeCycleObserverUxrContentLimiter mUxrContentLimiter;
     private ImageBinder<MediaItemMetadata.ArtworkRef> mAlbumArtBinder;
     private AppBarController mAppBarController;
     private BackgroundImageView mAlbumBackground;
@@ -96,7 +95,6 @@ public class PlaybackFragment extends Fragment {
 
     private boolean mHasQueue;
     private boolean mQueueIsVisible;
-
     private boolean mShowLinearProgressBar;
 
     private int mFadeDuration;
@@ -111,6 +109,11 @@ public class PlaybackFragment extends Fragment {
         public void onQueueItemClicked(MediaItemMetadata item) {
             boolean switchToPlayback = getResources().getBoolean(
                     R.bool.switch_to_playback_view_when_playable_item_is_clicked);
+            if (item.getId() != null) {
+                //Send analytics click event
+                mMediaItemsRepository.getAnalyticsManager()
+                        .sendMediaClickedEvent(item.getId(), AnalyticsEvent.QUEUE_LIST);
+            }
             if (switchToPlayback) {
                 toggleQueueVisibility();
             }
@@ -233,19 +236,17 @@ public class PlaybackFragment extends Fragment {
                 MediaAppConfig.getMediaItemsBitmapMaxSize(getContext()),
                 drawable -> mAlbumBackground.setBackgroundDrawable(drawable));
 
-        mPlaybackViewModel.getMetadata().observe(getViewLifecycleOwner(),
-                item -> mAlbumArtBinder.setImage(PlaybackFragment.this.getContext(),
-                        item != null ? item.getArtworkKey() : null));
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
+        mPlaybackViewModel.getMetadata().observe(getViewLifecycleOwner(), (item) -> {
+            mAlbumArtBinder.setImage(PlaybackFragment.this.getContext(), item != null
+                    ? item.getArtworkKey() : null);
+            if (item != null && getView().isShown()) {
+                ArrayList<String> items = new ArrayList<>();
+                items.add(item.getId());
+                mMediaItemsRepository.getAnalyticsManager().sendVisibleItemsEvents(null,
+                        AnalyticsEvent.PLAYBACK, AnalyticsEvent.SHOW,
+                        AnalyticsEvent.NONE, items);
+            }
+        });
     }
 
     private void initPlaybackControls(PlaybackControlsActionBar playbackControls) {
@@ -339,6 +340,9 @@ public class PlaybackFragment extends Fragment {
         // source change (media source changes -> hasQueue becomes false -> queue is hidden), don't
         // save it.
         mViewModel.setQueueVisible(updatedQueueVisibility);
+
+        mMediaItemsRepository.getAnalyticsManager().sendViewChangedEvent(AnalyticsEvent.QUEUE_LIST,
+                mQueueIsVisible ? AnalyticsEvent.SHOW : AnalyticsEvent.HIDE);
     }
 
     private void updateAppBarMenu(boolean hasQueue) {

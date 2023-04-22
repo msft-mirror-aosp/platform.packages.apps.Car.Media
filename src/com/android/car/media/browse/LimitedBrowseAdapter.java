@@ -156,4 +156,44 @@ public class LimitedBrowseAdapter extends DelegatingContentLimitingAdapter<Brows
         }
         return lastItem;
     }
+
+    /**
+     * Implements getFirstVisibleItemPosition with range filter
+     * <p>
+     *     Converts position in RV to index in adapter data.
+     * </p>
+     */
+    public int findFirstVisibleItemIndex() {
+        int rvPos = getFirstVisibleItemPosition();
+
+        if (rvPos == RecyclerView.NO_POSITION) return RecyclerView.NO_POSITION;
+
+        int indexInList = positionToIndex(rvPos);
+        //-1 if a message is shown, so increment past message
+        if (indexInList == RecyclerView.NO_POSITION) {
+            rvPos++;
+            indexInList = positionToIndex(rvPos);
+        }
+        return indexInList;
+    }
+
+    /**
+     * Implements getLastVisibleItemPosition with range filter
+     * <p>
+     *     Converts position in RV to index in adapter data.
+     * </p>
+     */
+    public int findLastVisibleItemIndex() {
+        int rvPos = getLastVisibleItemPosition();
+
+        if (rvPos == RecyclerView.NO_POSITION) return RecyclerView.NO_POSITION;
+
+        int indexInList = positionToIndex(rvPos);
+        //-1 if a message is shown, so decrement past message
+        if (indexInList == RecyclerView.NO_POSITION) {
+            rvPos--;
+            indexInList = positionToIndex(rvPos);
+        }
+        return indexInList;
+    }
 }
