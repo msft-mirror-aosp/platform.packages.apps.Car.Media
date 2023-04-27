@@ -45,7 +45,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 import androidx.fragment.app.FragmentActivity;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.RecyclerView;
@@ -136,7 +135,7 @@ public class BrowseViewController {
 
         @Override
         protected void onBrowsableItemClicked(@NonNull MediaItemMetadata item) {
-            mCallbacks.onBrowsableItemClicked(item);
+            mCallbacks.goToMediaItem(item);
         }
 
         @Override
@@ -209,8 +208,8 @@ public class BrowseViewController {
          */
         void onPlayableItemClicked(@NonNull MediaItemMetadata item);
 
-        /** Invoked when the user clicks on a browsable item. */
-        void onBrowsableItemClicked(@NonNull MediaItemMetadata item);
+        /** Displays the given item. It may not be a child of the current node. */
+        void goToMediaItem(@NonNull MediaItemMetadata item);
 
         /** Invoked when user clicks on the mini playback bar in an empty browse
          *
@@ -249,24 +248,19 @@ public class BrowseViewController {
             Callbacks callbacks,
             ViewGroup container,
             @NonNull MediaItemMetadata parentItem,
-            MediaItemsLiveData mediaItems,
             MediaItemsRepository mediaRepo,
-            MutableLiveData<Map<String, CustomBrowseAction>> globalBrowseActions,
             int rootBrowsableHint,
             int rootPlayableHint) {
-        return new BrowseViewController(callbacks, container, parentItem, mediaItems,
-                rootBrowsableHint, rootPlayableHint, mediaRepo, globalBrowseActions, true);
+        return new BrowseViewController(callbacks, container, parentItem,
+                mediaRepo.getMediaChildren(parentItem.getId()), rootBrowsableHint, rootPlayableHint,
+                mediaRepo, true);
     }
 
     /** Creates a controller to display the top results of a search query (in a list). */
     static BrowseViewController newSearchResultsController(
-            Callbacks callbacks,
-            ViewGroup container,
-            MediaItemsLiveData mediaItems,
-            MediaItemsRepository mediaRepo,
-            MutableLiveData<Map<String, CustomBrowseAction>> globalBrowseActions) {
-        return new BrowseViewController(
-                callbacks, container, null, mediaItems, 0, 0, mediaRepo, globalBrowseActions, true);
+            Callbacks callbacks, ViewGroup container, MediaItemsRepository mediaRepo) {
+        return new BrowseViewController(callbacks, container, null, mediaRepo.getSearchMediaItems(),
+                0, 0, mediaRepo, true);
     }
 
     /**
@@ -277,11 +271,9 @@ public class BrowseViewController {
     static BrowseViewController newRootController(
             Callbacks callbacks,
             ViewGroup container,
-            MediaItemsLiveData mediaItems,
-            MediaItemsRepository mediaRepo,
-            MutableLiveData<Map<String, CustomBrowseAction>> globalBrowseActions) {
-        return new BrowseViewController(callbacks, container, null, mediaItems, 0, 0, mediaRepo,
-                globalBrowseActions, false);
+            MediaItemsRepository mediaRepo) {
+        return new BrowseViewController(callbacks, container, null, mediaRepo.getRootMediaItems(),
+                0, 0, mediaRepo, false);
     }
 
     /**
@@ -337,7 +329,6 @@ public class BrowseViewController {
             int rootBrowsableHint,
             int rootPlayableHint,
             MediaItemsRepository mediaRepo,
-            MutableLiveData<Map<String, CustomBrowseAction>> globalBrowseActions,
             boolean displayMediaItems) {
         mCallbacks = callbacks;
         mParentItem = parentItem;
@@ -412,7 +403,7 @@ public class BrowseViewController {
         mUxrContentLimiter.setAdapter(mLimitedBrowseAdapter);
         activity.getLifecycle().addObserver(mUxrContentLimiter);
 
-        globalBrowseActions.observe(activity, actions -> {
+        mMediaRepo.getCustomBrowseActions().observe(activity, actions -> {
             mGlobalActions = actions;
             browseAdapter.setGlobalCustomActions(actions);
             configureCustomActionsHeader(actions, maxActions);
@@ -422,6 +413,15 @@ public class BrowseViewController {
         browseAdapter.setRootPlayableViewType(rootPlayableHint);
         browseAdapter.setGlobalCustomActions(mGlobalActions);
         mMediaItems.observe(activity, mItemsObserver);
+    }
+
+    /**
+     * Returns whether the children of the parentItem given to this controller have been loaded and
+     * the given item is one of them.
+     */
+    boolean hasChild(MediaItemMetadata item) {
+        List<MediaItemMetadata> children = FutureData.getData(mMediaItems.getValue());
+        return (children != null) && (children.contains(item));
     }
 
     private void initCustomActionsHeader(MediaItemMetadata parentItem, int maxActions) {
@@ -526,7 +526,7 @@ public class BrowseViewController {
                         new BrowseActionCallback() {
                             @Override
                             public void onItemLoaded(MediaItem item) {
-                                mCallbacks.onBrowsableItemClicked(new MediaItemMetadata(item));
+                                mCallbacks.goToMediaItem(new MediaItemMetadata(item));
                             }
                         });
             }
@@ -589,10 +589,6 @@ public class BrowseViewController {
             CharSequence browseSourceName = mediaSourceMediaSourcePair.second.getDisplayName();
             mActionBar.setTitle(browseSourceName);
         }
-    }
-
-    public MediaItemMetadata getParentItem() {
-        return mParentItem;
     }
 
     /** Shares the browse adapter with the given view... #local-hack. */

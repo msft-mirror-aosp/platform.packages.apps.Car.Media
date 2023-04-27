@@ -48,7 +48,9 @@ import com.android.car.media.PlaybackQueueFragment.PlaybackQueueCallback;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.MetadataController;
 import com.android.car.media.common.PlaybackControlsActionBar;
+import com.android.car.media.common.browse.MediaItemsRepository;
 import com.android.car.media.common.playback.PlaybackViewModel;
+import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.common.source.MediaSourceViewModel;
 import com.android.car.media.widgets.AppBarController;
 import com.android.car.ui.core.CarUi;
@@ -78,6 +80,7 @@ public class PlaybackFragment extends Fragment {
     private View mControlBarScrim;
     private PlaybackControlsActionBar mPlaybackControls;
     private PlaybackViewModel mPlaybackViewModel;
+    private MediaItemsRepository mMediaItemsRepository;
     private ViewGroup mSeekBarContainer;
     private SeekBar mSeekBar;
     private List<View> mViewsToHideForCustomActions;
@@ -118,9 +121,9 @@ public class PlaybackFragment extends Fragment {
      */
     public interface PlaybackFragmentListener {
         /**
-         * Invoked when the user clicks on the collapse button
+         * Invoked when the user clicks on a browse link
          */
-        void onCollapse();
+        void goToMediaItem(MediaSource source, MediaItemMetadata mediaItem);
     }
 
     @Override
@@ -132,6 +135,8 @@ public class PlaybackFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mPlaybackViewModel = PlaybackViewModel.get(getActivity().getApplication(),
+                MEDIA_SOURCE_MODE_PLAYBACK);
+        mMediaItemsRepository = MediaItemsRepository.get(getActivity().getApplication(),
                 MEDIA_SOURCE_MODE_PLAYBACK);
 
         Resources res = getResources();
@@ -304,8 +309,12 @@ public class PlaybackFragment extends Fragment {
 
         Size maxArtSize = MediaAppConfig.getMediaItemsBitmapMaxSize(view.getContext());
         mMetadataController = new MetadataController(getViewLifecycleOwner(), mPlaybackViewModel,
-                title, artist, albumTitle, outerSeparator, curTime, innerSeparator, maxTime,
-                seekbar, albumArt, null, maxArtSize);
+                mMediaItemsRepository, title, artist, albumTitle, outerSeparator, curTime,
+                innerSeparator, maxTime, seekbar, albumArt, null, maxArtSize,
+                (mediaItem) -> {
+                    MediaSource source = mPlaybackViewModel.getMediaSource().getValue();
+                    mListener.goToMediaItem(source, mediaItem);
+                });
     }
 
     /**

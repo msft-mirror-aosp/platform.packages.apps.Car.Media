@@ -18,7 +18,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <MenuItem
         app:id="@+id/menu_item_queue"
-        app:carUiIcon="@drawable/ic_queue_button"
+        app:carUiIcon="@drawable/ic_tracklist"
         app:activatable="true"/>
     <MenuItem
         app:id="@+id/menu_item_selector_with_source_logo"

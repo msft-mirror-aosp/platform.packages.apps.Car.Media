@@ -75,7 +75,6 @@ import com.android.car.ui.utils.CarUxRestrictionsUtil;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Stack;
 
 /**
  * This activity controls the UI of media. It also updates the connection status for the media app
@@ -114,9 +113,6 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
     private float mCloseVectorY;
     private float mCloseVectorNorm;
 
-    private final PlaybackFragment.PlaybackFragmentListener mPlaybackFragmentListener =
-            () -> changeMode(Mode.BROWSING);
-
     private MediaTrampolineHelper mMediaTrampoline;
 
     /**
@@ -132,7 +128,6 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         /** There's no browse tree and playback doesn't work. */
         FATAL_ERROR
     }
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -160,10 +155,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         localViewModel.getBrowsedMediaSource().observe(this, this::onMediaSourceChanged);
 
         mMediaTrampoline = new MediaTrampolineHelper(this);
-
         mPlaybackFragment = new PlaybackFragment();
-        mPlaybackFragment.setListener(mPlaybackFragmentListener);
-
 
         Size maxArtSize = MediaAppConfig.getMediaItemsBitmapMaxSize(this);
         mMiniPlaybackControls = findViewById(R.id.minimized_playback_controls);
@@ -197,6 +189,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         mMediaActivityController = new MediaActivityController(this, getMediaItemsRepository(),
                 mCarPackageManager, mBrowseContainer);
 
+        mPlaybackFragment.setListener(mMediaActivityController.getPlaybackFragmentListener());
         mPlaybackContainer.setOnTouchListener(new ClosePlaybackDetector(this));
     }
 
@@ -268,7 +261,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
             boolean isFatalError = false;
             if (!TextUtils.isEmpty(displayedMessage)) {
                 // If browse content -> not fatal
-                if (mMediaActivityController.browseTreeHasChildren()) {
+                if (mMediaActivityController.browseTreeHasChildrenList()) {
                     showToastOrDialog(displayedMessage, intent, label, mediaSource);
                 } else {
                     boolean isDistractionOptimized =
@@ -453,7 +446,8 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         }
     }
 
-    private void changeMode(Mode mode) {
+    @Override
+    public void changeMode(Mode mode) {
         if (mMode == mode) {
             if (Log.isLoggable(TAG, Log.INFO)) {
                 Log.i(TAG, "Mode " + mMode + " change is ignored");
@@ -461,6 +455,11 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
             return;
         }
         changeModeInternal(mode, true);
+    }
+
+    @Override
+    public void changeSource(MediaSource source) {
+        mMediaTrampoline.setLaunchedMediaSource(source.getBrowseServiceComponentName());
     }
 
     private void changeModeInternal(Mode mode, boolean hideViewAnimated) {
@@ -616,12 +615,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
 
         static class MediaServiceState {
             Mode mMode = Mode.BROWSING;
-            Stack<MediaItemMetadata> mBrowseStack = new Stack<>();
-            Stack<MediaItemMetadata> mSearchStack = new Stack<>();
-            /** True when the search bar has been opened or when the search results are browsed. */
-            boolean mSearching;
-            /** True iif the list of search results is being shown (implies mIsSearching). */
-            boolean mShowingSearchResults;
+            BrowseStack mBrowseStack = new BrowseStack();
             String mSearchQuery;
             boolean mQueueVisible = false;
             boolean mHasPlayableItem = false;
@@ -681,12 +675,6 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
             return getSavedState().mMode;
         }
 
-        @Nullable
-        MediaItemMetadata getSelectedTab() {
-            Stack<MediaItemMetadata> stack = getSavedState().mBrowseStack;
-            return (stack != null && !stack.empty()) ? stack.firstElement() : null;
-        }
-
         void setQueueVisible(boolean visible) {
             getSavedState().mQueueVisible = visible;
         }
@@ -712,33 +700,12 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
             return mBrowsedMediaSource;
         }
 
-        @NonNull Stack<MediaItemMetadata> getBrowseStack() {
+        @NonNull BrowseStack getBrowseStack() {
             return getSavedState().mBrowseStack;
-        }
-
-        @NonNull Stack<MediaItemMetadata> getSearchStack() {
-            return getSavedState().mSearchStack;
-        }
-
-        /** Returns whether search mode is on (showing search results or browsing them). */
-        boolean isSearching() {
-            return getSavedState().mSearching;
-        }
-
-        boolean isShowingSearchResults() {
-            return getSavedState().mShowingSearchResults;
         }
 
         String getSearchQuery() {
             return getSavedState().mSearchQuery;
-        }
-
-        void setSearching(boolean isSearching) {
-            getSavedState().mSearching = isSearching;
-        }
-
-        void setShowingSearchResults(boolean isShowing) {
-            getSavedState().mShowingSearchResults = isShowing;
         }
 
         void setSearchQuery(String searchQuery) {
