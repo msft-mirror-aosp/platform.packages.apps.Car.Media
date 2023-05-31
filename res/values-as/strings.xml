@@ -28,5 +28,5 @@
     <string name="fragment_playback_title" msgid="5014481549024607614">"এতিয়া এয়া প্লে\' হৈ আছে"</string>
     <string name="service_notification_title" msgid="8085444675783592744">"মিডিয়াৰ সৈতে সংযোগ কৰি থকা হৈছে"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"ধ্বনিৰ ছেটিংসমূহ"</string>
-    <string name="menu_item_app_selector_title" msgid="4587248991114338595">"এপসমূহ সলনি কৰক"</string>
+    <string name="menu_item_app_selector_title" msgid="4587248991114338595">"এপ্‌সমূহ সলনি কৰক"</string>
 </resources>
