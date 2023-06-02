@@ -14,11 +14,16 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
+<!-- The whole item is clickable as the thumbnail can be too small. -->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/media_item_click_target"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground"
     android:padding="@dimen/media_browse_grid_item_padding"
     android:layout_marginBottom="@dimen/media_browse_grid_item_margin_bottom">
 
@@ -26,9 +31,6 @@
         android:id="@+id/item_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:clickable="true"
-        android:focusable="true"
-        android:foreground="?android:attr/selectableItemBackground"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">

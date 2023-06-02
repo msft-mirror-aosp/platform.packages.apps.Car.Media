@@ -105,6 +105,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="item_container"/>
       <item type="id" name="max_time"/>
       <item type="id" name="media_activity_root"/>
+      <item type="id" name="media_item_click_target"/>
       <item type="id" name="menu_item_equalizer"/>
       <item type="id" name="menu_item_search"/>
       <item type="id" name="menu_item_selector"/>
