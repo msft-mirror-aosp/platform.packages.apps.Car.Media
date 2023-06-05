@@ -3,4 +3,9 @@
   <item type="id" name="imageDownloadTask"/>
   <item type="id" name="playback_seek_bar_container"/>
   <item type="id" name="outer_separator"/>
+  <item type="id" name="menu_item_equalizer"/>
+  <item type="id" name="menu_item_search"/>
+  <item type="id" name="menu_item_selector"/>
+  <item type="id" name="menu_item_selector_with_source_logo"/>
+  <item type="id" name="menu_item_setting"/>
 </resources>
