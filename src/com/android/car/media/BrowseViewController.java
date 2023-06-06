@@ -586,7 +586,8 @@ public class BrowseViewController {
             hideEmptyListPlayItem();
         }
         if (mediaSourceMediaSourcePair.second != null && mActionBar != null) {
-            CharSequence browseSourceName = mediaSourceMediaSourcePair.second.getDisplayName();
+            CharSequence browseSourceName = mediaSourceMediaSourcePair.second.getDisplayName(
+                    getActivity());
             mActionBar.setTitle(browseSourceName);
         }
     }
@@ -709,7 +710,7 @@ public class BrowseViewController {
             return getActivity().getString(
                     R.string.cannot_connect_to_app,
                     mediaSource != null
-                            ? mediaSource.getDisplayName()
+                            ? mediaSource.getDisplayName(getActivity())
                             : getActivity().getString(
                                     R.string.unknown_media_provider_name));
         } else {
