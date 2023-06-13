@@ -133,6 +133,8 @@ public class AppBarController {
         if (mUseSourceLogoForAppSelector) {
             menuItems.remove(menuMap.get(R.id.menu_item_selector));
             mAppSelector = menuMap.get(R.id.menu_item_selector_with_source_logo);
+            // Show the menus while searching so the app logo doesn't disappear.
+            mToolbarController.setShowMenuItemsWhileSearching(true);
         } else {
             menuItems.remove(menuMap.get(R.id.menu_item_selector_with_source_logo));
             mAppSelector = menuMap.get(R.id.menu_item_selector);
@@ -140,6 +142,12 @@ public class AppBarController {
         if (mAppSelector != null) {
             mAppSelector.setOnClickListener((menuItem) -> context.startActivity(appSelectorIntent));
             mAppSelector.setVisible(appSelectorIntent != null);
+        }
+
+        if ((appSelectorIntent != null)
+                && context.getResources().getBoolean(R.bool.media_source_logo_opens_app_selector)) {
+            mToolbarController.setOnLogoClickListener(
+                    () -> context.startActivity(appSelectorIntent));
         }
 
         mToolbarController.setMenuItems(menuItems);
@@ -275,14 +283,10 @@ public class AppBarController {
     }
 
     private void updateLogo() {
-        if (mToolbarController.getSearchMode() == SearchMode.DISABLED) {
-            if (mUseSourceLogoForAppSelector) {
-                mAppSelector.setIcon(mLogo);
-            } else {
-                mToolbarController.setLogo(mLogo);
-            }
+        if (mUseSourceLogoForAppSelector) {
+            mAppSelector.setIcon(mLogo);
         } else {
-            mToolbarController.setLogo(null);
+            mToolbarController.setLogo(mLogo);
         }
     }
 

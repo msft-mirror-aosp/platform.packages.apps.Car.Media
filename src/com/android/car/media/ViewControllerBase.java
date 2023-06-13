@@ -150,7 +150,6 @@ abstract class ViewControllerBase implements InsetsChangedListener {
         }
 
         mAppBarController.setLogo(icon);
-        mAppBarController.setSearchIcon(searchIcon);
         mAppBarController.setHasEqualizer(mShouldShowSoundSettings);
     }
 
