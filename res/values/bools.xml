@@ -45,6 +45,10 @@
     <!-- Controls whether to show the tabs when the navigation button is visible. -->
     <bool name="show_persistent_tabs">false</bool>
 
+    <!-- Controls whether the media source logo in the application bar should trigger the app
+         selector screen. Note: this works independently of the app selector menu. -->
+    <bool name="media_source_logo_opens_app_selector">false</bool>
+
     <!-- Whether the media source logo should be used for the app selector button in the playback
        view. If the flag is set to 'true', the main logo (which by default appears on the left
        hand side on toolbar) will be hidden. -->

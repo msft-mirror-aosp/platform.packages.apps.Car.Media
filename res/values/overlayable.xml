@@ -24,6 +24,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="array" name="playback_views_to_show_immediately_when_queue_is_visible"/>
       <item type="array" name="playback_views_to_show_when_queue_is_visible"/>
       <item type="bool" name="hide_search_keyboard_on_scroll_state_dragging"/>
+      <item type="bool" name="media_source_logo_opens_app_selector"/>
       <item type="bool" name="queue_fading_edge_length_enabled"/>
       <item type="bool" name="set_browse_list_focus_area_highlight_above_minimized_control_bar"/>
       <item type="bool" name="show_icon_for_now_playing_queue_list_item"/>
