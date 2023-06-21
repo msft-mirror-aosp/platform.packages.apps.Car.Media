@@ -182,6 +182,9 @@ public class PlaybackFragment extends Fragment {
             mControlBarScrim.setClickable(false);
         }
 
+        mShowLinearProgressBar = getContext().getResources().getBoolean(
+                R.bool.show_linear_progress_bar);
+
         if (mSeekBar != null) {
             if (mShowLinearProgressBar) {
                 boolean useMediaSourceColor = res.getBoolean(
