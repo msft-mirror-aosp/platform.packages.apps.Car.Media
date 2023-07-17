@@ -87,6 +87,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="browse_mini_item_bar"/>
       <item type="id" name="browse_mini_item_guideline"/>
       <item type="id" name="container_browse_mini_item_bar"/>
+      <item type="id" name="content_format"/>
       <item type="id" name="control_bar_first_row_guideline"/>
       <item type="id" name="control_bar_scrim"/>
       <item type="id" name="current_time"/>
@@ -203,6 +204,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="style" name="MediaIconContainerStyle"/>
       <item type="style" name="MediaTintableIconContainerStyle"/>
       <item type="style" name="MetadataContainerStyle"/>
+      <item type="style" name="MetadataPlaybackContentLogo"/>
       <item type="style" name="MetadataPlaybackSubtitleClickableStyle"/>
       <item type="style" name="MetadataPlaybackSubtitleStyle"/>
       <item type="style" name="MetadataPlaybackTitleStyle"/>

@@ -59,7 +59,7 @@ public class BrowseViewHolder extends RecyclerView.ViewHolder {
 
     private final Size mMaxArtSize;
     private final ImageViewBinder<MediaItemMetadata.ArtworkRef> mAlbumArtBinder;
-    private final List<ImageViewBinder<CustomBrowseAction.BrowseActionArtRef>>
+    private final List<ImageViewBinder<ImageBinder.ImageRef>>
             mBrowseActionIcons;
 
     /**
@@ -211,8 +211,8 @@ public class BrowseViewHolder extends RecyclerView.ViewHolder {
                     browseViewData.mCallback.onBrowseActionClick(
                         customBrowseAction, browseViewData));
             ImageView imageView = customActionView.findViewById(R.id.browse_item_custom_action);
-            ImageViewBinder<CustomBrowseAction.BrowseActionArtRef> viewBinder =
-                    new ImageViewBinder(mMaxArtSize, imageView);
+            ImageViewBinder<ImageBinder.ImageRef> viewBinder =
+                    new ImageViewBinder<>(mMaxArtSize, imageView);
             viewBinder.setImage(context, customBrowseAction.getArtRef());
             mBrowseActionIcons.add(viewBinder);
             mCustomActionsContainer.addView(customActionView);

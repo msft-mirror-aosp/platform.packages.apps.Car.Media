@@ -474,7 +474,7 @@ public class BrowseViewController {
             CarUiContentListItem item = new CarUiContentListItem(CarUiContentListItem.Action.ICON);
             item.setPrimaryIconType(CarUiContentListItem.IconType.AVATAR);
             item.setTitle(customBrowseAction.getLabel());
-            ImageBinder<CustomBrowseAction.BrowseActionArtRef> imageBinder =
+            ImageBinder<ImageBinder.ImageRef> imageBinder =
                     new ImageBinder<>(
                             ImageBinder.PlaceholderType.FOREGROUND,
                             mMaxArtSize,
