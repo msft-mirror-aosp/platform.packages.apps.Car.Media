@@ -45,6 +45,7 @@ import com.android.car.apps.common.imaging.ImageBinder;
 import com.android.car.apps.common.imaging.ImageBinder.PlaceholderType;
 import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.media.PlaybackQueueFragment.PlaybackQueueCallback;
+import com.android.car.media.common.ContentFormatView;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.MetadataController;
 import com.android.car.media.common.PlaybackControlsActionBar;
@@ -309,11 +310,12 @@ public class PlaybackFragment extends Fragment {
         TextView innerSeparator = view.findViewById(R.id.inner_separator);
         TextView maxTime = view.findViewById(R.id.max_time);
         SeekBar seekbar = mShowLinearProgressBar ? mSeekBar : null;
+        ContentFormatView contentFormat = view.findViewById(R.id.content_format);
 
         Size maxArtSize = MediaAppConfig.getMediaItemsBitmapMaxSize(view.getContext());
         mMetadataController = new MetadataController(getViewLifecycleOwner(), mPlaybackViewModel,
                 mMediaItemsRepository, title, artist, albumTitle, outerSeparator, curTime,
-                innerSeparator, maxTime, seekbar, albumArt, null, maxArtSize,
+                innerSeparator, maxTime, seekbar, albumArt, null, maxArtSize, contentFormat,
                 (mediaItem) -> {
                     MediaSource source = mPlaybackViewModel.getMediaSource().getValue();
                     mListener.goToMediaItem(source, mediaItem);
