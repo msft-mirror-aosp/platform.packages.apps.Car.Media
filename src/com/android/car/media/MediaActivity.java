@@ -132,6 +132,14 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (savedInstanceState != null) {
+            // The activity is re-created with the same intent it was originally created with, so
+            // the media component specified in the intent will be obsolete if the user has switched
+            // to a new source. Therefore clear the intent and rely on the view models.
+            setIntent(null);
+        }
+
         setContentView(R.layout.media_activity);
 
         Resources res = getResources();
