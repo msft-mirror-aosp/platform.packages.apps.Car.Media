@@ -50,5 +50,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         style="@style/MetadataPlaybackSubtitleStyle"
+        android:layout_marginEnd="@dimen/metadata_subtitles_margin"
     />
+
+    <com.android.car.media.common.ContentFormatView
+        android:id="@+id/content_format"
+        android:background="@color/album_art_background"
+        style="@style/MetadataPlaybackContentLogo"
+        />
 </LinearLayout>

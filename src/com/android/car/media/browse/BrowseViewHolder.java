@@ -47,7 +47,7 @@ public class BrowseViewHolder extends RecyclerView.ViewHolder {
     private final TextView mTitle;
     private final TextView mSubtitle;
     private final ImageView mAlbumArt;
-    private final ViewGroup mContainer;
+    private final View mMediaItemClickTarget;
     private final ImageView mRightArrow;
     private final ImageView mTitleDownloadIcon;
     private final ImageView mTitleExplicitIcon;
@@ -59,7 +59,7 @@ public class BrowseViewHolder extends RecyclerView.ViewHolder {
 
     private final Size mMaxArtSize;
     private final ImageViewBinder<MediaItemMetadata.ArtworkRef> mAlbumArtBinder;
-    private final List<ImageViewBinder<CustomBrowseAction.BrowseActionArtRef>>
+    private final List<ImageViewBinder<ImageBinder.ImageRef>>
             mBrowseActionIcons;
 
     /**
@@ -70,7 +70,13 @@ public class BrowseViewHolder extends RecyclerView.ViewHolder {
         mTitle = itemView.findViewById(com.android.car.media.R.id.title);
         mSubtitle = itemView.findViewById(com.android.car.media.R.id.subtitle);
         mAlbumArt = itemView.findViewById(com.android.car.media.R.id.thumbnail);
-        mContainer = itemView.findViewById(com.android.car.media.R.id.item_container);
+
+        // Due to RROs, changing the id was not possible => prefer the new but fallback to the old.
+        View ct = itemView.findViewById(com.android.car.media.R.id.media_item_click_target);
+        if (ct == null) {
+            ct = itemView.findViewById(com.android.car.media.R.id.item_container);
+        }
+        mMediaItemClickTarget = ct;
         mRightArrow = itemView.findViewById(com.android.car.media.R.id.right_arrow);
         mTitleDownloadIcon = itemView.findViewById(
                 com.android.car.media.R.id.download_icon_with_title);
@@ -112,8 +118,8 @@ public class BrowseViewHolder extends RecyclerView.ViewHolder {
 
         mAlbumArtBinder.setImage(context, hasMediaItem ? metadata.getArtworkKey() : null);
 
-        if (mContainer != null && data.mCallback != null) {
-            mContainer.setOnClickListener(v -> data.mCallback.onMediaItemClicked(data));
+        if (mMediaItemClickTarget != null && data.mCallback != null) {
+            mMediaItemClickTarget.setOnClickListener(v -> data.mCallback.onMediaItemClicked(data));
         }
         ViewUtils.setVisible(mRightArrow, hasMediaItem && metadata.isBrowsable());
 
@@ -205,8 +211,8 @@ public class BrowseViewHolder extends RecyclerView.ViewHolder {
                     browseViewData.mCallback.onBrowseActionClick(
                         customBrowseAction, browseViewData));
             ImageView imageView = customActionView.findViewById(R.id.browse_item_custom_action);
-            ImageViewBinder<CustomBrowseAction.BrowseActionArtRef> viewBinder =
-                    new ImageViewBinder(mMaxArtSize, imageView);
+            ImageViewBinder<ImageBinder.ImageRef> viewBinder =
+                    new ImageViewBinder<>(mMaxArtSize, imageView);
             viewBinder.setImage(context, customBrowseAction.getArtRef());
             mBrowseActionIcons.add(viewBinder);
             mCustomActionsContainer.addView(customActionView);

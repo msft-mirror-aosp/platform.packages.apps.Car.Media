@@ -62,6 +62,9 @@
     <!-- End margin of playback queue button -->
     <dimen name="playback_queue_button_margin_end">@dimen/car_ui_padding_2</dimen>
 
+    <!-- Height for the content format logo -->
+    <dimen name="playback_content_format_height">38dp</dimen>
+
     <!-- appbar_view.xml -->
     <!-- TODO(b/245995603): Replace this once CarUiRecyclerView is included -->
     <dimen name="browse_fragment_top_padding">@dimen/car_ui_toolbar_row_height</dimen>

@@ -105,7 +105,7 @@ abstract class ViewControllerBase implements InsetsChangedListener {
     }
 
     CharSequence getAppBarDefaultTitle(@Nullable MediaSource mediaSource) {
-        return (mediaSource != null) ? mediaSource.getDisplayName()
+        return (mediaSource != null) ? mediaSource.getDisplayName(mActivity)
                 : mActivity.getResources().getString(R.string.media_app_title);
     }
 
@@ -150,7 +150,6 @@ abstract class ViewControllerBase implements InsetsChangedListener {
         }
 
         mAppBarController.setLogo(icon);
-        mAppBarController.setSearchIcon(searchIcon);
         mAppBarController.setHasEqualizer(mShouldShowSoundSettings);
     }
 

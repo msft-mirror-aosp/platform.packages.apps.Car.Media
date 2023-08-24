@@ -350,7 +350,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
             @Nullable Drawable icon,
             MediaSource mediaSource) {
         boolean showTitleIcon = getResources().getBoolean(R.bool.show_playback_source_id);
-        String title = mediaSource != null ? mediaSource.getDisplayName().toString() : "";
+        String title = mediaSource != null ? mediaSource.getDisplayName(this).toString() : "";
 
         AlertDialogBuilder dialog = new AlertDialogBuilder(this);
         mDialog = dialog.setMessage(message)
@@ -429,7 +429,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         maybeCancelDialog();
         if (newMediaSource != null) {
             if (Log.isLoggable(TAG, Log.INFO)) {
-                Log.i(TAG, "Browsing: " + newMediaSource.getDisplayName());
+                Log.i(TAG, "Browsing: " + newMediaSource.getDisplayName(this));
             }
 
             if (Objects.equals(oldMediaSource, newMediaSource)) {

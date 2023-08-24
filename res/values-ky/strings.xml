@@ -28,5 +28,5 @@
     <string name="fragment_playback_title" msgid="5014481549024607614">"Эмне ойноп жатат?"</string>
     <string name="service_notification_title" msgid="8085444675783592744">"Медиа булагына туташууда"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"Добуштун параметрлери"</string>
-    <string name="menu_item_app_selector_title" msgid="4587248991114338595">"Колдонмолорду которуштуруу"</string>
+    <string name="menu_item_app_selector_title" msgid="4587248991114338595">"Башка колдонмого которулуу"</string>
 </resources>
