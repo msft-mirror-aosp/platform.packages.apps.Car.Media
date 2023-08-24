@@ -24,6 +24,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import com.android.car.apps.common.imaging.ImageBinder;
 import com.android.car.apps.common.imaging.ImageViewBinder;
 import com.android.car.media.MediaAppConfig;
 import com.android.car.media.R;
@@ -87,7 +88,7 @@ public class BrowseActionsHeader extends LinearLayout implements ActionsHeader {
             ImageView icon = actionView.findViewById(R.id.browse_item_custom_action);
             actionView.setOnClickListener(
                     item -> mActionClickListener.onActionClicked(action));
-            ImageViewBinder<CustomBrowseAction.BrowseActionArtRef> imageBinder =
+            ImageViewBinder<ImageBinder.ImageRef> imageBinder =
                     new ImageViewBinder<>(mMaxArtSize, icon);
             imageBinder.setImage(getContext(), action.getArtRef());
             mActionsContainer.addView(actionView);
