@@ -1,8 +1,5 @@
 package com.android.car.media.widgets;
 
-import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
-
-import android.app.Application;
 import android.car.drivingstate.CarUxRestrictions;
 import android.content.Context;
 import android.content.Intent;
@@ -50,6 +47,7 @@ public class AppBarController {
     private final ArrayList<String> mPrevTabs = new ArrayList<>();
     private final ToolbarController mToolbarController;
     private final Context mApplicationContext;
+    private final MediaItemsRepository mMediaItemsRepository;
 
     private final boolean mUseSourceLogoForAppSelector;
     // When enabled, tabs will be shown independent of the navigation button.
@@ -102,9 +100,12 @@ public class AppBarController {
     public static int getMaxTabs(Context context) {
         return context.getResources().getInteger(R.integer.max_tabs);
     }
-
-    public AppBarController(Context context, ToolbarController controller, @XmlRes int menuResId,
-                            boolean useSourceLogoForAppSelector) {
+    public AppBarController(Context context,
+            MediaItemsRepository repository,
+            ToolbarController controller,
+            @XmlRes int menuResId,
+            boolean useSourceLogoForAppSelector) {
+        mMediaItemsRepository = repository;
         mToolbarController = controller;
         mApplicationContext = context.getApplicationContext();
         mMaxTabs = getMaxTabs(context);
@@ -190,8 +191,7 @@ public class AppBarController {
         if (items == null) {
             items = Collections.emptyList();
             //Tabs are hidden when null.
-            MediaItemsRepository.get((Application) mApplicationContext,
-                    MEDIA_SOURCE_MODE_BROWSE).getAnalyticsManager().sendVisibleItemsEvents(
+            mMediaItemsRepository.getAnalyticsManager().sendVisibleItemsEvents(
                             null, AnalyticsEvent.BROWSE_TABS, AnalyticsEvent.HIDE,
                     AnalyticsEvent.NONE, null);
         }
@@ -229,11 +229,9 @@ public class AppBarController {
             List<String> currTabs = mTabs.stream().map(
                     (tab) -> tab.getMediaItemMetadata().getId()).collect(Collectors.toList());
             if (!mPrevTabs.isEmpty()) {
-                MediaItemsRepository.get((Application) mApplicationContext,
-                                MEDIA_SOURCE_MODE_BROWSE)
-                        .getAnalyticsManager().sendVisibleItemsEvents(null,
-                                AnalyticsEvent.BROWSE_TABS, AnalyticsEvent.HIDE,
-                                AnalyticsEvent.NONE, currTabs);
+                mMediaItemsRepository.getAnalyticsManager().sendVisibleItemsEvents(null,
+                        AnalyticsEvent.BROWSE_TABS, AnalyticsEvent.HIDE, AnalyticsEvent.NONE,
+                        currTabs);
             }
             mPrevTabs.clear();
             mToolbarController.setTabs(Collections.emptyList());
@@ -249,11 +247,9 @@ public class AppBarController {
                         .collect(Collectors.toCollection(ArrayList::new));
 
                 if (!itemsSublist.equals(mPrevTabs)) {
-                    MediaItemsRepository.get((Application) mApplicationContext,
-                                    MEDIA_SOURCE_MODE_BROWSE)
-                            .getAnalyticsManager().sendVisibleItemsEvents(null,
-                                    AnalyticsEvent.BROWSE_TABS, AnalyticsEvent.SHOW,
-                                    AnalyticsEvent.NONE, itemsSublist);
+                    mMediaItemsRepository.getAnalyticsManager().sendVisibleItemsEvents(null,
+                            AnalyticsEvent.BROWSE_TABS, AnalyticsEvent.SHOW, AnalyticsEvent.NONE,
+                            itemsSublist);
                 }
                 mPrevTabs.clear();
                 mPrevTabs.addAll(itemsSublist);

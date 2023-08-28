@@ -206,7 +206,7 @@ public class LimitedBrowseAdapter extends DelegatingContentLimitingAdapter<Brows
             return filterPos;
         }
 
-        while (isViewOccludedByKeyboard(vh.itemView) && filterPos >= 0) {
+        while ((vh != null) && isViewOccludedByKeyboard(vh.itemView) && filterPos >= 0) {
             filterPos--;
             vh = mRecyclerView.findViewHolderForLayoutPosition(filterPos);
         }

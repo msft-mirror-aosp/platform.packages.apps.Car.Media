@@ -15,6 +15,8 @@
  */
 package com.android.car.media;
 
+import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK;
+
 import static androidx.media.utils.MediaConstants.BROWSER_ROOT_HINTS_KEY_ROOT_CHILDREN_LIMIT;
 
 import static com.android.car.media.common.MediaConstants.KEY_ROOT_HINT_MAX_QUEUE_ITEMS_WHILE_RESTRICTED;
@@ -23,11 +25,14 @@ import android.app.Application;
 import android.os.Bundle;
 
 import com.android.car.media.common.source.MediaBrowserConnector;
+import com.android.car.media.common.source.MediaModels;
 import com.android.car.media.widgets.AppBarController;
 
 
 /** The application class. */
 public class CarMediaApp extends Application {
+
+    private MediaModels mMediaModelsPlayback = null;
 
     @Override
     public void onCreate() {
@@ -38,5 +43,13 @@ public class CarMediaApp extends Application {
         mediaSessionRootHints.putInt(BROWSER_ROOT_HINTS_KEY_ROOT_CHILDREN_LIMIT, maxTabs);
         mediaSessionRootHints.putInt(KEY_ROOT_HINT_MAX_QUEUE_ITEMS_WHILE_RESTRICTED, maxQueue);
         MediaBrowserConnector.addRootHints(mediaSessionRootHints);
+    }
+
+    /** Returns the {@link MediaModels} for the MEDIA_SOURCE_MODE_PLAYBACK. */
+    public MediaModels getMediaModelsForPlaybackMode() {
+        if (mMediaModelsPlayback == null) {
+            mMediaModelsPlayback = new MediaModels(this, MEDIA_SOURCE_MODE_PLAYBACK);
+        }
+        return mMediaModelsPlayback;
     }
 }

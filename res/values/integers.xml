@@ -71,4 +71,7 @@
     Items beyond this limit will be in the overflow. -->
     <integer name="max_visible_actions_header">2</integer>
 
+    <!-- The size of the bitmap used to render the media source's icon for the TaskDescription. -->
+    <integer name="task_description_icon_pixels">256</integer>
+
 </resources>

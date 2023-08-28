@@ -38,13 +38,13 @@ import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.android.car.apps.common.util.CarPackageManagerUtils;
 import com.android.car.media.common.browse.MediaBrowserViewModelImpl;
 import com.android.car.media.common.browse.MediaItemsRepository;
 import com.android.car.media.common.source.MediaBrowserConnector;
 import com.android.car.media.common.source.MediaSource;
-import com.android.car.media.common.source.MediaSourceViewModel;
 import com.android.car.media.extensions.analytics.event.AnalyticsEvent;
 import com.android.car.media.extensions.analytics.event.ViewChangeEvent;
 import com.android.car.media.widgets.AppBarController;
@@ -63,18 +63,20 @@ abstract class ViewControllerBase implements InsetsChangedListener {
     private final boolean mShouldShowSoundSettings;
     private final CarPackageManager mCarPackageManager;
 
+    protected final MediaActivity.ViewModel mViewModel;
     final FragmentActivity mActivity;
     final int mFadeDuration;
     final View mContent;
     final AppBarController mAppBarController;
-    final MediaSourceViewModel mMediaSourceVM;
     final MediaItemsRepository mMediaItemsRepository;
     private PendingIntent mCurrentSourceBrowserSettings;
     private Intent mCurrentSourcePreferences;
 
-    ViewControllerBase(FragmentActivity activity, MediaItemsRepository mediaItemsRepo,
-            CarPackageManager carPackageManager, ViewGroup container, @LayoutRes int resource) {
+    ViewControllerBase(FragmentActivity activity, CarPackageManager carPackageManager,
+            ViewGroup container, @LayoutRes int resource) {
         mActivity = activity;
+        mViewModel = new ViewModelProvider(activity).get(MediaActivity.ViewModel.class);
+        mMediaItemsRepository = mViewModel.getMediaItemsRepository(MEDIA_SOURCE_MODE_BROWSE);
         Resources res = mActivity.getResources();
         mFadeDuration = res.getInteger(R.integer.new_album_art_fade_in_duration);
         mShouldShowSoundSettings = res.getBoolean(R.bool.show_sound_settings);
@@ -87,18 +89,14 @@ abstract class ViewControllerBase implements InsetsChangedListener {
         updater.addListener(this);
         ToolbarController toolbar = CarUi.installBaseLayoutAround(mContent, updater, true);
 
-        mAppBarController = new AppBarController(activity, toolbar, R.xml.menuitems_browse,
+        mAppBarController = new AppBarController(activity, mMediaItemsRepository, toolbar,
+                R.xml.menuitems_browse,
                 res.getBoolean(R.bool.use_media_source_logo_for_app_selector));
         mAppBarController.checkBrowseMenus();
         mAppBarController.setSearchSupported(false);
         mAppBarController.setHasEqualizer(false);
 
         mCarPackageManager = carPackageManager;
-
-        mMediaSourceVM = MediaSourceViewModel.get(activity.getApplication(),
-                MEDIA_SOURCE_MODE_BROWSE);
-
-        mMediaItemsRepository = mediaItemsRepo;
 
         mMediaItemsRepository.getBrowsingState().observe(activity,
                 this::onMediaBrowsingStateChanged);
