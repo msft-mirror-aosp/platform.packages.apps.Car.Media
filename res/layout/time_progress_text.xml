@@ -47,11 +47,20 @@
 
     <TextView
         android:id="@+id/max_time"
+        android:tag="view_separated_from_logo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         style="@style/MetadataPlaybackSubtitleStyle"
-        android:layout_marginEnd="@dimen/metadata_subtitles_margin"
     />
+
+    <TextView
+        android:id="@+id/logo_separator"
+        style="@style/MetadataPlaybackSeparatorStyle"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/minimized_control_bar_subtitle_separator_text"
+        android:singleLine="true"/>
 
     <com.android.car.media.common.ContentFormatView
         android:id="@+id/content_format"

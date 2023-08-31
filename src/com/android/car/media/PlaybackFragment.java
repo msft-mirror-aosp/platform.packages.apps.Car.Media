@@ -312,6 +312,9 @@ public class PlaybackFragment extends Fragment {
         SeekBar seekbar = mShowLinearProgressBar ? mSeekBar : null;
         ContentFormatView contentFormat = view.findViewById(R.id.content_format);
 
+        View logoSeparatorView = view.findViewById(R.id.logo_separator);
+        View viewSeparatedFromLogo = view.findViewWithTag("view_separated_from_logo");
+
         Size maxArtSize = MediaAppConfig.getMediaItemsBitmapMaxSize(view.getContext());
         mMetadataController = new MetadataController(getViewLifecycleOwner(), mPlaybackViewModel,
                 mMediaItemsRepository, title, artist, albumTitle, outerSeparator, curTime,
@@ -320,6 +323,8 @@ public class PlaybackFragment extends Fragment {
                     MediaSource source = mPlaybackViewModel.getMediaSource().getValue();
                     mListener.goToMediaItem(source, mediaItem);
                 });
+        mMetadataController.setLogoSeparatorView(logoSeparatorView);
+        mMetadataController.setViewSeparatedFromLogo(viewSeparatedFromLogo);
     }
 
     /**
