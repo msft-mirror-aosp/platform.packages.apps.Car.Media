@@ -105,6 +105,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="imageDownloadTask"/>
       <item type="id" name="inner_separator"/>
       <item type="id" name="item_container"/>
+      <item type="id" name="logo_separator"/>
       <item type="id" name="max_time"/>
       <item type="id" name="media_activity_root"/>
       <item type="id" name="media_item_click_target"/>
@@ -205,6 +206,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="style" name="MediaTintableIconContainerStyle"/>
       <item type="style" name="MetadataContainerStyle"/>
       <item type="style" name="MetadataPlaybackContentLogo"/>
+      <item type="style" name="MetadataPlaybackSeparatorStyle"/>
       <item type="style" name="MetadataPlaybackSubtitleClickableStyle"/>
       <item type="style" name="MetadataPlaybackSubtitleStyle"/>
       <item type="style" name="MetadataPlaybackTitleStyle"/>
