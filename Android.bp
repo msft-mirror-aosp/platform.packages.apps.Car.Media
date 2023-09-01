@@ -50,12 +50,6 @@ android_library {
         "car-ui-lib-prebuilt",
         "car-uxr-client-lib-prebuilt",
     ],
-
-    product_variables: {
-        pdk: {
-            enabled: false,
-        },
-    },
 }
 
 android_app {
@@ -85,13 +79,6 @@ android_app {
     static_libs: [
         "car-media-app-source"
     ],
-
-    product_variables: {
-        pdk: {
-            enabled: false,
-        },
-    },
-
 }
 
 //############################################################
