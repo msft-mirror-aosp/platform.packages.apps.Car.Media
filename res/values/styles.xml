@@ -37,14 +37,18 @@
     <style name="MetadataPlaybackSubtitleClickableStyle" parent="MetadataPlaybackSubtitleStyle">
     </style>
 
+    <style name="MetadataPlaybackSeparatorStyle" parent="MetadataPlaybackSubtitleStyle">
+        <item name="android:layout_marginHorizontal">4dp</item>
+    </style>
+
     <style name="MetadataPlaybackContentLogo">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">@dimen/playback_content_format_height</item>
+        <item name="android:layout_gravity">center_vertical</item>
         <item name="android:adjustViewBounds">true</item>
         <item name="android:scaleType">fitStart</item>
-        <item name="logoTint">@color/primary_text_color</item>
+        <item name="logoTint">@color/secondary_text_color</item>
         <item name="logoSize">large</item>
-        <item name="backgroundTone">dark</item>
     </style>
 
     <style name="MetadataContainerStyle">
