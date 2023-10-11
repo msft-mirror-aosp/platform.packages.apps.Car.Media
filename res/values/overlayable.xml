@@ -28,6 +28,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="bool" name="queue_fading_edge_length_enabled"/>
       <item type="bool" name="set_browse_list_focus_area_highlight_above_minimized_control_bar"/>
       <item type="bool" name="show_icon_for_now_playing_queue_list_item"/>
+      <item type="bool" name="show_menu_item_selector"/>
       <item type="bool" name="show_mini_playback_controls"/>
       <item type="bool" name="show_persistent_tabs"/>
       <item type="bool" name="show_sound_settings"/>
