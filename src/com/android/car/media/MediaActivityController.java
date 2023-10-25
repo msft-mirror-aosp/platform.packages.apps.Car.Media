@@ -38,11 +38,13 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.OnScrollListener;
 
 import com.android.car.apps.common.util.FutureData;
 import com.android.car.apps.common.util.ViewUtils.ViewAnimEndListener;
 import com.android.car.media.BrowseStack.BrowseEntryType;
 import com.android.car.media.MediaActivity.Mode;
+import com.android.car.media.browse.LimitedBrowseAdapter;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.browse.MediaBrowserViewModelImpl;
 import com.android.car.media.common.browse.MediaItemsRepository;
@@ -138,6 +140,29 @@ public class MediaActivityController extends ViewControllerBase {
         /** Switches to the given source. */
         void changeSource(MediaSource source);
     }
+
+    private static OnScrollListener createWideKeyboardSearchResultListener(
+            RecyclerView toolbarSearchResultsView, MediaItemsRepository mediaItemsRepository) {
+        return new OnScrollListener() {
+            List<String> mPrevVisible = new ArrayList<>();
+
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                sendScrollEvent(dx != 0 || dy != 0, false);
+            }
+
+            private void sendScrollEvent(boolean fromScroll, boolean canKeyboardCover) {
+                LimitedBrowseAdapter limitedBrowseAdapter =
+                        (LimitedBrowseAdapter) toolbarSearchResultsView.getAdapter();
+                int currFirst = limitedBrowseAdapter.findFirstVisibleItemIndex();
+                int currLast = limitedBrowseAdapter.findLastVisibleItemIndex(canKeyboardCover);
+                mPrevVisible = AnalyticsHelper.sendScrollEvent(mediaItemsRepository, null,
+                        mPrevVisible, limitedBrowseAdapter.getItems(), currFirst, currLast,
+                        fromScroll);
+            }
+        };
+    }
+
 
     /**
      * Moves the user one level up in the browse/search tree. Returns whether that was possible.
@@ -270,6 +295,8 @@ public class MediaActivityController extends ViewControllerBase {
         if (mAppBarController.getSearchCapabilities().canShowSearchResultsView()) {
             // TODO(b/180441965) eliminate the need to create a different view
             mToolbarSearchResultsView = new RecyclerView(activity);
+            mToolbarSearchResultsView.addOnScrollListener(createWideKeyboardSearchResultListener(
+                    mToolbarSearchResultsView, mMediaItemsRepository));
 
             ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -631,6 +658,7 @@ public class MediaActivityController extends ViewControllerBase {
 
         updateAppBar();
         mAppBarController.setSearchQuery(mViewModel.getSearchQuery());
+
     }
 
     @Override

@@ -46,6 +46,9 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsAnimationCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
@@ -86,11 +89,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -132,6 +133,8 @@ public class BrowseViewController {
     private Map<String, CustomBrowseAction> mGlobalActions = new HashMap<>();
     private ActionsHeader mActionBar;
     private boolean mIsShown;
+    List<String> mPrevVisible = new ArrayList<>();
+
 
 
     private final BrowseAdapter.Observer mBrowseAdapterObserver = new BrowseAdapter.Observer() {
@@ -172,7 +175,7 @@ public class BrowseViewController {
         mIsShown = isShown;
         //Send analytics
         int firsPos = mLimitedBrowseAdapter.findFirstVisibleItemIndex();
-        int lastPov = mLimitedBrowseAdapter.findLastVisibleItemIndex();
+        int lastPov = mLimitedBrowseAdapter.findLastVisibleItemIndex(false);
         if (mMediaItems.getValue() != null && mMediaItems.getValue().getData() != null
                 && firsPos != NO_POSITION && lastPov != NO_POSITION) {
             List<String> itemsSublist = mMediaItems.getValue().getData()
@@ -420,21 +423,12 @@ public class BrowseViewController {
         mBrowseList.setHasFixedSize(true);
         mBrowseList.setAdapter(mLimitedBrowseAdapter);
         mBrowseList.addOnScrollListener(new CarUiRecyclerView.OnScrollListener() {
-            int mPrevFirstPos = -2;
-            int mPrevLastPost = -2;
-            //TODO(b/303253453): hide event when search is closed or cleared.
             @Override
             public void onScrolled(CarUiRecyclerView recyclerView, int dx, int dy) {
                 //dx and dy are 0 when items in RV change or layout is requested. We should
                 // use this to trigger querying what is visible.
-                if (mPrevFirstPos == -2) {
-                    mPrevFirstPos =  mLimitedBrowseAdapter.findFirstVisibleItemIndex();
-                }
-
-                if (mPrevLastPost == -2) {
-                    mPrevLastPost =  mLimitedBrowseAdapter.findLastVisibleItemIndex();
-                }
                 if (mIsShown) {
+                    //TODO(b/308462758) Trigger a sendScrollEvent when search query is cleared.
                     sendScrollEvent(dx != 0 || dy != 0);
                 }
             }
@@ -447,62 +441,25 @@ public class BrowseViewController {
                     }
                 }
             }
-
-            private void sendScrollEvent(boolean fromScroll) {
-                int currFirst = mLimitedBrowseAdapter.findFirstVisibleItemIndex();
-                int currLast = mLimitedBrowseAdapter.findLastVisibleItemIndex();
-
-                //If for any reason there are no visible items we have nothing to send.
-                if (currFirst == NO_POSITION
-                        || currLast == NO_POSITION
-                        || mMediaItems.getValue().getData() == null) {
-                    return;
-                }
-
-                List<String> currItemsSublist = mMediaItems.getValue().getData()
-                        .subList(currFirst, currLast + 1)
-                        .stream()
-                        .map(MediaItemMetadata::getId)
-                        .collect(Collectors.toCollection(ArrayList::new));
-
-                if (fromScroll) {
-                    Set<String> prev = mMediaItems.getValue().getData()
-                            .subList(mPrevFirstPos, mPrevLastPost + 1)
-                            .stream()
-                            .map(MediaItemMetadata::getId).collect(Collectors.toSet());
-
-                    Set<String> delta = new HashSet<>(prev);
-                    currItemsSublist.forEach(delta::remove);
-                    prev.forEach(currItemsSublist::remove);
-
-                    if (!delta.isEmpty()) {
-                        mMediaRepo.getAnalyticsManager().sendVisibleItemsEvents(
-                                mParentItem != null ? mParentItem.getId() : null,
-                                AnalyticsEvent.BROWSE_LIST,
-                                AnalyticsEvent.HIDE, AnalyticsEvent.SCROLL,
-                                new ArrayList<>(delta));
-                    }
-                    if (!currItemsSublist.isEmpty()) {
-                        mMediaRepo.getAnalyticsManager().sendVisibleItemsEvents(
-                                mParentItem != null ? mParentItem.getId() : null,
-                                AnalyticsEvent.BROWSE_LIST,
-                                AnalyticsEvent.SHOW,  AnalyticsEvent.SCROLL,
-                                currItemsSublist);
-                    }
-                } else {
-                    mMediaRepo.getAnalyticsManager().sendVisibleItemsEvents(
-                            mParentItem != null ? mParentItem.getId() : null,
-                            AnalyticsEvent.BROWSE_LIST,
-                            AnalyticsEvent.SHOW, AnalyticsEvent.NONE,
-                            currItemsSublist);
-                }
-
-                mPrevFirstPos =
-                        mLimitedBrowseAdapter.findFirstVisibleItemIndex();
-                mPrevLastPost =
-                        mLimitedBrowseAdapter.findLastVisibleItemIndex();
-            }
         });
+
+        ViewCompat.setWindowInsetsAnimationCallback(mBrowseList.getView().getRootView(),
+                new WindowInsetsAnimationCompat.Callback(
+                        WindowInsetsAnimationCompat.Callback.DISPATCH_MODE_STOP) {
+                    @NonNull
+                    @Override
+                    public WindowInsetsCompat onProgress(
+                            @NonNull WindowInsetsCompat windowInsetsCompat,
+                            @NonNull List<WindowInsetsAnimationCompat> list) {
+                        return windowInsetsCompat;
+                    }
+
+                    @Override
+                    public void onEnd(@NonNull WindowInsetsAnimationCompat animation) {
+                        super.onEnd(animation);
+                        if (mIsShown) sendScrollEvent(false);
+                    }
+                });
 
         mUxrContentLimiter = new LifeCycleObserverUxrContentLimiter(
                 new UxrContentLimiterImpl(activity, R.xml.uxr_config));
@@ -520,6 +477,15 @@ public class BrowseViewController {
         browseAdapter.setGlobalCustomActions(mGlobalActions);
         mMediaItems.observe(activity, mItemsObserver);
 
+    }
+
+    private void sendScrollEvent(boolean fromScroll) {
+        if (mMediaItems.getValue() != null && mMediaItems.getValue().getData() != null) {
+            int currFirst = mLimitedBrowseAdapter.findFirstVisibleItemIndex();
+            int currLast = mLimitedBrowseAdapter.findLastVisibleItemIndex(true);
+            mPrevVisible = AnalyticsHelper.sendScrollEvent(mMediaRepo, mParentItem, mPrevVisible,
+                    mMediaItems.getValue().getData(), currFirst, currLast, fromScroll);
+        }
     }
 
 
@@ -859,7 +825,7 @@ public class BrowseViewController {
         stopLoadingIndicator();
 
         List<MediaItemMetadata> items = MediaBrowserViewModelImpl.filterItems(
-            /*root*/ !mDisplayMediaItems, futureData.getData());
+                /*root*/ !mDisplayMediaItems, futureData.getData());
 
         boolean sourceHasPlayable = mViewModel.hasPlayableItem();
         if (items != null && !sourceHasPlayable) {
@@ -871,7 +837,7 @@ public class BrowseViewController {
         boolean hasPlayCommand = false;
         if (mPlaybackViewModelBrowseSource.getPlaybackStateWrapper().getValue() != null) {
             hasPlayCommand = (mPlaybackViewModelBrowseSource.getPlaybackStateWrapper().getValue()
-                .getSupportedActions() & PlaybackStateCompat.ACTION_PLAY) != 0;
+                    .getSupportedActions() & PlaybackStateCompat.ACTION_PLAY) != 0;
         }
 
         if (mDisplayMediaItems) {

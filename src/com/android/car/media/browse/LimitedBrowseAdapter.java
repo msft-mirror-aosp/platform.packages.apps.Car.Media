@@ -16,6 +16,9 @@
 
 package com.android.car.media.browse;
 
+import static com.android.car.apps.common.util.ViewUtils.isViewOccludedByKeyboard;
+import static com.android.car.ui.recyclerview.RangeFilter.INVALID_INDEX;
+
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -99,8 +102,13 @@ public class LimitedBrowseAdapter extends DelegatingContentLimitingAdapter<Brows
      * @param mediaItemMetadata
      */
     public void updateItemMetaData(MediaItemMetadata mediaItemMetadata,
-                                   BrowseAdapter.MediaItemUpdateType updateType) {
+            BrowseAdapter.MediaItemUpdateType updateType) {
         mBrowseAdapter.updateItemMetaData(mediaItemMetadata, updateType);
+    }
+
+    /** Returns list of items in the adapter */
+    public  List<MediaItemMetadata> getItems() {
+        return mBrowseAdapter.getItems();
     }
 
     private int validateAnchor() {
@@ -158,23 +166,18 @@ public class LimitedBrowseAdapter extends DelegatingContentLimitingAdapter<Brows
     }
 
     /**
-     * Implements getFirstVisibleItemPosition with range filter
+     * Implements findFirstCompletelyVisibleItemPosition with range filter
      * <p>
      *     Converts position in RV to index in adapter data.
      * </p>
      */
     public int findFirstVisibleItemIndex() {
-        int rvPos = getFirstVisibleItemPosition();
-
+        int rvPos = mRecyclerView.findFirstCompletelyVisibleItemPosition();
         if (rvPos == RecyclerView.NO_POSITION) return RecyclerView.NO_POSITION;
-
-        int indexInList = positionToIndex(rvPos);
-        //-1 if a message is shown, so increment past message
-        if (indexInList == RecyclerView.NO_POSITION) {
-            rvPos++;
-            indexInList = positionToIndex(rvPos);
-        }
-        return indexInList;
+        //Handle filter message
+        int filterPos = positionToIndex(rvPos);
+        if (filterPos == INVALID_INDEX) filterPos = positionToIndex(++rvPos);
+        return filterPos;
     }
 
     /**
@@ -183,17 +186,31 @@ public class LimitedBrowseAdapter extends DelegatingContentLimitingAdapter<Brows
      *     Converts position in RV to index in adapter data.
      * </p>
      */
-    public int findLastVisibleItemIndex() {
-        int rvPos = getLastVisibleItemPosition();
-
-        if (rvPos == RecyclerView.NO_POSITION) return RecyclerView.NO_POSITION;
-
-        int indexInList = positionToIndex(rvPos);
-        //-1 if a message is shown, so decrement past message
-        if (indexInList == RecyclerView.NO_POSITION) {
-            rvPos--;
-            indexInList = positionToIndex(rvPos);
+    public int findLastVisibleItemIndex(boolean canKeyboardCover) {
+        int rvPos = mRecyclerView.findLastCompletelyVisibleItemPosition();
+        if (rvPos == RecyclerView.NO_POSITION) {
+            return RecyclerView.NO_POSITION;
         }
-        return indexInList;
+
+        int filterPos = positionToIndex(rvPos);
+        //Handle filter message
+        if (filterPos == INVALID_INDEX) filterPos = positionToIndex(--rvPos);
+
+        if (!canKeyboardCover) {
+            return filterPos;
+        }
+
+        //Handle Keyboard
+        RecyclerView.ViewHolder vh = mRecyclerView.findViewHolderForLayoutPosition(filterPos);
+        if (vh == null) {
+            return filterPos;
+        }
+
+        while (isViewOccludedByKeyboard(vh.itemView) && filterPos >= 0) {
+            filterPos--;
+            vh = mRecyclerView.findViewHolderForLayoutPosition(filterPos);
+        }
+
+        return filterPos;
     }
 }
