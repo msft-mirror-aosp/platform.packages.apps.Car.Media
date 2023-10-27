@@ -45,6 +45,8 @@ import com.android.car.media.common.browse.MediaItemsRepository;
 import com.android.car.media.common.source.MediaBrowserConnector;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.common.source.MediaSourceViewModel;
+import com.android.car.media.extensions.analytics.event.AnalyticsEvent;
+import com.android.car.media.extensions.analytics.event.ViewChangeEvent;
 import com.android.car.media.widgets.AppBarController;
 import com.android.car.ui.baselayout.Insets;
 import com.android.car.ui.baselayout.InsetsChangedListener;
@@ -66,7 +68,7 @@ abstract class ViewControllerBase implements InsetsChangedListener {
     final View mContent;
     final AppBarController mAppBarController;
     final MediaSourceViewModel mMediaSourceVM;
-
+    final MediaItemsRepository mMediaItemsRepository;
     private PendingIntent mCurrentSourceBrowserSettings;
     private Intent mCurrentSourcePreferences;
 
@@ -96,7 +98,11 @@ abstract class ViewControllerBase implements InsetsChangedListener {
         mMediaSourceVM = MediaSourceViewModel.get(activity.getApplication(),
                 MEDIA_SOURCE_MODE_BROWSE);
 
-        mediaItemsRepo.getBrowsingState().observe(activity, this::onMediaBrowsingStateChanged);
+        mMediaItemsRepository = mediaItemsRepo;
+
+        mMediaItemsRepository.getBrowsingState().observe(activity,
+                this::onMediaBrowsingStateChanged);
+
     }
 
     @Override
@@ -115,6 +121,8 @@ abstract class ViewControllerBase implements InsetsChangedListener {
             if (Log.isLoggable(TAG, Log.DEBUG)) {
                 Log.d(TAG, "onSettingsSelection");
             }
+            mMediaItemsRepository.getAnalyticsManager().sendViewChangedEvent(
+                    AnalyticsEvent.SETTINGS_VIEW, ViewChangeEvent.SHOW);
             try {
                 if (mCurrentSourceBrowserSettings != null) {
                     mCurrentSourceBrowserSettings.send();

@@ -69,6 +69,8 @@ import com.android.car.media.common.browse.MediaItemsRepository;
 import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.common.source.MediaTrampolineHelper;
+import com.android.car.media.extensions.analytics.event.AnalyticsEvent;
+import com.android.car.media.extensions.analytics.event.ViewChangeEvent;
 import com.android.car.ui.AlertDialogBuilder;
 import com.android.car.ui.utils.CarUxRestrictionsUtil;
 
@@ -215,6 +217,9 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
     protected void onResume() {
         super.onResume();
 
+        getMediaItemsRepository().getAnalyticsManager().sendViewChangedEvent(
+                AnalyticsEvent.MEDIA_HOST, AnalyticsEvent.SHOW);
+
         Intent intent = getIntent();
         if (Log.isLoggable(TAG, Log.DEBUG)) {
             Log.d(TAG, "onResume intent: " + intent);
@@ -253,6 +258,14 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         if (mMode == Mode.FATAL_ERROR && mErrorController != null) {
             mErrorController.onResume();
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        getMediaItemsRepository().getAnalyticsManager().sendViewChangedEvent(
+                ViewChangeEvent.MEDIA_HOST, ViewChangeEvent.HIDE);
+        getMediaItemsRepository().getAnalyticsManager().sendQueue();
     }
 
     @Override
@@ -448,6 +461,10 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         maybeCancelToast();
         maybeCancelDialog();
         if (newMediaSource != null) {
+            //Tell app that host in visible, this is the first place where there is valid manager
+            getMediaItemsRepository().getAnalyticsManager().sendViewChangedEvent(
+                    AnalyticsEvent.MEDIA_HOST, AnalyticsEvent.SHOW);
+
             if (Log.isLoggable(TAG, Log.INFO)) {
                 Log.i(TAG, "Browsing: " + newMediaSource.getDisplayName(this));
             }
@@ -495,11 +512,29 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         mPlaybackFragment.closeOverflowMenu();
         updateMiniPlaybackControls(hideViewAnimated);
 
+        //Send view exit analytics event, this is needed to calculate time on each screen.
+        switch (oldMode) {
+            case BROWSING:
+                getMediaItemsRepository().getAnalyticsManager().sendViewChangedEvent(
+                        AnalyticsEvent.BROWSE_LIST, AnalyticsEvent.HIDE);
+                break;
+            case PLAYBACK:
+                getMediaItemsRepository().getAnalyticsManager().sendViewChangedEvent(
+                        AnalyticsEvent.PLAYBACK, AnalyticsEvent.HIDE);
+                break;
+            case FATAL_ERROR:
+                getMediaItemsRepository().getAnalyticsManager().sendViewChangedEvent(
+                        AnalyticsEvent.ERROR_MESSAGE, AnalyticsEvent.HIDE);
+                break;
+        }
+
         switch (mMode) {
             case FATAL_ERROR:
                 ViewUtils.showViewAnimated(mErrorContainer, mFadeDuration);
                 ViewUtils.hideViewAnimated(mPlaybackContainer, fadeOutDuration);
                 ViewUtils.hideViewAnimated(mBrowseContainer, fadeOutDuration);
+                getMediaItemsRepository().getAnalyticsManager().sendViewChangedEvent(
+                        AnalyticsEvent.ERROR_MESSAGE, AnalyticsEvent.SHOW);
                 break;
             case PLAYBACK:
                 mPlaybackContainer.setX(0);
@@ -508,6 +543,8 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
                 ViewUtils.hideViewAnimated(mErrorContainer, fadeOutDuration);
                 ViewUtils.showViewAnimated(mPlaybackContainer, mFadeDuration);
                 ViewUtils.hideViewAnimated(mBrowseContainer, fadeOutDuration);
+                getMediaItemsRepository().getAnalyticsManager().sendViewChangedEvent(
+                        AnalyticsEvent.PLAYBACK, AnalyticsEvent.SHOW);
                 break;
             case BROWSING:
                 if (oldMode == Mode.PLAYBACK) {
@@ -519,6 +556,8 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
                     ViewUtils.hideViewAnimated(mPlaybackContainer, fadeOutDuration);
                     ViewUtils.showViewAnimated(mBrowseContainer, mFadeDuration);
                 }
+                getMediaItemsRepository().getAnalyticsManager().sendViewChangedEvent(
+                        AnalyticsEvent.BROWSE_LIST, AnalyticsEvent.SHOW);
                 break;
         }
     }
