@@ -23,7 +23,6 @@ import static androidx.recyclerview.widget.RecyclerView.NO_POSITION;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Rect;
-import android.os.Bundle;
 import android.util.Log;
 import android.util.Size;
 import android.view.LayoutInflater;
@@ -32,14 +31,17 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.car.apps.common.imaging.ImageViewBinder;
 import com.android.car.apps.common.util.ViewUtils;
+import com.android.car.media.MediaActivityController.Callbacks;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.browse.MediaItemsRepository;
 import com.android.car.media.common.playback.PlaybackViewModel;
@@ -64,10 +66,11 @@ import java.util.stream.Collectors;
  * PlaybackViewModel} and updates its information depending on the currently playing media source
  * through the {@link android.media.session.MediaSession} API.
  */
-public class PlaybackQueueFragment extends Fragment {
+public class PlaybackQueueController {
 
-    private static final String TAG = "PlaybackQueueFragment";
+    private static final String TAG = "PlaybackQueueController";
 
+    private Callbacks mCallbacks;
     private LifeCycleObserverUxrContentLimiter mUxrContentLimiter;
     private PlaybackViewModel mPlaybackViewModel;
     private MediaItemsRepository mMediaItemsRepository;
@@ -492,51 +495,44 @@ public class PlaybackQueueFragment extends Fragment {
         }
     }
 
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, final ViewGroup container,
-            Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_playback_queue, container, false);
-    }
+    public PlaybackQueueController(
+            ViewGroup container,
+            @LayoutRes int resource,
+            Callbacks callbacks) {
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        mPlaybackViewModel = PlaybackViewModel.get(getActivity().getApplication(),
+        FragmentActivity activity = callbacks.getActivity();
+        mCallbacks = callbacks;
+
+        mPlaybackViewModel = PlaybackViewModel.get(activity.getApplication(),
                 MEDIA_SOURCE_MODE_PLAYBACK);
         mMediaItemsRepository = MediaItemsRepository.get(getActivity().getApplication(),
                 MEDIA_SOURCE_MODE_PLAYBACK);
 
-        Resources res = getResources();
+        LayoutInflater inflater = LayoutInflater.from(container.getContext());
+        View view = inflater.inflate(resource, container, false);
+        container.addView(view);
+
+        Resources res = view.getContext().getResources();
         mQueue = view.findViewById(R.id.queue_list);
 
         mShowTimeForActiveQueueItem = res.getBoolean(
                 R.bool.show_time_for_now_playing_queue_list_item);
         mShowIconForActiveQueueItem = res.getBoolean(
                 R.bool.show_icon_for_now_playing_queue_list_item);
-        mShowThumbnailForQueueItem = getContext().getResources().getBoolean(
+        mShowThumbnailForQueueItem = view.getContext().getResources().getBoolean(
                 R.bool.show_thumbnail_for_queue_list_item);
-        mShowSubtitleForQueueItem = getContext().getResources().getBoolean(
+        mShowSubtitleForQueueItem = view.getContext().getResources().getBoolean(
                 R.bool.show_subtitle_for_queue_list_item);
 
-        mPlaybackViewModel.getPlaybackController().observe(getViewLifecycleOwner(),
+        mPlaybackViewModel.getPlaybackController().observe(activity,
                 controller -> mController = controller);
         initQueue();
 
         mUxrContentLimiter = new LifeCycleObserverUxrContentLimiter(
-                new UxrContentLimiterImpl(getContext(), R.xml.uxr_config));
+                new UxrContentLimiterImpl(view.getContext(), R.xml.uxr_config));
         mUxrContentLimiter.setAdapter(mQueueAdapter);
-        getLifecycle().addObserver(mUxrContentLimiter);
+        activity.getLifecycle().addObserver(mUxrContentLimiter);
     }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-    }
-
 
     public void setCallback(PlaybackQueueCallback callback) {
         mPlaybackQueueCallback = callback;
@@ -544,7 +540,7 @@ public class PlaybackQueueFragment extends Fragment {
 
     private void initQueue() {
 
-        int decorationHeight = getResources().getDimensionPixelSize(
+        int decorationHeight = getActivity().getResources().getDimensionPixelSize(
                 R.dimen.playback_queue_list_padding_top);
         // TODO (b/206038962): addItemDecoration is not supported anymore. Find another way to
         // support this.
@@ -553,10 +549,10 @@ public class PlaybackQueueFragment extends Fragment {
         mQueue.addItemDecoration(new QueueTopItemDecoration(decorationHeight, decorationPosition));
 
         mQueue.setVerticalFadingEdgeEnabled(
-                getResources().getBoolean(R.bool.queue_fading_edge_length_enabled));
+                getActivity().getResources().getBoolean(R.bool.queue_fading_edge_length_enabled));
         mQueueAdapter = new QueueItemsAdapter();
 
-        mPlaybackViewModel.getPlaybackStateWrapper().observe(getViewLifecycleOwner(),
+        mPlaybackViewModel.getPlaybackStateWrapper().observe(getActivity(),
                 state -> {
                     Long itemId = (state != null) ? state.getActiveQueueItemId() : null;
                     if (!Objects.equals(mActiveQueueItemId, itemId)) {
@@ -634,10 +630,10 @@ public class PlaybackQueueFragment extends Fragment {
         mItemAnimator = new DefaultItemAnimator();
         mItemAnimator.setSupportsChangeAnimations(false);
         mQueue.setItemAnimator(mItemAnimator);
-        mPlaybackViewModel.getQueue().observe(this, this::setQueue);
+        mPlaybackViewModel.getQueue().observe(getActivity(), this::setQueue);
 
         mPlaybackViewModel.getProgress().observe(
-                getViewLifecycleOwner(),
+                getActivity(),
                 playbackProgress -> {
                     mQueueAdapter.setCurrentTime(playbackProgress.getCurrentTimeText().toString());
                     mQueueAdapter.setMaxTime(playbackProgress.getMaxTimeText().toString());
@@ -656,5 +652,9 @@ public class PlaybackQueueFragment extends Fragment {
         if (mPlaybackQueueCallback != null) {
             mPlaybackQueueCallback.onQueueItemClicked(item);
         }
+    }
+
+    private FragmentActivity getActivity() {
+        return mCallbacks.getActivity();
     }
 }

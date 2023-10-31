@@ -92,7 +92,6 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
     private PlaybackViewModel.PlaybackController mBrowsePlaybackController;
 
     /** Layout views */
-    private PlaybackFragment mPlaybackFragment;
     private MediaActivityController mMediaActivityController;
     private MinimizedPlaybackControlBar mMiniPlaybackControls;
     private ViewGroup mBrowseContainer;
@@ -165,7 +164,6 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         localViewModel.getBrowsedMediaSource().observe(this, this::onMediaSourceChanged);
 
         mMediaTrampoline = new MediaTrampolineHelper(this);
-        mPlaybackFragment = new PlaybackFragment();
 
         Size maxArtSize = MediaAppConfig.getMediaItemsBitmapMaxSize(this);
         mMiniPlaybackControls = findViewById(R.id.minimized_playback_controls);
@@ -176,9 +174,6 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         mBrowseContainer = findViewById(R.id.fragment_container);
         mErrorContainer = findViewById(R.id.error_container);
         mPlaybackContainer = findViewById(R.id.playback_container);
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.playback_container, mPlaybackFragment)
-                .commit();
 
         playbackViewModelBrowse.getPlaybackController().observe(this,
                 playbackController -> {
@@ -197,9 +192,8 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         mCarPackageManager = (CarPackageManager) mCar.getCarManager(Car.PACKAGE_SERVICE);
 
         mMediaActivityController = new MediaActivityController(this, getMediaItemsRepository(),
-                mCarPackageManager, mBrowseContainer);
+                mCarPackageManager, mBrowseContainer, mPlaybackContainer);
 
-        mPlaybackFragment.setListener(mMediaActivityController.getPlaybackFragmentListener());
         mPlaybackContainer.setOnTouchListener(new ClosePlaybackDetector(this));
     }
 
@@ -509,7 +503,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         getInnerViewModel().saveMode(mode);
         mMode = mode;
 
-        mPlaybackFragment.closeOverflowMenu();
+        mMediaActivityController.getNowPlayingController().closeOverflowMenu();
         updateMiniPlaybackControls(hideViewAnimated);
 
         //Send view exit analytics event, this is needed to calculate time on each screen.

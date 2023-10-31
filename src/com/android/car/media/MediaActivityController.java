@@ -16,6 +16,7 @@
 
 package com.android.car.media;
 
+import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK;
 import static android.view.accessibility.AccessibilityNodeInfo.ACTION_FOCUS;
 
 import static com.android.car.apps.common.util.ViewUtils.showHideViewAnimated;
@@ -25,6 +26,7 @@ import android.car.content.pm.CarPackageManager;
 import android.content.Context;
 import android.support.v4.media.MediaBrowserCompat;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -41,12 +43,13 @@ import com.android.car.apps.common.util.FutureData;
 import com.android.car.apps.common.util.ViewUtils.ViewAnimEndListener;
 import com.android.car.media.BrowseStack.BrowseEntryType;
 import com.android.car.media.MediaActivity.Mode;
-import com.android.car.media.PlaybackFragment.PlaybackFragmentListener;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.browse.MediaBrowserViewModelImpl;
 import com.android.car.media.common.browse.MediaItemsRepository;
+import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaBrowserConnector.BrowsingState;
 import com.android.car.media.common.source.MediaSource;
+import com.android.car.media.common.source.MediaSourceViewModel;
 import com.android.car.media.extensions.analytics.event.AnalyticsEvent;
 import com.android.car.media.extensions.analytics.event.BrowseChangeEvent;
 import com.android.car.media.widgets.AppBarController;
@@ -106,7 +109,8 @@ public class MediaActivityController extends ViewControllerBase {
     private final Observer<BrowsingState> mMediaBrowsingObserver =
             this::onMediaBrowsingStateChanged;
 
-    private final PlaybackFragment.PlaybackFragmentListener mPlaybackFragmentListener;
+    private final NowPlayingController mNowPlayingController;
+    private final NowPlayingController.NowPlayingListener mNowPlayingListener;
 
     /**
      * Callbacks (implemented by the hosting Activity)
@@ -133,10 +137,6 @@ public class MediaActivityController extends ViewControllerBase {
 
         /** Switches to the given source. */
         void changeSource(MediaSource source);
-    }
-
-    PlaybackFragmentListener getPlaybackFragmentListener() {
-        return mPlaybackFragmentListener;
     }
 
     /**
@@ -243,7 +243,7 @@ public class MediaActivityController extends ViewControllerBase {
 
 
     MediaActivityController(Callbacks callbacks, MediaItemsRepository mediaItemsRepo,
-            CarPackageManager carPackageManager, ViewGroup container) {
+            CarPackageManager carPackageManager, ViewGroup container, ViewGroup playbackContainer) {
         super(callbacks.getActivity(), mediaItemsRepo, carPackageManager, container,
                 R.layout.fragment_browse);
 
@@ -254,6 +254,16 @@ public class MediaActivityController extends ViewControllerBase {
         mBrowseStack = mViewModel.getBrowseStack();
         mBrowseArea = mContent.requireViewById(R.id.browse_content_area);
         mFpv = activity.requireViewById(R.id.fpv);
+
+        PlaybackViewModel playbackViewModel = PlaybackViewModel.get(
+                activity.getApplication(), MEDIA_SOURCE_MODE_PLAYBACK);
+        MediaSourceViewModel mediaSourceViewModel = MediaSourceViewModel.get(
+                activity.getApplication(), MEDIA_SOURCE_MODE_PLAYBACK);
+        LayoutInflater inflater = LayoutInflater.from(playbackContainer.getContext());
+        View playbackView = inflater.inflate(R.layout.fragment_playback, playbackContainer, false);
+        playbackContainer.addView(playbackView);
+        mNowPlayingController = new NowPlayingController(
+                callbacks, playbackView, playbackViewModel, mediaSourceViewModel);
 
         mAppBarController.setListener(mAppBarListener);
         mAppBarController.setSearchQuery(mViewModel.getSearchQuery());
@@ -287,7 +297,7 @@ public class MediaActivityController extends ViewControllerBase {
         mMediaItemsRepository.getRootMediaItems().observe(activity, this::onRootMediaItemsUpdate);
         mViewModel.getMiniControlsVisible().observe(activity, this::onPlaybackControlsChanged);
 
-        mPlaybackFragmentListener = (source, mediaItem) -> {
+        mNowPlayingListener = (source, mediaItem) -> {
             if (source == null || mediaItem == null) {
                 Log.e(TAG, "goToMediaItem error S: " + source + " MI: " + mediaItem);
                 return;
@@ -306,6 +316,7 @@ public class MediaActivityController extends ViewControllerBase {
 
             navigateTo(mediaItem);
         };
+        mNowPlayingController.setListener(mNowPlayingListener);
     }
 
     private BrowseViewController recreateController(BrowseStack.BrowseEntry entry) {
@@ -639,6 +650,10 @@ public class MediaActivityController extends ViewControllerBase {
                 entry.getController().onPlaybackControlsChanged(mPlaybackControlsVisible);
             }
         }
+    }
+
+    NowPlayingController getNowPlayingController() {
+        return mNowPlayingController;
     }
 
     private void hideKeyboard() {
