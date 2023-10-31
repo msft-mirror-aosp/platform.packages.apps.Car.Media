@@ -31,7 +31,8 @@
         app:id="@+id/menu_item_selector"
         app:title="@string/menu_item_app_selector_title"
         app:carUiIcon="@drawable/ic_app_switch"
-        app:tinted="true"/>
+        app:tinted="true"
+        app:visible="@bool/show_menu_item_selector"/>
     <MenuItem
         app:id="@+id/menu_item_selector_with_source_logo"
         app:title="@string/menu_item_app_selector_title"

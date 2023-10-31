@@ -54,4 +54,7 @@
        hand side on toolbar) will be hidden. -->
     <bool name="use_media_source_logo_for_app_selector_in_playback_view">false</bool>
 
+    <!-- Controls whether to show menu item selector in toolbar menu items-->
+    <bool name="show_menu_item_selector">true</bool>
+
 </resources>

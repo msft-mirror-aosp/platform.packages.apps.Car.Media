@@ -148,7 +148,7 @@ public class AppBarController {
         }
         if (mAppSelector != null) {
             mAppSelector.setOnClickListener((menuItem) -> context.startActivity(appSelectorIntent));
-            mAppSelector.setVisible(appSelectorIntent != null);
+            mAppSelector.setVisible(appSelectorIntent != null && mAppSelector.isVisible());
         }
 
         if ((appSelectorIntent != null)
