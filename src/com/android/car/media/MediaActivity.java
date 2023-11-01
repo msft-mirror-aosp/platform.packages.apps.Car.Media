@@ -132,6 +132,14 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (savedInstanceState != null) {
+            // The activity is re-created with the same intent it was originally created with, so
+            // the media component specified in the intent will be obsolete if the user has switched
+            // to a new source. Therefore clear the intent and rely on the view models.
+            setIntent(null);
+        }
+
         setContentView(R.layout.media_activity);
 
         Resources res = getResources();
@@ -224,6 +232,18 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
             }
 
             mMediaTrampoline.setLaunchedMediaSource(launchedSourceComp);
+
+            // When the Now playing view shows a different media source (due to media continuity),
+            // go back to the browsing view so that the displayed source matches what the user
+            // launched.
+            if (mMode == Mode.PLAYBACK) {
+                PlaybackViewModel model = getPlaybackViewModel(MEDIA_SOURCE_MODE_PLAYBACK);
+                MediaSource src = model.getMediaSource().getValue();
+                ComponentName playComp = (src != null) ? src.getBrowseServiceComponentName() : null;
+                if (!Objects.equals(playComp, launchedSourceComp)) {
+                    changeMode(Mode.BROWSING);
+                }
+            }
 
             // Mark the intent as consumed so that coming back from the media app selector doesn't
             // set the source again.
