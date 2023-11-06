@@ -17,9 +17,9 @@
 package com.android.car.media;
 
 import android.view.View;
+import android.view.ViewGroup.MarginLayoutParams;
 
 import androidx.annotation.NonNull;
-import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.android.car.ui.baselayout.Insets;
 import com.android.car.ui.baselayout.InsetsChangedListener;
@@ -47,8 +47,7 @@ public class GuidelinesUpdater implements InsetsChangedListener {
     // Read the results of the base layout measurements and adjust the guidelines to match
     public void onCarUiInsetsChanged(@NonNull Insets insets) {
         View startPad = mGuidedView.findViewById(R.id.ui_content_start_guideline);
-        ConstraintLayout.LayoutParams start =
-                (ConstraintLayout.LayoutParams)startPad.getLayoutParams();
+        MarginLayoutParams start = (MarginLayoutParams) startPad.getLayoutParams();
         if (startPad.getLayoutDirection() == View.LAYOUT_DIRECTION_LTR) {
             start.setMargins(insets.getLeft(), 0, 0, 0);
         } else {
@@ -57,7 +56,7 @@ public class GuidelinesUpdater implements InsetsChangedListener {
         startPad.setLayoutParams(start);
 
         View endPad = mGuidedView.findViewById(R.id.ui_content_end_guideline);
-        ConstraintLayout.LayoutParams end = (ConstraintLayout.LayoutParams)endPad.getLayoutParams();
+        MarginLayoutParams end = (MarginLayoutParams) endPad.getLayoutParams();
         if (endPad.getLayoutDirection() == View.LAYOUT_DIRECTION_LTR) {
             end.setMargins(0, 0, insets.getRight(), 0);
         } else {
@@ -66,13 +65,12 @@ public class GuidelinesUpdater implements InsetsChangedListener {
         endPad.setLayoutParams(end);
 
         View topPad = mGuidedView.findViewById(R.id.ui_content_top_guideline);
-        ConstraintLayout.LayoutParams top = (ConstraintLayout.LayoutParams)topPad.getLayoutParams();
+        MarginLayoutParams top = (MarginLayoutParams) topPad.getLayoutParams();
         top.setMargins(0, insets.getTop(), 0, 0);
         topPad.setLayoutParams(top);
 
         View bottomPad = mGuidedView.findViewById(R.id.ui_content_bottom_guideline);
-        ConstraintLayout.LayoutParams bottom =
-                (ConstraintLayout.LayoutParams)bottomPad.getLayoutParams();
+        MarginLayoutParams bottom = (MarginLayoutParams) bottomPad.getLayoutParams();
         bottom.setMargins(0, 0, 0, insets.getBottom());
         bottomPad.setLayoutParams(bottom);
 
