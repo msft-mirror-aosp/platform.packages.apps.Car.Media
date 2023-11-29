@@ -38,6 +38,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="bool" name="switch_to_playback_view_when_playable_item_is_clicked"/>
       <item type="bool" name="use_media_source_color_for_progress_bar"/>
       <item type="bool" name="use_media_source_logo_for_app_selector_in_playback_view"/>
+      <item type="color" name="progress_bar_highlight" />
       <item type="dimen" name="browse_fragment_bottom_padding"/>
       <item type="dimen" name="browse_fragment_top_padding"/>
       <item type="dimen" name="browse_fragment_top_padding_stacked"/>
