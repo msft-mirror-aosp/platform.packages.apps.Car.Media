@@ -65,7 +65,7 @@ import androidx.core.view.WindowInsetsAnimationCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.car.apps.common.imaging.ImageBinder;
@@ -422,7 +422,7 @@ public class BrowseViewController {
         mMediaRepo = mediaRepo;
 
         FragmentActivity activity = callbacks.getActivity();
-        mViewModel = ViewModelProviders.of(activity).get(MediaActivity.ViewModel.class);
+        mViewModel = new ViewModelProvider(activity).get(MediaActivity.ViewModel.class);
 
         LayoutInflater inflater = LayoutInflater.from(container.getContext());
         mContent = inflater.inflate(R.layout.browse_node, container, false);
@@ -445,19 +445,14 @@ public class BrowseViewController {
         mFadeDuration = mContent.getContext().getResources().getInteger(
                 R.integer.new_album_art_fade_in_duration);
 
-        mPlaybackViewModel = PlaybackViewModel.get(activity.getApplication(),
-                MEDIA_SOURCE_MODE_PLAYBACK);
-        mPlaybackViewModelBrowseSource = PlaybackViewModel.get(activity.getApplication(),
-            MEDIA_SOURCE_MODE_BROWSE);
+        mPlaybackViewModel = mViewModel.getPlaybackViewModel(MEDIA_SOURCE_MODE_PLAYBACK);
+        mPlaybackViewModelBrowseSource = mViewModel.getPlaybackViewModel(MEDIA_SOURCE_MODE_BROWSE);
 
         LiveDataFunctions.pair(mPlaybackViewModel.getProgress(), mPlaybackViewModel.getMetadata())
                 .observe(activity, this::handleProgressUpdate);
 
-        LiveDataFunctions.pair(
-                PlaybackViewModel.get(activity.getApplication(),
-                        MEDIA_SOURCE_MODE_PLAYBACK).getMediaSource(),
-                PlaybackViewModel.get(activity.getApplication(),
-                        MEDIA_SOURCE_MODE_BROWSE).getMediaSource())
+        LiveDataFunctions.pair(mPlaybackViewModel.getMediaSource(),
+                        mPlaybackViewModelBrowseSource.getMediaSource())
                 .observe(activity, this::handleSourceUpdates);
 
         BrowseAdapter browseAdapter = new BrowseAdapter(mBrowseList.getContext());
@@ -951,9 +946,10 @@ public class BrowseViewController {
 
     private boolean isSourcesSame() {
         PlaybackViewModel playbackViewModelBrowse =
-                PlaybackViewModel.get(getActivity().getApplication(), MEDIA_SOURCE_MODE_BROWSE);
+                mViewModel.getPlaybackViewModel(MEDIA_SOURCE_MODE_BROWSE);
         PlaybackViewModel playbackViewModelPlayback =
-                PlaybackViewModel.get(getActivity().getApplication(), MEDIA_SOURCE_MODE_PLAYBACK);
+                mViewModel.getPlaybackViewModel(MEDIA_SOURCE_MODE_PLAYBACK);
+
         return Objects.equals(playbackViewModelPlayback.getMediaSource().getValue(),
                 playbackViewModelBrowse.getMediaSource().getValue());
     }
@@ -968,9 +964,8 @@ public class BrowseViewController {
         ViewUtils.showViewAnimated(mEmptyListPlaybackBar, mFadeDuration);
 
         Size maxArtSize = MediaAppConfig.getMediaItemsBitmapMaxSize(mContent.getContext());
-        PlaybackViewModel playbackViewModel =
-                PlaybackViewModel.get(getActivity().getApplication(), MEDIA_SOURCE_MODE_BROWSE);
-        mEmptyListPlaybackBar.setModel(playbackViewModel, getActivity(), maxArtSize);
+        PlaybackViewModel playViewModel = mViewModel.getPlaybackViewModel(MEDIA_SOURCE_MODE_BROWSE);
+        mEmptyListPlaybackBar.setModel(playViewModel, getActivity(), maxArtSize);
 
         mEmptyListPlaybackBar.setOnClickListener(
                 view -> mCallbacks.onBrowseEmptyListPlayItemClicked());

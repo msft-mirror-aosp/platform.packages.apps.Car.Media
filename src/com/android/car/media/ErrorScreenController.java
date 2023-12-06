@@ -11,7 +11,6 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.android.car.apps.common.util.IntentUtils;
 import com.android.car.media.common.PlaybackErrorViewController;
-import com.android.car.media.common.browse.MediaItemsRepository;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.ui.FocusArea;
 
@@ -25,15 +24,15 @@ public class ErrorScreenController extends ViewControllerBase {
     private PendingIntent mPendingIntent;
     private boolean mCanAutoLaunch;
 
-    ErrorScreenController(FragmentActivity activity, MediaItemsRepository mediaItemsRepo,
-            CarPackageManager carPackageManager, ViewGroup container) {
-        super(activity, mediaItemsRepo, carPackageManager, container, R.layout.fragment_error);
+    ErrorScreenController(FragmentActivity activity, CarPackageManager carPackageManager,
+            ViewGroup container) {
+        super(activity, carPackageManager, container, R.layout.fragment_error);
 
         mPlaybackErrorViewController = new PlaybackErrorViewController(mContent);
         mFocusArea = mContent.findViewById(R.id.focus_area);
 
-        MediaActivity.ViewModel viewModel = new ViewModelProvider(activity).get(
-                MediaActivity.ViewModel.class);
+        MediaActivity.ViewModel viewModel =
+                new ViewModelProvider(activity).get(MediaActivity.ViewModel.class);
         viewModel.getMiniControlsVisible().observe(activity, this::onPlaybackControlsChanged);
     }
 

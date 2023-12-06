@@ -14,8 +14,8 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 
+import com.android.car.media.common.source.CarMediaManagerHelper;
 import com.android.car.media.common.source.MediaSource;
-import com.android.car.media.common.source.MediaSourceViewModel;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -31,6 +31,8 @@ public class MediaDispatcherActivity extends FragmentActivity {
     private static final String TAG = "MediaDispatcherActivity";
     private static Set<String> sCustomMediaComponents = null;
 
+    static final String KEY_MEDIA_ID = "com.android.car.media.intent.extra.MEDIA_ID";
+
     static boolean isCustomMediaSource(Resources res, @Nullable MediaSource source) {
         if (sCustomMediaComponents == null) {
             sCustomMediaComponents = new HashSet<>();
@@ -44,15 +46,23 @@ public class MediaDispatcherActivity extends FragmentActivity {
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         Intent intent = getIntent();
         String action = null;
         String componentName = null;
+        String mediaId = null;
         if (intent != null) {
             action = intent.getAction();
             componentName = intent.getStringExtra(EXTRA_MEDIA_COMPONENT);
+            mediaId = intent.getStringExtra(KEY_MEDIA_ID);
         }
 
         if (Log.isLoggable(TAG, Log.INFO)) {
@@ -69,13 +79,12 @@ public class MediaDispatcherActivity extends FragmentActivity {
             }
         }
 
-        // Retrieve the current source if none was set. However, do NOT set it and rely on setting
-        // the EXTRA_MEDIA_COMPONENT on the intent launched below. This avoids source notifications
-        // as well as extra trips back here, all of which would be useless.
+        // Retrieve the current source if none was set, otherwise save the given source.
+        CarMediaManagerHelper helper = CarMediaManagerHelper.getInstance(getApplication());
         if (mediaSrc == null) {
-            MediaSourceViewModel mediaSrcVM = MediaSourceViewModel.get(getApplication(),
-                    MEDIA_SOURCE_MODE_BROWSE);
-            mediaSrc = mediaSrcVM.getPrimaryMediaSource().getValue();
+            mediaSrc = helper.getAudioSource(MEDIA_SOURCE_MODE_BROWSE).getValue();
+        } else {
+            helper.setPrimaryMediaSource(mediaSrc, MEDIA_SOURCE_MODE_BROWSE);
         }
 
         Intent newIntent = null;
@@ -83,24 +92,25 @@ public class MediaDispatcherActivity extends FragmentActivity {
             // Launch custom app (e.g. Radio)
             String srcPackage = mediaSrc.getPackageName();
             newIntent = getPackageManager().getLaunchIntentForPackage(srcPackage);
+            if (newIntent != null) {
+                newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            }
             if (Log.isLoggable(TAG, Log.DEBUG)) {
                 Log.d(TAG, "Getting launch intent for package : " + srcPackage + (newIntent != null
                         ? " succeeded" : " failed"));
             }
         }
-        if (newIntent == null) {
-            // Launch media center
-            newIntent = new Intent(this, MediaActivity.class);
+
+        // Launch media center only if there is a media source
+        if ((newIntent == null) && (mediaSrc != null)) {
+            newIntent = MediaActivity.createMediaActivityIntent(this, mediaSrc, mediaId);
         }
 
-        // Add the selected media source to the intent so the launched activity gets it right away
-        if (mediaSrc != null) {
-            newIntent.putExtra(EXTRA_MEDIA_COMPONENT,
-                    mediaSrc.getBrowseServiceComponentName().flattenToString());
+        if (newIntent != null) {
+            startActivity(newIntent);
+        } else {
+            Log.e(TAG, "No intent to launch, mediaSrc: " + mediaSrc);
         }
-
-        newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(newIntent);
         finish();
     }
 }

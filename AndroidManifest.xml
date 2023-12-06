@@ -52,6 +52,7 @@
             android:exported="false"
             android:resizeableActivity="true"
             android:windowSoftInputMode="stateHidden|adjustPan"
+            android:documentLaunchMode="intoExisting"
             android:launchMode="singleTop">
             <meta-data android:name="distractionOptimized" android:value="true"/>
         </activity>

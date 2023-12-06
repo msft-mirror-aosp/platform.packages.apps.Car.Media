@@ -16,8 +16,6 @@
 
 package com.android.car.media;
 
-import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK;
-
 import static com.android.car.ui.recyclerview.RangeFilter.INVALID_INDEX;
 
 import android.content.Context;
@@ -473,15 +471,14 @@ public class PlaybackQueueController {
     public PlaybackQueueController(
             ViewGroup container,
             @LayoutRes int resource,
-            Callbacks callbacks) {
+            Callbacks callbacks,
+            PlaybackViewModel playbackViewModel,
+            MediaItemsRepository itemsRepository) {
 
         FragmentActivity activity = callbacks.getActivity();
         mCallbacks = callbacks;
-
-        mPlaybackViewModel = PlaybackViewModel.get(activity.getApplication(),
-                MEDIA_SOURCE_MODE_PLAYBACK);
-        mMediaItemsRepository = MediaItemsRepository.get(getActivity().getApplication(),
-                MEDIA_SOURCE_MODE_PLAYBACK);
+        mPlaybackViewModel = playbackViewModel;
+        mMediaItemsRepository = itemsRepository;
 
         LayoutInflater inflater = LayoutInflater.from(container.getContext());
         View view = inflater.inflate(resource, container, false);

@@ -16,8 +16,6 @@
 
 package com.android.car.media;
 
-import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK;
-
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.PorterDuff;
@@ -34,7 +32,6 @@ import android.widget.TextView;
 import androidx.core.util.Preconditions;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
-import androidx.lifecycle.ViewModelProviders;
 
 import com.android.car.apps.common.BackgroundImageView;
 import com.android.car.apps.common.imaging.ImageBinder;
@@ -49,7 +46,6 @@ import com.android.car.media.common.PlaybackControlsActionBar;
 import com.android.car.media.common.browse.MediaItemsRepository;
 import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaSource;
-import com.android.car.media.common.source.MediaSourceViewModel;
 import com.android.car.media.extensions.analytics.event.AnalyticsEvent;
 import com.android.car.media.widgets.AppBarController;
 import com.android.car.ui.core.CarUi;
@@ -98,8 +94,6 @@ public class NowPlayingController {
 
     private int mFadeDuration;
 
-    private MediaActivity.ViewModel mViewModel;
-
     private MenuItem mQueueMenuItem;
 
     private PlaybackQueueController.PlaybackQueueCallback mPlaybackQueueCallback =
@@ -133,21 +127,20 @@ public class NowPlayingController {
             Callbacks callbacks,
             View view,
             PlaybackViewModel playbackViewModel,
-            MediaSourceViewModel mediaSourceViewModel) {
+            MediaItemsRepository itemsRepository) {
 
         FragmentActivity activity = callbacks.getActivity();
         mCallbacks = callbacks;
-
         mPlaybackViewModel = playbackViewModel;
-        mMediaItemsRepository = MediaItemsRepository.get(activity.getApplication(),
-            MEDIA_SOURCE_MODE_PLAYBACK);
+        mMediaItemsRepository = itemsRepository;
 
         Resources res = view.getContext().getResources();
         mAlbumBackground = view.findViewById(R.id.playback_background);
 
         ViewGroup queueContainer = view.findViewById(R.id.queue_fragment_container);
         mPlaybackQueueController = new PlaybackQueueController(
-                queueContainer, R.layout.fragment_playback_queue, callbacks);
+                queueContainer, R.layout.fragment_playback_queue, callbacks, playbackViewModel,
+                itemsRepository);
         mPlaybackQueueController.setCallback(mPlaybackQueueCallback);
 
         mSeekBarContainer = view.findViewById(R.id.playback_seek_bar_container);
@@ -156,8 +149,8 @@ public class NowPlayingController {
 
         GuidelinesUpdater updater = new GuidelinesUpdater(view);
         ToolbarController toolbarController = CarUi.installBaseLayoutAround(view, updater, true);
-        mAppBarController = new AppBarController(view.getContext(), toolbarController,
-                R.xml.menuitems_playback,
+        mAppBarController = new AppBarController(view.getContext(), mMediaItemsRepository,
+                toolbarController, R.xml.menuitems_playback,
                 res.getBoolean(R.bool.use_media_source_logo_for_app_selector_in_playback_view));
 
         mAppBarController.setTitle(R.string.fragment_playback_title);
@@ -169,7 +162,7 @@ public class NowPlayingController {
         mQueueMenuItem.setOnClickListener((item) -> toggleQueueVisibility());
 
         // Update toolbar's logo
-        mediaSourceViewModel.getPrimaryMediaSource().observe(activity, mediaSource ->
+        mPlaybackViewModel.getMediaSource().observe(activity, mediaSource ->
                 mAppBarController.setLogo(mediaSource != null
                     ? new BitmapDrawable(
                         view.getContext().getResources(), mediaSource.getCroppedPackageIcon())
@@ -207,8 +200,6 @@ public class NowPlayingController {
                 mSeekBar.setVisibility(View.GONE);
             }
         }
-
-        mViewModel = ViewModelProviders.of(activity).get(MediaActivity.ViewModel.class);
 
         initPlaybackControls(view.findViewById(R.id.playback_controls));
         initMetadataController(view);
@@ -294,7 +285,7 @@ public class NowPlayingController {
         mPlaybackViewModel.hasQueue().observe(getActivity(),
                 hasQueue -> {
                     boolean enableQueue = (hasQueue != null) && hasQueue;
-                    boolean isQueueVisible = enableQueue && mViewModel.getQueueVisible();
+                    boolean isQueueVisible = enableQueue && mCallbacks.getQueueVisible();
                     setQueueState(enableQueue, isQueueVisible);
                 });
     }
@@ -319,6 +310,8 @@ public class NowPlayingController {
                 mMediaItemsRepository, title, artist, albumTitle, outerSeparator, curTime,
                 innerSeparator, maxTime, seekbar, albumArt, null, maxArtSize, contentFormat,
                 (mediaItem) -> {
+                    mMediaItemsRepository.getAnalyticsManager()
+                            .sendMediaClickedEvent(mediaItem.getId(), AnalyticsEvent.PLAYBACK);
                     MediaSource source = mPlaybackViewModel.getMediaSource().getValue();
                     mListener.goToMediaItem(source, mediaItem);
                 });
@@ -337,7 +330,7 @@ public class NowPlayingController {
         // so that we can restore PlaybackFragment properly when needed. If it's changed by media
         // source change (media source changes -> hasQueue becomes false -> queue is hidden), don't
         // save it.
-        mViewModel.setQueueVisible(updatedQueueVisibility);
+        mCallbacks.setQueueVisible(updatedQueueVisibility);
 
         mMediaItemsRepository.getAnalyticsManager().sendViewChangedEvent(AnalyticsEvent.QUEUE_LIST,
                 mQueueIsVisible ? AnalyticsEvent.SHOW : AnalyticsEvent.HIDE);
