@@ -18,6 +18,13 @@ package com.android.car.media;
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK;
 
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_HIDE;
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_SHOW;
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_COMPONENT_BROWSE_LIST;
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_COMPONENT_ERROR_MESSAGE;
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_COMPONENT_MEDIA_HOST;
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_COMPONENT_PLAYBACK;
+
 import static com.android.car.apps.common.util.LiveDataFunctions.dataOf;
 import static com.android.car.apps.common.util.VectorMath.EPSILON;
 import static com.android.car.media.MediaDispatcherActivity.KEY_MEDIA_ID;
@@ -54,6 +61,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.OptIn;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.AndroidViewModel;
@@ -75,8 +83,6 @@ import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaModels;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.common.source.MediaSourceViewModel;
-import com.android.car.media.extensions.analytics.event.AnalyticsEvent;
-import com.android.car.media.extensions.analytics.event.ViewChangeEvent;
 import com.android.car.ui.AlertDialogBuilder;
 import com.android.car.ui.utils.CarUxRestrictionsUtil;
 
@@ -88,6 +94,7 @@ import java.util.Objects;
  * This activity controls the UI of media. It also updates the connection status for the media app
  * by broadcast.
  */
+@OptIn(markerClass = androidx.car.app.annotations2.ExperimentalCarApi.class)
 public class MediaActivity extends FragmentActivity implements MediaActivityController.Callbacks {
     private static final String TAG = "MediaActivity";
 
@@ -306,7 +313,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         super.onResume();
 
         getMediaItemsRepository().getAnalyticsManager().sendViewChangedEvent(
-                AnalyticsEvent.MEDIA_HOST, AnalyticsEvent.SHOW);
+                VIEW_COMPONENT_MEDIA_HOST, VIEW_ACTION_SHOW);
 
         // When the Now playing view shows a different media source (due to media continuity),
         // go back to the browsing view so that the displayed source matches what the user
@@ -334,7 +341,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
     protected void onPause() {
         super.onPause();
         getMediaItemsRepository().getAnalyticsManager().sendViewChangedEvent(
-                ViewChangeEvent.MEDIA_HOST, ViewChangeEvent.HIDE);
+                VIEW_COMPONENT_MEDIA_HOST, VIEW_ACTION_HIDE);
         getMediaItemsRepository().getAnalyticsManager().sendQueue();
     }
 
@@ -531,7 +538,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         if (newMediaSource != null) {
             //Tell app that host in visible, this is the first place where there is valid manager
             getMediaItemsRepository().getAnalyticsManager().sendViewChangedEvent(
-                    AnalyticsEvent.MEDIA_HOST, AnalyticsEvent.SHOW);
+                    VIEW_COMPONENT_MEDIA_HOST, VIEW_ACTION_SHOW);
 
             if (Log.isLoggable(TAG, Log.INFO)) {
                 Log.i(TAG, "Browsing: " + newMediaSource.getDisplayName(this));
@@ -600,15 +607,15 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         switch (oldMode) {
             case BROWSING:
                 getMediaItemsRepository().getAnalyticsManager().sendViewChangedEvent(
-                        AnalyticsEvent.BROWSE_LIST, AnalyticsEvent.HIDE);
+                        VIEW_COMPONENT_BROWSE_LIST, VIEW_ACTION_HIDE);
                 break;
             case PLAYBACK:
                 getMediaItemsRepository().getAnalyticsManager().sendViewChangedEvent(
-                        AnalyticsEvent.PLAYBACK, AnalyticsEvent.HIDE);
+                        VIEW_COMPONENT_PLAYBACK, VIEW_ACTION_HIDE);
                 break;
             case FATAL_ERROR:
                 getMediaItemsRepository().getAnalyticsManager().sendViewChangedEvent(
-                        AnalyticsEvent.ERROR_MESSAGE, AnalyticsEvent.HIDE);
+                        VIEW_COMPONENT_ERROR_MESSAGE, VIEW_ACTION_HIDE);
                 break;
         }
 
@@ -618,7 +625,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
                 ViewUtils.hideViewAnimated(mPlaybackContainer, fadeOutDuration);
                 ViewUtils.hideViewAnimated(mBrowseContainer, fadeOutDuration);
                 getMediaItemsRepository().getAnalyticsManager().sendViewChangedEvent(
-                        AnalyticsEvent.ERROR_MESSAGE, AnalyticsEvent.SHOW);
+                        VIEW_COMPONENT_ERROR_MESSAGE, VIEW_ACTION_SHOW);
                 break;
             case PLAYBACK:
                 mPlaybackContainer.setX(0);
@@ -628,7 +635,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
                 ViewUtils.showViewAnimated(mPlaybackContainer, mFadeDuration);
                 ViewUtils.hideViewAnimated(mBrowseContainer, fadeOutDuration);
                 getMediaItemsRepository().getAnalyticsManager().sendViewChangedEvent(
-                        AnalyticsEvent.PLAYBACK, AnalyticsEvent.SHOW);
+                        VIEW_COMPONENT_PLAYBACK, VIEW_ACTION_SHOW);
                 break;
             case BROWSING:
                 if (oldMode == Mode.PLAYBACK) {
@@ -641,7 +648,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
                     ViewUtils.showViewAnimated(mBrowseContainer, mFadeDuration);
                 }
                 getMediaItemsRepository().getAnalyticsManager().sendViewChangedEvent(
-                        AnalyticsEvent.BROWSE_LIST, AnalyticsEvent.SHOW);
+                        VIEW_COMPONENT_BROWSE_LIST, VIEW_ACTION_SHOW);
                 break;
         }
     }

@@ -20,6 +20,10 @@ import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK;
 import static android.view.accessibility.AccessibilityNodeInfo.ACTION_FOCUS;
 
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_HIDE;
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_SHOW;
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_COMPONENT_BROWSE_TABS;
+
 import static com.android.car.apps.common.util.ViewUtils.showHideViewAnimated;
 import static com.android.car.media.common.source.MediaBrowserConnector.ConnectionStatus.CONNECTED;
 import static com.android.car.ui.utils.ViewUtils.LazyLayoutView;
@@ -36,6 +40,8 @@ import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.OptIn;
+import androidx.car.app.mediaextensions.analytics.event.BrowseChangeEvent;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -52,8 +58,6 @@ import com.android.car.media.common.browse.MediaBrowserViewModelImpl;
 import com.android.car.media.common.browse.MediaItemsRepository;
 import com.android.car.media.common.source.MediaBrowserConnector.BrowsingState;
 import com.android.car.media.common.source.MediaSource;
-import com.android.car.media.extensions.analytics.event.AnalyticsEvent;
-import com.android.car.media.extensions.analytics.event.BrowseChangeEvent;
 import com.android.car.media.widgets.AppBarController;
 import com.android.car.ui.FocusParkingView;
 import com.android.car.ui.baselayout.Insets;
@@ -73,6 +77,7 @@ import java.util.Objects;
  * Controls the views of the {@link MediaActivity}.
  * TODO: finish moving control code out of MediaActivity (b/179292809).
  */
+@OptIn(markerClass = androidx.car.app.annotations2.ExperimentalCarApi.class)
 public class MediaActivityController extends ViewControllerBase {
 
     private static final String TAG = "MediaActivityCtr";
@@ -255,7 +260,7 @@ public class MediaActivityController extends ViewControllerBase {
                 mAppBarController.setSearchSupported(canSearch);
                 if (mBrowseStack.size() <= 0) {
                     String rootId = newBrowsingState.mBrowser.getRoot();
-                    mBrowseStack.pushRoot(BrowseViewController.newRootController(
+                    mBrowseStack.pushRoot(rootId, BrowseViewController.newRootController(
                             rootId, mBrowseCallbacks, mBrowseArea, mMediaItemsRepository));
                 }
                 showCurrentNode(true);
@@ -384,7 +389,7 @@ public class MediaActivityController extends ViewControllerBase {
             if (mAcceptTabSelection && (item != null) && (item != getSelectedTab())) {
                 if (item.getId() != null) {
                     mMediaItemsRepository.getAnalyticsManager()
-                            .sendMediaClickedEvent(item.getId(), AnalyticsEvent.BROWSE_TABS);
+                            .sendMediaClickedEvent(item.getId(), VIEW_COMPONENT_BROWSE_TABS);
                 }
                 // Clear the entire stack, including search and links.
                 hideAndDestroyStackEntries(mBrowseStack.removeAllEntriesExceptRoot());
@@ -610,7 +615,7 @@ public class MediaActivityController extends ViewControllerBase {
             }
             mMediaItemsRepository.getAnalyticsManager().sendBrowseChangeEvent(
                     browseEntryTypeToAnalytic(browseEntry.mType),
-                    show ? AnalyticsEvent.SHOW : AnalyticsEvent.HIDE, currentId);
+                    show ? VIEW_ACTION_SHOW : VIEW_ACTION_HIDE, currentId);
             controller.onShow(show);
         }
     }
@@ -664,22 +669,23 @@ public class MediaActivityController extends ViewControllerBase {
     private int browseEntryTypeToAnalytic(BrowseStack.BrowseEntryType type) {
         switch(type){
             case TREE_TAB:
-                return BrowseChangeEvent.TREE_TAB;
+                return BrowseChangeEvent.BROWSE_MODE_TREE_TAB;
             case TREE_ROOT:
-                return BrowseChangeEvent.TREE_ROOT;
+                return BrowseChangeEvent.BROWSE_MODE_TREE_ROOT;
             case TREE_BROWSE:
-                return BrowseChangeEvent.TREE_BROWSE;
+                return BrowseChangeEvent.BROWSE_MODE_TREE_BROWSE;
             case SEARCH_RESULTS:
-                return BrowseChangeEvent.SEARCH_RESULTS;
+                return BrowseChangeEvent.BROWSE_MODE_SEARCH_RESULTS;
             case SEARCH_BROWSE:
-                return BrowseChangeEvent.SEARCH_BROWSE;
+                return BrowseChangeEvent.BROWSE_MODE_SEARCH_BROWSE;
             case LINK:
-                return BrowseChangeEvent.LINK;
+                return BrowseChangeEvent.BROWSE_MODE_LINK;
             case LINK_BROWSE:
-                return BrowseChangeEvent.LINK_BROWSE;
+                return BrowseChangeEvent.BROWSE_MODE_LINK_BROWSE;
+            default:
+                Log.e(TAG, "Unexpected BrowseEntryType");
+                return BrowseChangeEvent.BROWSE_MODE_UNKNOWN;
         }
-
-        return BrowseChangeEvent.UNKNOWN;
     }
 
     private void showSearchResults() {
@@ -781,8 +787,9 @@ public class MediaActivityController extends ViewControllerBase {
             return;
         }
         mTopItems = items;
+        String rootId = mBrowseStack.getRootId();
         if (mTopItems == null || mTopItems.isEmpty()) {
-            mAppBarController.setItems(null);
+            mAppBarController.setItems(rootId, null);
             mAppBarController.setActiveItem(null);
             if (items != null) {
                 // Only do this when not loading the tabs or we loose the saved one.
@@ -797,7 +804,7 @@ public class MediaActivityController extends ViewControllerBase {
 
         try {
             mAcceptTabSelection = false;
-            mAppBarController.setItems(mTopItems.size() == 1 ? null : mTopItems);
+            mAppBarController.setItems(rootId, mTopItems.size() == 1 ? null : mTopItems);
             mAppBarController.setActiveItem(newTab);
 
             if (oldTab != newTab) {

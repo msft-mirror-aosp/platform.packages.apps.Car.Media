@@ -1,5 +1,10 @@
 package com.android.car.media.widgets;
 
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_HIDE;
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_MODE_NONE;
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_SHOW;
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_COMPONENT_BROWSE_TABS;
+
 import android.car.drivingstate.CarUxRestrictions;
 import android.content.Context;
 import android.content.Intent;
@@ -8,6 +13,7 @@ import android.util.Size;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.OptIn;
 import androidx.annotation.XmlRes;
 import androidx.core.util.Preconditions;
 
@@ -16,7 +22,6 @@ import com.android.car.media.R;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.browse.MediaItemsRepository;
 import com.android.car.media.common.source.MediaSource;
-import com.android.car.media.extensions.analytics.event.AnalyticsEvent;
 import com.android.car.ui.toolbar.MenuItem;
 import com.android.car.ui.toolbar.MenuItemXmlParserUtil;
 import com.android.car.ui.toolbar.NavButtonMode;
@@ -37,6 +42,7 @@ import java.util.stream.Collectors;
  * Media template application bar. This class wraps a {@link ToolbarController} and
  * adds media-specific methods to it like {@link #setItems} and {@link #setSearchSupported}.
  */
+@OptIn(markerClass = androidx.car.app.annotations2.ExperimentalCarApi.class)
 public class AppBarController {
     private static final int MEDIA_UX_RESTRICTION_DEFAULT =
             CarUxRestrictions.UX_RESTRICTIONS_NO_SETUP;
@@ -63,6 +69,7 @@ public class AppBarController {
     private boolean mSearchSupported;
     private boolean mShowSearchIfSupported;
     private String mSearchQuery;
+    private String mRootId;
     private int mSelectedTab = -1;
     private Drawable mLogo;
 
@@ -187,13 +194,14 @@ public class AppBarController {
      *
      * @param items list of tabs to show, or null if no tabs should be shown.
      */
-    public void setItems(@Nullable List<MediaItemMetadata> items) {
+    public void setItems(@Nullable String rootId, @Nullable List<MediaItemMetadata> items) {
+        mRootId = rootId;
+
         if (items == null) {
             items = Collections.emptyList();
             //Tabs are hidden when null.
-            mMediaItemsRepository.getAnalyticsManager().sendVisibleItemsEvents(
-                            null, AnalyticsEvent.BROWSE_TABS, AnalyticsEvent.HIDE,
-                    AnalyticsEvent.NONE, null);
+            mMediaItemsRepository.getAnalyticsManager().sendVisibleItemsEvents(mRootId,
+                    VIEW_COMPONENT_BROWSE_TABS, VIEW_ACTION_HIDE, VIEW_ACTION_MODE_NONE, null);
         }
 
         for (TabBinder<MediaItemMetadata.ArtworkRef> tabBinder : mTabs) {
@@ -229,8 +237,8 @@ public class AppBarController {
             List<String> currTabs = mTabs.stream().map(
                     (tab) -> tab.getMediaItemMetadata().getId()).collect(Collectors.toList());
             if (!mPrevTabs.isEmpty()) {
-                mMediaItemsRepository.getAnalyticsManager().sendVisibleItemsEvents(null,
-                        AnalyticsEvent.BROWSE_TABS, AnalyticsEvent.HIDE, AnalyticsEvent.NONE,
+                mMediaItemsRepository.getAnalyticsManager().sendVisibleItemsEvents(mRootId,
+                        VIEW_COMPONENT_BROWSE_TABS, VIEW_ACTION_HIDE, VIEW_ACTION_MODE_NONE,
                         currTabs);
             }
             mPrevTabs.clear();
@@ -247,8 +255,8 @@ public class AppBarController {
                         .collect(Collectors.toCollection(ArrayList::new));
 
                 if (!itemsSublist.equals(mPrevTabs)) {
-                    mMediaItemsRepository.getAnalyticsManager().sendVisibleItemsEvents(null,
-                            AnalyticsEvent.BROWSE_TABS, AnalyticsEvent.SHOW, AnalyticsEvent.NONE,
+                    mMediaItemsRepository.getAnalyticsManager().sendVisibleItemsEvents(mRootId,
+                            VIEW_COMPONENT_BROWSE_TABS, VIEW_ACTION_SHOW, VIEW_ACTION_MODE_NONE,
                             itemsSublist);
                 }
                 mPrevTabs.clear();

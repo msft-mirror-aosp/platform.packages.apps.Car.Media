@@ -58,6 +58,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.OptIn;
+import androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent;
 import androidx.core.util.Pair;
 import androidx.core.util.Preconditions;
 import androidx.core.view.ViewCompat;
@@ -88,7 +90,6 @@ import com.android.car.media.common.playback.PlaybackProgress;
 import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaBrowserConnector.BrowsingState;
 import com.android.car.media.common.source.MediaSource;
-import com.android.car.media.extensions.analytics.event.AnalyticsEvent;
 import com.android.car.ui.AlertDialogBuilder;
 import com.android.car.ui.FocusArea;
 import com.android.car.ui.baselayout.Insets;
@@ -117,6 +118,7 @@ import java.util.stream.Collectors;
  * The content view is initialized with 0 alpha and needs to be animated or set to to full opacity
  * to become visible.
  */
+@OptIn(markerClass = androidx.car.app.annotations2.ExperimentalCarApi.class)
 public class BrowseViewController {
     private static final String TAG = "BrowseViewController";
 
@@ -159,7 +161,7 @@ public class BrowseViewController {
         protected void onPlayableItemClicked(@NonNull MediaItemMetadata item) {
             if (item.getId() != null) {
                 mMediaRepo.getAnalyticsManager().sendMediaClickedEvent(item.getId(),
-                        AnalyticsEvent.BROWSE_LIST);
+                        AnalyticsEvent.VIEW_COMPONENT_BROWSE_LIST);
             }
             mCallbacks.onPlayableItemClicked(item);
         }
@@ -168,7 +170,7 @@ public class BrowseViewController {
         protected void onBrowsableItemClicked(@NonNull MediaItemMetadata item) {
             if (item.getId() != null) {
                 mMediaRepo.getAnalyticsManager().sendMediaClickedEvent(item.getId(),
-                        AnalyticsEvent.BROWSE_LIST);
+                        AnalyticsEvent.VIEW_COMPONENT_BROWSE_LIST);
             }
             mCallbacks.goToMediaItem(item);
         }
@@ -203,8 +205,9 @@ public class BrowseViewController {
 
             mMediaRepo.getAnalyticsManager().sendVisibleItemsEvents(
                     mParentItem == null ? null : mParentItem.getId(),
-                    AnalyticsEvent.BROWSE_LIST, isShown ? AnalyticsEvent.SHOW : AnalyticsEvent.HIDE,
-                    AnalyticsEvent.NONE, itemsSublist);
+                    AnalyticsEvent.VIEW_COMPONENT_BROWSE_LIST,
+                    isShown ? AnalyticsEvent.VIEW_ACTION_SHOW : AnalyticsEvent.VIEW_ACTION_HIDE,
+                    AnalyticsEvent.VIEW_ACTION_MODE_NONE, itemsSublist);
         }
     }
 
@@ -564,9 +567,9 @@ public class BrowseViewController {
             boolean isShow) {
         mMediaRepo.getAnalyticsManager()
                 .sendVisibleItemsEvents(itemId,
-                        AnalyticsEvent.BROWSE_ACTION_OVERFLOW,
-                        isShow ? AnalyticsEvent.SHOW : AnalyticsEvent.HIDE,
-                        AnalyticsEvent.NONE, actions.stream()
+                        AnalyticsEvent.VIEW_COMPONENT_BROWSE_ACTION_OVERFLOW,
+                        isShow ? AnalyticsEvent.VIEW_ACTION_SHOW : AnalyticsEvent.VIEW_ACTION_HIDE,
+                        AnalyticsEvent.VIEW_ACTION_MODE_NONE, actions.stream()
                                 .map(CustomBrowseAction::getId)
                                 .collect(Collectors.toList()));
     }

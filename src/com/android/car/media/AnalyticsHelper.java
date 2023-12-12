@@ -16,17 +16,24 @@
 
 package com.android.car.media;
 
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_HIDE;
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_MODE_NONE;
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_MODE_SCROLL;
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_COMPONENT_BROWSE_LIST;
 import static androidx.recyclerview.widget.RecyclerView.NO_POSITION;
+
+import androidx.annotation.OptIn;
+import androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent;
 
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.browse.MediaItemsRepository;
-import com.android.car.media.extensions.analytics.event.AnalyticsEvent;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /** Helpers for Analytics */
+@OptIn(markerClass = androidx.car.app.annotations2.ExperimentalCarApi.class)
 public class AnalyticsHelper {
 
     /** Creates a sends a scroll event. Returns the items sent. */
@@ -38,8 +45,8 @@ public class AnalyticsHelper {
         if (items.isEmpty() && !prevItems.isEmpty()) {
             repo.getAnalyticsManager().sendVisibleItemsEvents(
                     parentItem != null ? parentItem.getId() : null,
-                    AnalyticsEvent.BROWSE_LIST, AnalyticsEvent.HIDE,
-                    fromScroll ? AnalyticsEvent.SCROLL : AnalyticsEvent.NONE,
+                    VIEW_COMPONENT_BROWSE_LIST, VIEW_ACTION_HIDE,
+                    fromScroll ? VIEW_ACTION_MODE_SCROLL : VIEW_ACTION_MODE_NONE,
                     new ArrayList<>(prevItems));
             return List.of();
         }
@@ -54,8 +61,8 @@ public class AnalyticsHelper {
             if (!prevItems.isEmpty()) {
                 repo.getAnalyticsManager().sendVisibleItemsEvents(
                         parentItem != null ? parentItem.getId() : null,
-                        AnalyticsEvent.BROWSE_LIST, AnalyticsEvent.HIDE,
-                        fromScroll ? AnalyticsEvent.SCROLL : AnalyticsEvent.NONE,
+                        VIEW_COMPONENT_BROWSE_LIST, VIEW_ACTION_HIDE,
+                        fromScroll ? VIEW_ACTION_MODE_SCROLL : VIEW_ACTION_MODE_NONE,
                         new ArrayList<>(prevItems));
             }
 
@@ -81,15 +88,15 @@ public class AnalyticsHelper {
         if (!delta.isEmpty()) {
             repo.getAnalyticsManager().sendVisibleItemsEvents(
                     parentItem != null ? parentItem.getId() : null,
-                    AnalyticsEvent.BROWSE_LIST, AnalyticsEvent.HIDE,
-                    fromScroll ? AnalyticsEvent.SCROLL : AnalyticsEvent.NONE,
+                    VIEW_COMPONENT_BROWSE_LIST, VIEW_ACTION_HIDE,
+                    fromScroll ? VIEW_ACTION_MODE_SCROLL : VIEW_ACTION_MODE_NONE,
                     new ArrayList<>(delta));
         }
         if (!deltaNew.isEmpty()) {
             repo.getAnalyticsManager().sendVisibleItemsEvents(
                     parentItem != null ? parentItem.getId() : null,
-                    AnalyticsEvent.BROWSE_LIST, AnalyticsEvent.SHOW,
-                    fromScroll ? AnalyticsEvent.SCROLL : AnalyticsEvent.NONE,
+                    VIEW_COMPONENT_BROWSE_LIST, AnalyticsEvent.VIEW_ACTION_SHOW,
+                    fromScroll ? VIEW_ACTION_MODE_SCROLL : VIEW_ACTION_MODE_NONE,
                     new ArrayList<>(deltaNew));
         }
 
