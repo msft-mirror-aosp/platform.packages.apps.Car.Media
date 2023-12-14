@@ -90,6 +90,8 @@
             android:layout_height="match_parent"
             android:clickable="true"
             android:clipToPadding="false"
+            android:fadeScrollbars="true"
+            android:scrollbars="vertical"
             android:visibility="gone"
             app:layoutStyle="grid"
             app:numOfColumns="@integer/num_browse_columns"/>
