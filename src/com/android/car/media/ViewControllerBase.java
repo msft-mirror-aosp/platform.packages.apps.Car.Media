@@ -37,6 +37,8 @@ import androidx.annotation.CallSuper;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.OptIn;
+import androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -45,8 +47,6 @@ import com.android.car.media.common.browse.MediaBrowserViewModelImpl;
 import com.android.car.media.common.browse.MediaItemsRepository;
 import com.android.car.media.common.source.MediaBrowserConnector;
 import com.android.car.media.common.source.MediaSource;
-import com.android.car.media.extensions.analytics.event.AnalyticsEvent;
-import com.android.car.media.extensions.analytics.event.ViewChangeEvent;
 import com.android.car.media.widgets.AppBarController;
 import com.android.car.ui.baselayout.Insets;
 import com.android.car.ui.baselayout.InsetsChangedListener;
@@ -57,6 +57,7 @@ import com.android.car.ui.toolbar.ToolbarController;
  * Functionality common to content view controllers. It mainly handles the AppBar view,
  * which is common to all of them.
  */
+@OptIn(markerClass = androidx.car.app.annotations2.ExperimentalCarApi.class)
 abstract class ViewControllerBase implements InsetsChangedListener {
     private static final String TAG = "ViewControllerBase";
 
@@ -120,7 +121,7 @@ abstract class ViewControllerBase implements InsetsChangedListener {
                 Log.d(TAG, "onSettingsSelection");
             }
             mMediaItemsRepository.getAnalyticsManager().sendViewChangedEvent(
-                    AnalyticsEvent.SETTINGS_VIEW, ViewChangeEvent.SHOW);
+                    AnalyticsEvent.VIEW_COMPONENT_SETTINGS_VIEW, AnalyticsEvent.VIEW_ACTION_SHOW);
             try {
                 if (mCurrentSourceBrowserSettings != null) {
                     mCurrentSourceBrowserSettings.send();

@@ -137,12 +137,23 @@ public class BrowseStack {
         return mEntries.size();
     }
 
-    void pushRoot(@NonNull BrowseViewController controller) {
+    void pushRoot(String rootId, @NonNull BrowseViewController controller) {
         if (mEntries.isEmpty()) {
-            mEntries.push(new BrowseEntry(BrowseEntryType.TREE_ROOT, null, controller));
+            MediaItemMetadata fakeRootItem = MediaItemMetadata.createEmptyRootData(rootId);
+            mEntries.push(new BrowseEntry(BrowseEntryType.TREE_ROOT, fakeRootItem, controller));
         } else {
             Log.e(TAG, "Ignoring pushRoot on a non empty stack.");
         }
+    }
+
+    String getRootId() {
+        if (mEntries.isEmpty()) return null;
+
+        BrowseEntry first = mEntries.get(0);
+        if (first.mItem == null || first.mType != BrowseEntryType.TREE_ROOT) {
+            return null;
+        }
+        return first.mItem.getId();
     }
 
     void pushSearchResults(@NonNull BrowseViewController controller) {

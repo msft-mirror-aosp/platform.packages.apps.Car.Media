@@ -16,6 +16,11 @@
 
 package com.android.car.media;
 
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_HIDE;
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_SHOW;
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_COMPONENT_PLAYBACK;
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_COMPONENT_QUEUE_LIST;
+
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.PorterDuff;
@@ -29,6 +34,8 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.annotation.OptIn;
+import androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent;
 import androidx.core.util.Preconditions;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -46,7 +53,6 @@ import com.android.car.media.common.PlaybackControlsActionBar;
 import com.android.car.media.common.browse.MediaItemsRepository;
 import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaSource;
-import com.android.car.media.extensions.analytics.event.AnalyticsEvent;
 import com.android.car.media.widgets.AppBarController;
 import com.android.car.ui.core.CarUi;
 import com.android.car.ui.toolbar.MenuItem;
@@ -63,6 +69,7 @@ import java.util.List;
  * It observes a {@link PlaybackViewModel} and updates its information depending on the currently
  * playing media source through the {@link android.media.session.MediaSession} API.
  */
+@OptIn(markerClass = androidx.car.app.annotations2.ExperimentalCarApi.class)
 public class NowPlayingController {
     private static final String TAG = "NowPlayingController";
 
@@ -105,7 +112,7 @@ public class NowPlayingController {
             if (item.getId() != null) {
                 //Send analytics click event
                 mMediaItemsRepository.getAnalyticsManager()
-                        .sendMediaClickedEvent(item.getId(), AnalyticsEvent.QUEUE_LIST);
+                        .sendMediaClickedEvent(item.getId(), VIEW_COMPONENT_QUEUE_LIST);
             }
             if (switchToPlayback) {
                 toggleQueueVisibility();
@@ -232,8 +239,8 @@ public class NowPlayingController {
                 ArrayList<String> items = new ArrayList<>();
                 items.add(item.getId());
                 mMediaItemsRepository.getAnalyticsManager().sendVisibleItemsEvents(null,
-                        AnalyticsEvent.PLAYBACK, AnalyticsEvent.SHOW,
-                        AnalyticsEvent.NONE, items);
+                        VIEW_COMPONENT_PLAYBACK, VIEW_ACTION_SHOW,
+                        AnalyticsEvent.VIEW_ACTION_MODE_NONE, items);
             }
         });
     }
@@ -311,7 +318,7 @@ public class NowPlayingController {
                 innerSeparator, maxTime, seekbar, albumArt, null, maxArtSize, contentFormat,
                 (mediaItem) -> {
                     mMediaItemsRepository.getAnalyticsManager()
-                            .sendMediaClickedEvent(mediaItem.getId(), AnalyticsEvent.PLAYBACK);
+                            .sendMediaClickedEvent(mediaItem.getId(), VIEW_COMPONENT_PLAYBACK);
                     MediaSource source = mPlaybackViewModel.getMediaSource().getValue();
                     mListener.goToMediaItem(source, mediaItem);
                 });
@@ -332,8 +339,8 @@ public class NowPlayingController {
         // save it.
         mCallbacks.setQueueVisible(updatedQueueVisibility);
 
-        mMediaItemsRepository.getAnalyticsManager().sendViewChangedEvent(AnalyticsEvent.QUEUE_LIST,
-                mQueueIsVisible ? AnalyticsEvent.SHOW : AnalyticsEvent.HIDE);
+        mMediaItemsRepository.getAnalyticsManager().sendViewChangedEvent(VIEW_COMPONENT_QUEUE_LIST,
+                mQueueIsVisible ? VIEW_ACTION_SHOW : VIEW_ACTION_HIDE);
     }
 
     private void updateAppBarMenu(boolean hasQueue) {
