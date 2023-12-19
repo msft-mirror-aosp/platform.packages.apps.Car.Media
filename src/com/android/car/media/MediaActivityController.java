@@ -20,8 +20,6 @@ import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK;
 import static android.view.accessibility.AccessibilityNodeInfo.ACTION_FOCUS;
 
-import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_HIDE;
-import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_SHOW;
 import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_COMPONENT_BROWSE_TABS;
 
 import static com.android.car.apps.common.util.ViewUtils.showHideViewAnimated;
@@ -41,7 +39,6 @@ import android.view.inputmethod.InputMethodManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.OptIn;
-import androidx.car.app.mediaextensions.analytics.event.BrowseChangeEvent;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -137,6 +134,9 @@ public class MediaActivityController extends ViewControllerBase {
         /** Called when switching to pbv without changing playback content*/
         void openPlaybackView();
 
+        /** Returns whether the entire browse view is visible. */
+        boolean isBrowseViewVisible();
+
         /** Returns the activity. */
         FragmentActivity getActivity();
 
@@ -168,7 +168,7 @@ public class MediaActivityController extends ViewControllerBase {
                         (LimitedBrowseAdapter) toolbarSearchResultsView.getAdapter();
                 int currFirst = limitedBrowseAdapter.findFirstVisibleItemIndex();
                 int currLast = limitedBrowseAdapter.findLastVisibleItemIndex(canKeyboardCover);
-                mPrevVisible = AnalyticsHelper.sendScrollEvent(mediaItemsRepository, null,
+                mPrevVisible = AnalyticsHelper.sendVisibleItemsInc(mediaItemsRepository, null,
                         mPrevVisible, limitedBrowseAdapter.getItems(), currFirst, currLast,
                         fromScroll);
             }
@@ -260,8 +260,9 @@ public class MediaActivityController extends ViewControllerBase {
                 mAppBarController.setSearchSupported(canSearch);
                 if (mBrowseStack.size() <= 0) {
                     String rootId = newBrowsingState.mBrowser.getRoot();
-                    mBrowseStack.pushRoot(rootId, BrowseViewController.newRootController(
-                            rootId, mBrowseCallbacks, mBrowseArea, mMediaItemsRepository));
+                    MediaItemMetadata fakeRootItem = MediaItemMetadata.createEmptyRootData(rootId);
+                    mBrowseStack.pushRoot(fakeRootItem, BrowseViewController.newRootController(
+                            fakeRootItem, mBrowseCallbacks, mBrowseArea, mMediaItemsRepository));
                 }
                 showCurrentNode(true);
 
@@ -355,8 +356,10 @@ public class MediaActivityController extends ViewControllerBase {
     private BrowseViewController recreateController(BrowseStack.BrowseEntry entry) {
         switch (entry.mType) {
             case TREE_ROOT:
-                return BrowseViewController.newRootController(mMediaItemsRepository.getRootId(),
-                        mBrowseCallbacks, mBrowseArea, mMediaItemsRepository);
+                String rootId = mMediaItemsRepository.getRootId();
+                MediaItemMetadata fakeRootItem = MediaItemMetadata.createEmptyRootData(rootId);
+                return BrowseViewController.newRootController(fakeRootItem, mBrowseCallbacks,
+                        mBrowseArea, mMediaItemsRepository);
             case SEARCH_RESULTS:
                 BrowseViewController result = BrowseViewController.newSearchResultsController(
                         mBrowseCallbacks, mBrowseArea, mMediaItemsRepository);
@@ -444,6 +447,11 @@ public class MediaActivityController extends ViewControllerBase {
         public void openPlaybackView() {
             hideKeyboard();
             mCallbacks.openPlaybackView();
+        }
+
+        @Override
+        public boolean isBrowseViewVisible() {
+            return mCallbacks.isBrowseViewVisible();
         }
 
         @Override
@@ -599,24 +607,7 @@ public class MediaActivityController extends ViewControllerBase {
 
         if (controller != null) {
             showHideContentAnimated(show, controller.getContent(), mViewAnimEndListener);
-            sendNodeChangeAnalytics(show, entry);
-        }
-    }
-
-    private void sendNodeChangeAnalytics(boolean show,
-            @NonNull BrowseStack.BrowseEntry browseEntry) {
-
-        BrowseViewController controller = browseEntry.getController();
-
-        if (controller != null) {
-            String currentId = null;
-            if (browseEntry.mItem != null) {
-                currentId = browseEntry.mItem.getId();
-            }
-            mMediaItemsRepository.getAnalyticsManager().sendBrowseChangeEvent(
-                    browseEntryTypeToAnalytic(browseEntry.mType),
-                    show ? VIEW_ACTION_SHOW : VIEW_ACTION_HIDE, currentId);
-            controller.onShow(show);
+            controller.onShow(show, entry.mType);
         }
     }
 
@@ -663,29 +654,6 @@ public class MediaActivityController extends ViewControllerBase {
         }
 
         showHideViewAnimated(show, content, mFadeDuration, listener);
-    }
-
-    @BrowseChangeEvent.BrowseMode
-    private int browseEntryTypeToAnalytic(BrowseStack.BrowseEntryType type) {
-        switch(type){
-            case TREE_TAB:
-                return BrowseChangeEvent.BROWSE_MODE_TREE_TAB;
-            case TREE_ROOT:
-                return BrowseChangeEvent.BROWSE_MODE_TREE_ROOT;
-            case TREE_BROWSE:
-                return BrowseChangeEvent.BROWSE_MODE_TREE_BROWSE;
-            case SEARCH_RESULTS:
-                return BrowseChangeEvent.BROWSE_MODE_SEARCH_RESULTS;
-            case SEARCH_BROWSE:
-                return BrowseChangeEvent.BROWSE_MODE_SEARCH_BROWSE;
-            case LINK:
-                return BrowseChangeEvent.BROWSE_MODE_LINK;
-            case LINK_BROWSE:
-                return BrowseChangeEvent.BROWSE_MODE_LINK_BROWSE;
-            default:
-                Log.e(TAG, "Unexpected BrowseEntryType");
-                return BrowseChangeEvent.BROWSE_MODE_UNKNOWN;
-        }
     }
 
     private void showSearchResults() {
@@ -751,7 +719,7 @@ public class MediaActivityController extends ViewControllerBase {
             View view = controller.getContent();
             mEntriesToDestroy.put(view, entry);
             showHideContentAnimated(false, view, mViewAnimEndListener);
-            sendNodeChangeAnalytics(false, entry);
+            controller.onShow(false, entry.mType);
         } else {
             entry.destroyController();
         }

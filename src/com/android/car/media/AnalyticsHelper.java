@@ -36,8 +36,12 @@ import java.util.stream.Collectors;
 @OptIn(markerClass = androidx.car.app.annotations2.ExperimentalCarApi.class)
 public class AnalyticsHelper {
 
-    /** Creates a sends a scroll event. Returns the items sent. */
-    public static List<String> sendScrollEvent(
+    /**
+     * Creates a sends a visible items event for the items that became visible and another event
+     * for the items that became hidden.
+     * @return the currently visible items.
+     */
+    public static List<String> sendVisibleItemsInc(
             MediaItemsRepository repo, MediaItemMetadata parentItem, List<String> prevItems,
             List<MediaItemMetadata> items, int currFirst, int currLast, boolean fromScroll) {
 

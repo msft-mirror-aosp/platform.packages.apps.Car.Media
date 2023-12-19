@@ -137,7 +137,8 @@ public class BrowseStackTests extends BaseMockitoTest {
             BrowseEntryType type = decodeType(codesAndNode[0]);
             switch (type) {
                 case TREE_ROOT:
-                    result.pushRoot("RootId", mock(BrowseViewController.class));
+                    MediaItemMetadata rootItem = MediaItemMetadata.createEmptyRootData("RootId");
+                    result.pushRoot(rootItem, mock(BrowseViewController.class));
                     break;
                 case SEARCH_RESULTS:
                     result.pushSearchResults(mock(BrowseViewController.class));

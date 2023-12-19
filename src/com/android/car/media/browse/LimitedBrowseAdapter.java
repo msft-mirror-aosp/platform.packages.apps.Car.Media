@@ -174,7 +174,7 @@ public class LimitedBrowseAdapter extends DelegatingContentLimitingAdapter<Brows
     public int findFirstVisibleItemIndex() {
         int rvPos = mRecyclerView.findFirstCompletelyVisibleItemPosition();
         if (rvPos == RecyclerView.NO_POSITION) return RecyclerView.NO_POSITION;
-        //Handle filter message
+        // Handle driving restriction message.
         int filterPos = positionToIndex(rvPos);
         if (filterPos == INVALID_INDEX) filterPos = positionToIndex(++rvPos);
         return filterPos;
@@ -193,7 +193,7 @@ public class LimitedBrowseAdapter extends DelegatingContentLimitingAdapter<Brows
         }
 
         int filterPos = positionToIndex(rvPos);
-        //Handle filter message
+        // Handle driving restriction message.
         if (filterPos == INVALID_INDEX) filterPos = positionToIndex(--rvPos);
 
         if (!canKeyboardCover) {

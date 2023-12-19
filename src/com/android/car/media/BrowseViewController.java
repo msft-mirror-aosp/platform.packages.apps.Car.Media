@@ -19,6 +19,8 @@ package com.android.car.media;
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK;
 
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_HIDE;
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_SHOW;
 import static androidx.recyclerview.widget.RecyclerView.NO_POSITION;
 
 import static com.android.car.apps.common.util.ViewUtils.removeFromParent;
@@ -151,6 +153,7 @@ public class BrowseViewController {
     private MediaItemsRepository mMediaRepo;
     private Map<String, CustomBrowseAction> mGlobalActions = new HashMap<>();
     private ActionsHeader mActionBar;
+    /** See {@link #onShow}. */
     private boolean mIsShown;
     List<String> mPrevVisible = new ArrayList<>();
 
@@ -189,10 +192,21 @@ public class BrowseViewController {
         }
     };
 
-    /** Called when BVC is shown/hidden by MAC#showNode */
-    public void onShow(boolean isShown) {
+    /**
+     * Called when BVC is shown/hidden by {@link MediaActivityController} (for its associated item)
+     * within the browse view. The given isShown does NOT reflect what is happening to the browse
+     * view itself (like being moved or faded away when going to the playback screen).
+     */
+    public void onShow(boolean isShown, @NonNull BrowseStack.BrowseEntryType type) {
         mIsShown = isShown;
-        //Send analytics
+
+        // Send analytics
+        String parentId = mParentItem == null ? "" : mParentItem.getId();
+
+        mMediaRepo.getAnalyticsManager().sendBrowseChangeEvent(
+                type.toAnalyticBrowseMode(), isShown ? VIEW_ACTION_SHOW : VIEW_ACTION_HIDE,
+                parentId);
+
         int firsPos = mLimitedBrowseAdapter.findFirstVisibleItemIndex();
         int lastPov = mLimitedBrowseAdapter.findLastVisibleItemIndex(false);
         if (mMediaItems.getValue() != null && mMediaItems.getValue().getData() != null
@@ -204,8 +218,7 @@ public class BrowseViewController {
                     .collect(Collectors.toCollection(ArrayList::new));
 
             mMediaRepo.getAnalyticsManager().sendVisibleItemsEvents(
-                    mParentItem == null ? null : mParentItem.getId(),
-                    AnalyticsEvent.VIEW_COMPONENT_BROWSE_LIST,
+                    parentId, AnalyticsEvent.VIEW_COMPONENT_BROWSE_LIST,
                     isShown ? AnalyticsEvent.VIEW_ACTION_SHOW : AnalyticsEvent.VIEW_ACTION_HIDE,
                     AnalyticsEvent.VIEW_ACTION_MODE_NONE, itemsSublist);
         }
@@ -285,6 +298,9 @@ public class BrowseViewController {
          */
         void openPlaybackView();
 
+        /** Returns whether the entire browse view is visible. */
+        boolean isBrowseViewVisible();
+
         /** Invoked when child nodes have been removed from this controller. */
         void onChildrenNodesRemoved(@NonNull BrowseViewController controller,
                 @NonNull Collection<MediaItemMetadata> removedNodes);
@@ -311,14 +327,14 @@ public class BrowseViewController {
             MediaItemsRepository mediaRepo,
             int rootBrowsableHint,
             int rootPlayableHint) {
-        return new BrowseViewController(callbacks, container, parentItem, null, rootBrowsableHint,
+        return new BrowseViewController(callbacks, container, parentItem, rootBrowsableHint,
                 rootPlayableHint, mediaRepo, true);
     }
 
     /** Creates a controller to display the top results of a search query (in a list). */
     static BrowseViewController newSearchResultsController(
             Callbacks callbacks, ViewGroup container, MediaItemsRepository mediaRepo) {
-        return new BrowseViewController(callbacks, container, null, null, 0, 0, mediaRepo, true);
+        return new BrowseViewController(callbacks, container, null, 0, 0, mediaRepo, true);
     }
 
     /**
@@ -327,11 +343,11 @@ public class BrowseViewController {
      * messages.
      */
     static BrowseViewController newRootController(
-            String rootId,
+            MediaItemMetadata parentItem,
             Callbacks callbacks,
             ViewGroup container,
             MediaItemsRepository mediaRepo) {
-        return new BrowseViewController(callbacks, container, null, rootId, 0, 0, mediaRepo, false);
+        return new BrowseViewController(callbacks, container, parentItem, 0, 0, mediaRepo, false);
     }
 
     private static Bundle createItemSubscriptionOptions(View myView, CarUiRecyclerView browseList) {
@@ -413,7 +429,6 @@ public class BrowseViewController {
             Callbacks callbacks,
             ViewGroup container,
             @Nullable MediaItemMetadata parentItem,
-            @Nullable String rootId,
             int rootBrowsableHint,
             int rootPlayableHint,
             MediaItemsRepository mediaRepo,
@@ -468,12 +483,9 @@ public class BrowseViewController {
         mBrowseList.addOnScrollListener(new CarUiRecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(CarUiRecyclerView recyclerView, int dx, int dy) {
-                //dx and dy are 0 when items in RV change or layout is requested. We should
+                // dx and dy are 0 when items in RV change or layout is requested. We should
                 // use this to trigger querying what is visible.
-                if (mIsShown) {
-                    //TODO(b/308462758) Trigger a sendScrollEvent when search query is cleared.
-                    sendScrollEvent(dx != 0 || dy != 0);
-                }
+                maybeSendVisibleItemsIncremental(dx != 0 || dy != 0);
             }
 
             @Override
@@ -500,7 +512,7 @@ public class BrowseViewController {
                     @Override
                     public void onEnd(@NonNull WindowInsetsAnimationCompat animation) {
                         super.onEnd(animation);
-                        if (mIsShown) sendScrollEvent(false);
+                        maybeSendVisibleItemsIncremental(false);
                     }
                 });
 
@@ -522,8 +534,6 @@ public class BrowseViewController {
         Bundle options = createItemSubscriptionOptions(mContainer, mBrowseList);
         if (parentItem != null) {
             mMediaItems = mediaRepo.getMediaChildren(parentItem.getId(), options);
-        } else if (rootId != null) {
-            mMediaItems = mediaRepo.getMediaChildren(rootId, options);
         } else {
             mMediaItems = mediaRepo.getSearchMediaItems();
         }
@@ -531,12 +541,14 @@ public class BrowseViewController {
 
     }
 
-    private void sendScrollEvent(boolean fromScroll) {
-        if (mMediaItems.getValue() != null && mMediaItems.getValue().getData() != null) {
+    private void maybeSendVisibleItemsIncremental(boolean fromScroll) {
+        if (mIsShown && mCallbacks.isBrowseViewVisible() && (mMediaItems.getValue() != null)
+                && mMediaItems.getValue().getData() != null) {
             int currFirst = mLimitedBrowseAdapter.findFirstVisibleItemIndex();
             int currLast = mLimitedBrowseAdapter.findLastVisibleItemIndex(true);
-            mPrevVisible = AnalyticsHelper.sendScrollEvent(mMediaRepo, mParentItem, mPrevVisible,
-                    mMediaItems.getValue().getData(), currFirst, currLast, fromScroll);
+            mPrevVisible = AnalyticsHelper.sendVisibleItemsInc(mMediaRepo, mParentItem,
+                    mPrevVisible, mMediaItems.getValue().getData(), currFirst, currLast,
+                    fromScroll);
         }
     }
 
@@ -748,7 +760,7 @@ public class BrowseViewController {
     String getDebugInfo() {
         StringBuilder log = new StringBuilder();
         log.append("[");
-        log.append((mParentItem != null) ? mParentItem.getTitle() : "Root");
+        log.append((mParentItem != null) ? mParentItem.getTitle() : "Search");
         log.append("]");
         FutureData<List<MediaItemMetadata>> children = mMediaItems.getValue();
         if (children == null) {

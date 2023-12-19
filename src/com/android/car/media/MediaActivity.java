@@ -703,9 +703,11 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         if (shouldShowMiniPlaybackControls) {
             Boolean visible = getInnerViewModel().getMiniControlsVisible().getValue();
             if (visible != Boolean.TRUE) {
+                mMiniPlaybackControls.onActualVisibilityChanged(true);
                 ViewUtils.showViewAnimated(mMiniPlaybackControls, mFadeDuration);
             }
         } else {
+            mMiniPlaybackControls.onActualVisibilityChanged(false);
             ViewUtils.hideViewAnimated(mMiniPlaybackControls, fadeOutDuration);
         }
         getInnerViewModel().setMiniControlsVisible(shouldShowMiniPlaybackControls);
@@ -726,6 +728,11 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
     @Override
     public void openPlaybackView() {
         maybeOpenPlayback();
+    }
+
+    @Override
+    public boolean isBrowseViewVisible() {
+        return mMode == Mode.BROWSING;
     }
 
     private void maybeOpenPlayback() {

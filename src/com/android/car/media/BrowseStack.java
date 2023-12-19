@@ -22,6 +22,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.car.app.mediaextensions.analytics.event.BrowseChangeEvent;
 
 import com.android.car.media.common.MediaItemMetadata;
 
@@ -68,6 +69,30 @@ public class BrowseStack {
         LINK,
         /** An item descending from a linked entry. */
         LINK_BROWSE;
+
+        /** Converts the entry type to the equivalent analytics browse mode. */
+        @BrowseChangeEvent.BrowseMode
+        public int toAnalyticBrowseMode() {
+            switch (this) {
+                case TREE_TAB:
+                    return BrowseChangeEvent.BROWSE_MODE_TREE_TAB;
+                case TREE_ROOT:
+                    return BrowseChangeEvent.BROWSE_MODE_TREE_ROOT;
+                case TREE_BROWSE:
+                    return BrowseChangeEvent.BROWSE_MODE_TREE_BROWSE;
+                case SEARCH_RESULTS:
+                    return BrowseChangeEvent.BROWSE_MODE_SEARCH_RESULTS;
+                case SEARCH_BROWSE:
+                    return BrowseChangeEvent.BROWSE_MODE_SEARCH_BROWSE;
+                case LINK:
+                    return BrowseChangeEvent.BROWSE_MODE_LINK;
+                case LINK_BROWSE:
+                    return BrowseChangeEvent.BROWSE_MODE_LINK_BROWSE;
+                default:
+                    Log.e(TAG, "Unexpected BrowseEntryType");
+                    return BrowseChangeEvent.BROWSE_MODE_UNKNOWN;
+            }
+        }
 
         BrowseEntryType getNextEntryBrowseType() {
             switch (this) {
@@ -137,9 +162,8 @@ public class BrowseStack {
         return mEntries.size();
     }
 
-    void pushRoot(String rootId, @NonNull BrowseViewController controller) {
+    void pushRoot(MediaItemMetadata fakeRootItem, @NonNull BrowseViewController controller) {
         if (mEntries.isEmpty()) {
-            MediaItemMetadata fakeRootItem = MediaItemMetadata.createEmptyRootData(rootId);
             mEntries.push(new BrowseEntry(BrowseEntryType.TREE_ROOT, fakeRootItem, controller));
         } else {
             Log.e(TAG, "Ignoring pushRoot on a non empty stack.");

@@ -549,8 +549,7 @@ public class PlaybackQueueController {
             private void sendScrollEvent(boolean fromScroll) {
                 int currFirst = mQueueAdapter.findFirstVisibleItemIndex();
                 int currLast = mQueueAdapter.findLastVisibleItemIndex();
-
-                mPrevVisible = AnalyticsHelper.sendScrollEvent(mMediaItemsRepository, null,
+                mPrevVisible = AnalyticsHelper.sendVisibleItemsInc(mMediaItemsRepository, null,
                         mPrevVisible, mQueueAdapter.mQueueItems, currFirst, currLast, fromScroll);
             }
         });
