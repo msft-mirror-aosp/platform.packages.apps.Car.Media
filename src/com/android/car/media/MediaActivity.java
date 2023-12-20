@@ -610,6 +610,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
                         VIEW_COMPONENT_BROWSE_LIST, VIEW_ACTION_HIDE);
                 break;
             case PLAYBACK:
+                mMediaActivityController.onNpvActualVisibilityChanged(false);
                 getMediaItemsRepository().getAnalyticsManager().sendViewChangedEvent(
                         VIEW_COMPONENT_PLAYBACK, VIEW_ACTION_HIDE);
                 break;
@@ -632,7 +633,10 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
                 mPlaybackContainer.setY(0);
                 mPlaybackContainer.setAlpha(0f);
                 ViewUtils.hideViewAnimated(mErrorContainer, fadeOutDuration);
-                ViewUtils.showViewAnimated(mPlaybackContainer, mFadeDuration);
+                // Reporting the view as visible at the end of the animation gives a chance for the
+                // new queue to be loaded and avoids reporting the old queue as visible.
+                ViewUtils.showViewAnimated(mPlaybackContainer, mFadeDuration,
+                        view -> mMediaActivityController.onNpvActualVisibilityChanged(true));
                 ViewUtils.hideViewAnimated(mBrowseContainer, fadeOutDuration);
                 getMediaItemsRepository().getAnalyticsManager().sendViewChangedEvent(
                         VIEW_COMPONENT_PLAYBACK, VIEW_ACTION_SHOW);

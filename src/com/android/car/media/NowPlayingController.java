@@ -245,6 +245,14 @@ public class NowPlayingController {
         });
     }
 
+    /**
+     * Tells the controller what is actually happening to its view, so that it can be
+     * considered hidden right when a hiding animation starts.
+     */
+    public void onActualVisibilityChanged(boolean isShown) {
+        mPlaybackQueueController.onActualVisibilityChanged(isShown && mQueueIsVisible);
+    }
+
     private void initPlaybackControls(PlaybackControlsActionBar playbackControls) {
         mPlaybackControls = playbackControls;
         mPlaybackControls.setModel(mPlaybackViewModel, getActivity());
@@ -358,6 +366,7 @@ public class NowPlayingController {
 
         if (mQueueIsVisible != visible) {
             mQueueIsVisible = visible;
+            mPlaybackQueueController.onActualVisibilityChanged(mQueueIsVisible);
             if (mQueueIsVisible) {
                 ViewUtils.showViewsAnimated(mViewsToShowWhenQueueIsVisible, mFadeDuration);
                 ViewUtils.hideViewsAnimated(mViewsToHideWhenQueueIsVisible, mFadeDuration);

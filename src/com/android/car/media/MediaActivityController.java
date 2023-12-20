@@ -20,6 +20,7 @@ import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK;
 import static android.view.accessibility.AccessibilityNodeInfo.ACTION_FOCUS;
 
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_COMPONENT_BROWSE_LIST;
 import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_COMPONENT_BROWSE_TABS;
 
 import static com.android.car.apps.common.util.ViewUtils.showHideViewAnimated;
@@ -168,9 +169,9 @@ public class MediaActivityController extends ViewControllerBase {
                         (LimitedBrowseAdapter) toolbarSearchResultsView.getAdapter();
                 int currFirst = limitedBrowseAdapter.findFirstVisibleItemIndex();
                 int currLast = limitedBrowseAdapter.findLastVisibleItemIndex(canKeyboardCover);
-                mPrevVisible = AnalyticsHelper.sendVisibleItemsInc(mediaItemsRepository, null,
-                        mPrevVisible, limitedBrowseAdapter.getItems(), currFirst, currLast,
-                        fromScroll);
+                mPrevVisible = AnalyticsHelper.sendVisibleItemsInc(VIEW_COMPONENT_BROWSE_LIST,
+                        mediaItemsRepository, null, mPrevVisible, limitedBrowseAdapter.getItems(),
+                        currFirst, currLast, fromScroll);
             }
         };
     }
@@ -351,6 +352,14 @@ public class MediaActivityController extends ViewControllerBase {
             }
         };
         mNowPlayingController.setListener(mNowPlayingListener);
+    }
+
+    /**
+     * Tells the Now Playing View controller what is actually happening to its view, so that it
+     * can be considered hidden right when a hiding animation starts.
+     */
+    public void onNpvActualVisibilityChanged(boolean isShown) {
+        mNowPlayingController.onActualVisibilityChanged(isShown);
     }
 
     private BrowseViewController recreateController(BrowseStack.BrowseEntry entry) {

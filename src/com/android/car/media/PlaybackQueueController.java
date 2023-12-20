@@ -16,6 +16,9 @@
 
 package com.android.car.media;
 
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_COMPONENT_QUEUE_LIST;
+import static androidx.recyclerview.widget.RecyclerView.NO_POSITION;
+
 import static com.android.car.ui.recyclerview.RangeFilter.INVALID_INDEX;
 
 import android.content.Context;
@@ -66,22 +69,24 @@ public class PlaybackQueueController {
 
     private static final String TAG = "PlaybackQueueController";
 
-    private Callbacks mCallbacks;
-    private LifeCycleObserverUxrContentLimiter mUxrContentLimiter;
-    private PlaybackViewModel mPlaybackViewModel;
-    private MediaItemsRepository mMediaItemsRepository;
+    private final Callbacks mCallbacks;
+    private final LifeCycleObserverUxrContentLimiter mUxrContentLimiter;
+    private final PlaybackViewModel mPlaybackViewModel;
+    private final MediaItemsRepository mMediaItemsRepository;
     private QueueItemsAdapter mQueueAdapter;
-    private CarUiRecyclerView mQueue;
+    private boolean mIsActuallyVisible = false;
+    private List<String> mPrevVisibleItems = new ArrayList<>();
+    private final CarUiRecyclerView mQueue;
     private PlaybackQueueCallback mPlaybackQueueCallback;
     private DefaultItemAnimator mItemAnimator;
 
     private PlaybackViewModel.PlaybackController mController;
     private Long mActiveQueueItemId;
 
-    private boolean mShowTimeForActiveQueueItem;
-    private boolean mShowIconForActiveQueueItem;
-    private boolean mShowThumbnailForQueueItem;
-    private boolean mShowSubtitleForQueueItem;
+    private final boolean mShowTimeForActiveQueueItem;
+    private final boolean mShowIconForActiveQueueItem;
+    private final boolean mShowThumbnailForQueueItem;
+    private final boolean mShowSubtitleForQueueItem;
 
     /**
      * The callbacks used to communicate the user interactions to the queue fragment listeners.
@@ -510,6 +515,31 @@ public class PlaybackQueueController {
         mPlaybackQueueCallback = callback;
     }
 
+    /**
+     * Tells the controller what is actually happening to its view, so that it can be
+     * considered hidden right when a hiding animation starts.
+     */
+    public void onActualVisibilityChanged(boolean isVisible) {
+        if (mIsActuallyVisible != isVisible) {
+            mIsActuallyVisible = isVisible;
+            sendVisibleItemsIncremental(isVisible, false);
+        }
+    }
+
+    private void sendVisibleItemsIncremental(boolean isShown, boolean fromScroll) {
+        if (isShown) {
+            int currFirst = mQueueAdapter.findFirstVisibleItemIndex();
+            int currLast = mQueueAdapter.findLastVisibleItemIndex();
+            mPrevVisibleItems = AnalyticsHelper.sendVisibleItemsInc(VIEW_COMPONENT_QUEUE_LIST,
+                    mMediaItemsRepository, null, mPrevVisibleItems, mQueueAdapter.mQueueItems,
+                    currFirst, currLast, fromScroll);
+        } else {
+            mPrevVisibleItems = AnalyticsHelper.sendVisibleItemsInc(VIEW_COMPONENT_QUEUE_LIST,
+                    mMediaItemsRepository, null, mPrevVisibleItems, mQueueAdapter.mQueueItems,
+                    NO_POSITION, NO_POSITION, false);
+        }
+    }
+
     private void initQueue() {
 
         int decorationHeight = getActivity().getResources().getDimensionPixelSize(
@@ -534,24 +564,16 @@ public class PlaybackQueueController {
                 });
         mQueue.setAdapter(mQueueAdapter);
         mQueue.addOnScrollListener(new CarUiRecyclerView.OnScrollListener() {
-            List<String> mPrevVisible = new ArrayList<>();
 
             @Override
             public void onScrolled(CarUiRecyclerView recyclerView, int dx, int dy) {
                 //dx and dy are 0 when items in RV change or layout is requested. We should
                 // use this to trigger querying what is visible.
-                sendScrollEvent(dx != 0 || dy != 0);
+                sendVisibleItemsIncremental(true, (dx != 0 || dy != 0));
             }
 
             @Override
             public void onScrollStateChanged(CarUiRecyclerView recyclerView, int newState) {}
-
-            private void sendScrollEvent(boolean fromScroll) {
-                int currFirst = mQueueAdapter.findFirstVisibleItemIndex();
-                int currLast = mQueueAdapter.findLastVisibleItemIndex();
-                mPrevVisible = AnalyticsHelper.sendVisibleItemsInc(mMediaItemsRepository, null,
-                        mPrevVisible, mQueueAdapter.mQueueItems, currFirst, currLast, fromScroll);
-            }
         });
         // Disable item changed animation.
         mItemAnimator = new DefaultItemAnimator();
@@ -570,6 +592,9 @@ public class PlaybackQueueController {
 
     void setQueue(List<MediaItemMetadata> queueItems) {
         mQueueAdapter.setItems(queueItems);
+        if (mIsActuallyVisible) {
+            sendVisibleItemsIncremental(/* visible */ true, /* fromScroll */ false);
+        }
     }
 
     private void onQueueItemClicked(MediaItemMetadata item) {

@@ -21,6 +21,7 @@ import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK;
 
 import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_HIDE;
 import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_SHOW;
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_COMPONENT_BROWSE_LIST;
 import static androidx.recyclerview.widget.RecyclerView.NO_POSITION;
 
 import static com.android.car.apps.common.util.ViewUtils.removeFromParent;
@@ -164,7 +165,7 @@ public class BrowseViewController {
         protected void onPlayableItemClicked(@NonNull MediaItemMetadata item) {
             if (item.getId() != null) {
                 mMediaRepo.getAnalyticsManager().sendMediaClickedEvent(item.getId(),
-                        AnalyticsEvent.VIEW_COMPONENT_BROWSE_LIST);
+                        VIEW_COMPONENT_BROWSE_LIST);
             }
             mCallbacks.onPlayableItemClicked(item);
         }
@@ -173,7 +174,7 @@ public class BrowseViewController {
         protected void onBrowsableItemClicked(@NonNull MediaItemMetadata item) {
             if (item.getId() != null) {
                 mMediaRepo.getAnalyticsManager().sendMediaClickedEvent(item.getId(),
-                        AnalyticsEvent.VIEW_COMPONENT_BROWSE_LIST);
+                        VIEW_COMPONENT_BROWSE_LIST);
             }
             mCallbacks.goToMediaItem(item);
         }
@@ -218,7 +219,7 @@ public class BrowseViewController {
                     .collect(Collectors.toCollection(ArrayList::new));
 
             mMediaRepo.getAnalyticsManager().sendVisibleItemsEvents(
-                    parentId, AnalyticsEvent.VIEW_COMPONENT_BROWSE_LIST,
+                    parentId, VIEW_COMPONENT_BROWSE_LIST,
                     isShown ? AnalyticsEvent.VIEW_ACTION_SHOW : AnalyticsEvent.VIEW_ACTION_HIDE,
                     AnalyticsEvent.VIEW_ACTION_MODE_NONE, itemsSublist);
         }
@@ -546,9 +547,9 @@ public class BrowseViewController {
                 && mMediaItems.getValue().getData() != null) {
             int currFirst = mLimitedBrowseAdapter.findFirstVisibleItemIndex();
             int currLast = mLimitedBrowseAdapter.findLastVisibleItemIndex(true);
-            mPrevVisible = AnalyticsHelper.sendVisibleItemsInc(mMediaRepo, mParentItem,
-                    mPrevVisible, mMediaItems.getValue().getData(), currFirst, currLast,
-                    fromScroll);
+            mPrevVisible = AnalyticsHelper.sendVisibleItemsInc(VIEW_COMPONENT_BROWSE_LIST,
+                    mMediaRepo, mParentItem, mPrevVisible, mMediaItems.getValue().getData(),
+                    currFirst, currLast, fromScroll);
         }
     }
 
