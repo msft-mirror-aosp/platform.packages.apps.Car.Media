@@ -19,7 +19,7 @@ package com.android.car.media;
 import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_HIDE;
 import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_MODE_NONE;
 import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_MODE_SCROLL;
-import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_COMPONENT_BROWSE_LIST;
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_SHOW;
 import static androidx.recyclerview.widget.RecyclerView.NO_POSITION;
 
 import androidx.annotation.OptIn;
@@ -42,20 +42,20 @@ public class AnalyticsHelper {
      * @return the currently visible items.
      */
     public static List<String> sendVisibleItemsInc(
+            @AnalyticsEvent.ViewComponent int viewComp,
             MediaItemsRepository repo, MediaItemMetadata parentItem, List<String> prevItems,
             List<MediaItemMetadata> items, int currFirst, int currLast, boolean fromScroll) {
 
-        //Handle empty list by hiding previous and returning empty.
+        // Handle empty list by hiding previous and returning empty.
         if (items.isEmpty() && !prevItems.isEmpty()) {
             repo.getAnalyticsManager().sendVisibleItemsEvents(
-                    parentItem != null ? parentItem.getId() : null,
-                    VIEW_COMPONENT_BROWSE_LIST, VIEW_ACTION_HIDE,
+                    parentItem != null ? parentItem.getId() : null, viewComp, VIEW_ACTION_HIDE,
                     fromScroll ? VIEW_ACTION_MODE_SCROLL : VIEW_ACTION_MODE_NONE,
                     new ArrayList<>(prevItems));
             return List.of();
         }
 
-        //If for any reason there are no visible items or error state
+        // If for any reason there are no visible items or error state
         // we have nothing to show, hide prev
         if (currFirst == NO_POSITION
                 || currLast == NO_POSITION
@@ -64,8 +64,7 @@ public class AnalyticsHelper {
 
             if (!prevItems.isEmpty()) {
                 repo.getAnalyticsManager().sendVisibleItemsEvents(
-                        parentItem != null ? parentItem.getId() : null,
-                        VIEW_COMPONENT_BROWSE_LIST, VIEW_ACTION_HIDE,
+                        parentItem != null ? parentItem.getId() : null, viewComp, VIEW_ACTION_HIDE,
                         fromScroll ? VIEW_ACTION_MODE_SCROLL : VIEW_ACTION_MODE_NONE,
                         new ArrayList<>(prevItems));
             }
@@ -91,15 +90,13 @@ public class AnalyticsHelper {
 
         if (!delta.isEmpty()) {
             repo.getAnalyticsManager().sendVisibleItemsEvents(
-                    parentItem != null ? parentItem.getId() : null,
-                    VIEW_COMPONENT_BROWSE_LIST, VIEW_ACTION_HIDE,
+                    parentItem != null ? parentItem.getId() : null, viewComp, VIEW_ACTION_HIDE,
                     fromScroll ? VIEW_ACTION_MODE_SCROLL : VIEW_ACTION_MODE_NONE,
                     new ArrayList<>(delta));
         }
         if (!deltaNew.isEmpty()) {
             repo.getAnalyticsManager().sendVisibleItemsEvents(
-                    parentItem != null ? parentItem.getId() : null,
-                    VIEW_COMPONENT_BROWSE_LIST, AnalyticsEvent.VIEW_ACTION_SHOW,
+                    parentItem != null ? parentItem.getId() : null, viewComp, VIEW_ACTION_SHOW,
                     fromScroll ? VIEW_ACTION_MODE_SCROLL : VIEW_ACTION_MODE_NONE,
                     new ArrayList<>(deltaNew));
         }
