@@ -113,6 +113,8 @@ public class MediaActivityController extends ViewControllerBase {
 
     private final Observer<BrowsingState> mMediaBrowsingObserver =
             this::onMediaBrowsingStateChanged;
+    private final Observer<FutureData<MediaSource>> mFutureMediaSourceObserver =
+        future -> onMediaSourceChanged(future.isLoading() ? null : future.getData());
 
     private final NowPlayingController mNowPlayingController;
     private final NowPlayingController.NowPlayingListener mNowPlayingListener;
@@ -327,9 +329,7 @@ public class MediaActivityController extends ViewControllerBase {
         // Observe forever ensures the caches are destroyed even while the activity isn't resumed.
         mMediaItemsRepository.getBrowsingState().observeForever(mMediaBrowsingObserver);
 
-        mViewModel.getBrowsedMediaSource().observeForever(future -> {
-            onMediaSourceChanged(future.isLoading() ? null : future.getData());
-        });
+        mViewModel.getBrowsedMediaSource().observeForever(mFutureMediaSourceObserver);
 
         mMediaItemsRepository.getRootMediaItems().observe(activity, this::onRootMediaItemsUpdate);
         mViewModel.getMiniControlsVisible().observe(activity, this::onPlaybackControlsChanged);
@@ -381,6 +381,9 @@ public class MediaActivityController extends ViewControllerBase {
         for (BrowseStack.BrowseEntry entry : mBrowseStack.getEntries()) {
             entry.destroyController();
         }
+
+        mViewModel.getBrowsedMediaSource().removeObserver(mFutureMediaSourceObserver);
+
         if (mToolbarSearchResultsView != null) {
             mToolbarSearchResultsView.setAdapter(null);
         }

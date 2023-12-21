@@ -148,7 +148,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         // Create the models for the browse mode. They are based on the given browsedSource to
         // which this MediaActivity instance is permanently tied. New sources are opened in a
         // different MediaActivity instance.
-        models[MEDIA_SOURCE_MODE_BROWSE] = new MediaModels(this, browsedSource);
+        models[MEDIA_SOURCE_MODE_BROWSE] = new MediaModels(app, browsedSource);
 
         // Create the models for the playback mode.
         if (getResources().getBoolean(R.bool.show_playback_media_source)) {
