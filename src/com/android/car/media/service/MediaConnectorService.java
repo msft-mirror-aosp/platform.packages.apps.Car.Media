@@ -17,7 +17,6 @@
 package com.android.car.media.service;
 
 import static android.car.media.CarMediaIntents.EXTRA_MEDIA_COMPONENT;
-import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -37,6 +36,7 @@ import androidx.lifecycle.LifecycleService;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 
+import com.android.car.media.CarMediaApp;
 import com.android.car.media.R;
 import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.playback.PlaybackViewModel.PlaybackStateWrapper;
@@ -57,7 +57,6 @@ public class MediaConnectorService extends LifecycleService {
     private static final String NOTIFICATION_CHANNEL_ID = "com.android.car.media.service";
     private static final String NOTIFICATION_CHANNEL_NAME = "MediaConnectorService";
     private static final String EXTRA_AUTOPLAY = "com.android.car.media.autoplay";
-
 
     private static class TaskInfo {
         private final int mStartId;
@@ -95,8 +94,9 @@ public class MediaConnectorService extends LifecycleService {
         super.onCreate();
 
         if (mPlaybackLiveData == null) {
-            mPlaybackLiveData = PlaybackViewModel.get(getApplication(), MEDIA_SOURCE_MODE_PLAYBACK)
-                    .getPlaybackStateWrapper();
+            CarMediaApp app = (CarMediaApp) getApplication();
+            PlaybackViewModel pvm = app.getMediaModelsForPlaybackMode().getPlaybackViewModel();
+            mPlaybackLiveData = pvm.getPlaybackStateWrapper();
         }
 
         // A single observer simplifies the service (less risk to end up with multiple ones).
@@ -107,6 +107,12 @@ public class MediaConnectorService extends LifecycleService {
         NotificationManager manager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         manager.createNotificationChannel(channel);
+    }
+
+    @Override
+    public void onDestroy() {
+        mPlaybackLiveData.removeObserver(mPlaybackStateListener);
+        super.onDestroy();
     }
 
     private final Observer<PlaybackStateWrapper> mPlaybackStateListener =

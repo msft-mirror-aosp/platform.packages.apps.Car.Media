@@ -47,6 +47,7 @@ android_library {
         "androidx.lifecycle_lifecycle-extensions",
         "car-apps-common-prebuilt",
         "car-media-common-prebuilt",
+        "car-media-extensions-prebuilt",
         "car-ui-lib-prebuilt",
         "car-uxr-client-lib-prebuilt",
     ],
@@ -123,7 +124,7 @@ android_test {
         "hamcrest-library",
         "mockito-target-inline-minus-junit4",
         "platform-test-annotations",
-        "truth-prebuilt",
+        "truth",
         "car-media-app-source"
     ],
 

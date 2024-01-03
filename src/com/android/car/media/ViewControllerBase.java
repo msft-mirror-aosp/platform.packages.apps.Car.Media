@@ -37,14 +37,16 @@ import androidx.annotation.CallSuper;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.OptIn;
+import androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent;
 import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.android.car.apps.common.util.CarPackageManagerUtils;
 import com.android.car.media.common.browse.MediaBrowserViewModelImpl;
 import com.android.car.media.common.browse.MediaItemsRepository;
 import com.android.car.media.common.source.MediaBrowserConnector;
 import com.android.car.media.common.source.MediaSource;
-import com.android.car.media.common.source.MediaSourceViewModel;
 import com.android.car.media.widgets.AppBarController;
 import com.android.car.ui.baselayout.Insets;
 import com.android.car.ui.baselayout.InsetsChangedListener;
@@ -55,24 +57,27 @@ import com.android.car.ui.toolbar.ToolbarController;
  * Functionality common to content view controllers. It mainly handles the AppBar view,
  * which is common to all of them.
  */
+@OptIn(markerClass = androidx.car.app.annotations2.ExperimentalCarApi.class)
 abstract class ViewControllerBase implements InsetsChangedListener {
     private static final String TAG = "ViewControllerBase";
 
     private final boolean mShouldShowSoundSettings;
     private final CarPackageManager mCarPackageManager;
 
+    protected final MediaActivity.ViewModel mViewModel;
     final FragmentActivity mActivity;
     final int mFadeDuration;
     final View mContent;
     final AppBarController mAppBarController;
-    final MediaSourceViewModel mMediaSourceVM;
-
+    final MediaItemsRepository mMediaItemsRepository;
     private PendingIntent mCurrentSourceBrowserSettings;
     private Intent mCurrentSourcePreferences;
 
-    ViewControllerBase(FragmentActivity activity, MediaItemsRepository mediaItemsRepo,
-            CarPackageManager carPackageManager, ViewGroup container, @LayoutRes int resource) {
+    ViewControllerBase(FragmentActivity activity, CarPackageManager carPackageManager,
+            ViewGroup container, @LayoutRes int resource) {
         mActivity = activity;
+        mViewModel = new ViewModelProvider(activity).get(MediaActivity.ViewModel.class);
+        mMediaItemsRepository = mViewModel.getMediaItemsRepository(MEDIA_SOURCE_MODE_BROWSE);
         Resources res = mActivity.getResources();
         mFadeDuration = res.getInteger(R.integer.new_album_art_fade_in_duration);
         mShouldShowSoundSettings = res.getBoolean(R.bool.show_sound_settings);
@@ -85,7 +90,8 @@ abstract class ViewControllerBase implements InsetsChangedListener {
         updater.addListener(this);
         ToolbarController toolbar = CarUi.installBaseLayoutAround(mContent, updater, true);
 
-        mAppBarController = new AppBarController(activity, toolbar, R.xml.menuitems_browse,
+        mAppBarController = new AppBarController(activity, mMediaItemsRepository, toolbar,
+                R.xml.menuitems_browse,
                 res.getBoolean(R.bool.use_media_source_logo_for_app_selector));
         mAppBarController.checkBrowseMenus();
         mAppBarController.setSearchSupported(false);
@@ -93,10 +99,9 @@ abstract class ViewControllerBase implements InsetsChangedListener {
 
         mCarPackageManager = carPackageManager;
 
-        mMediaSourceVM = MediaSourceViewModel.get(activity.getApplication(),
-                MEDIA_SOURCE_MODE_BROWSE);
+        mMediaItemsRepository.getBrowsingState().observe(activity,
+                this::onMediaBrowsingStateChanged);
 
-        mediaItemsRepo.getBrowsingState().observe(activity, this::onMediaBrowsingStateChanged);
     }
 
     @Override
@@ -115,6 +120,8 @@ abstract class ViewControllerBase implements InsetsChangedListener {
             if (Log.isLoggable(TAG, Log.DEBUG)) {
                 Log.d(TAG, "onSettingsSelection");
             }
+            mMediaItemsRepository.getAnalyticsManager().sendViewChangedEvent(
+                    AnalyticsEvent.VIEW_COMPONENT_SETTINGS_VIEW, AnalyticsEvent.VIEW_ACTION_SHOW);
             try {
                 if (mCurrentSourceBrowserSettings != null) {
                     mCurrentSourceBrowserSettings.send();

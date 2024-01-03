@@ -16,32 +16,41 @@
 
 package com.android.car.media;
 
+import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
+import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK;
 import static android.view.accessibility.AccessibilityNodeInfo.ACTION_FOCUS;
 
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_COMPONENT_BROWSE_LIST;
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_COMPONENT_BROWSE_TABS;
+
 import static com.android.car.apps.common.util.ViewUtils.showHideViewAnimated;
+import static com.android.car.media.common.source.MediaBrowserConnector.ConnectionStatus.CONNECTED;
 import static com.android.car.ui.utils.ViewUtils.LazyLayoutView;
 
 import android.car.content.pm.CarPackageManager;
 import android.content.Context;
 import android.support.v4.media.MediaBrowserCompat;
+import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.OptIn;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.OnScrollListener;
 
 import com.android.car.apps.common.util.FutureData;
 import com.android.car.apps.common.util.ViewUtils.ViewAnimEndListener;
 import com.android.car.media.BrowseStack.BrowseEntryType;
 import com.android.car.media.MediaActivity.Mode;
-import com.android.car.media.PlaybackFragment.PlaybackFragmentListener;
+import com.android.car.media.browse.LimitedBrowseAdapter;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.browse.MediaBrowserViewModelImpl;
 import com.android.car.media.common.browse.MediaItemsRepository;
@@ -66,6 +75,7 @@ import java.util.Objects;
  * Controls the views of the {@link MediaActivity}.
  * TODO: finish moving control code out of MediaActivity (b/179292809).
  */
+@OptIn(markerClass = androidx.car.app.annotations2.ExperimentalCarApi.class)
 public class MediaActivityController extends ViewControllerBase {
 
     private static final String TAG = "MediaActivityCtr";
@@ -87,12 +97,13 @@ public class MediaActivityController extends ViewControllerBase {
      * Updated in {@link #onMediaSourceChanged}.
      */
     private BrowseStack mBrowseStack;
-    private final MediaActivity.ViewModel mViewModel;
 
     private int mRootBrowsableHint;
     private int mRootPlayableHint;
     private boolean mBrowseTreeHasChildrenList;
     private boolean mAcceptTabSelection = true;
+
+    private String mPendingMediaId;
 
     /**
      * Media items to display as tabs. If null, it means we haven't finished loading them yet. If
@@ -103,8 +114,11 @@ public class MediaActivityController extends ViewControllerBase {
 
     private final Observer<BrowsingState> mMediaBrowsingObserver =
             this::onMediaBrowsingStateChanged;
+    private final Observer<FutureData<MediaSource>> mFutureMediaSourceObserver =
+        future -> onMediaSourceChanged(future.isLoading() ? null : future.getData());
 
-    private final PlaybackFragment.PlaybackFragmentListener mPlaybackFragmentListener;
+    private final NowPlayingController mNowPlayingController;
+    private final NowPlayingController.NowPlayingListener mNowPlayingListener;
 
     /**
      * Callbacks (implemented by the hosting Activity)
@@ -123,6 +137,9 @@ public class MediaActivityController extends ViewControllerBase {
         /** Called when switching to pbv without changing playback content*/
         void openPlaybackView();
 
+        /** Returns whether the entire browse view is visible. */
+        boolean isBrowseViewVisible();
+
         /** Returns the activity. */
         FragmentActivity getActivity();
 
@@ -130,12 +147,37 @@ public class MediaActivityController extends ViewControllerBase {
         void changeMode(Mode mode);
 
         /** Switches to the given source. */
-        void changeSource(MediaSource source);
+        void changeSource(MediaSource source, MediaItemMetadata mediaItem);
+
+        /** Returns whether the queue should be visible. */
+        boolean getQueueVisible();
+
+        /** Saves whether the queue should be visible. */
+        void setQueueVisible(boolean visible);
     }
 
-    PlaybackFragmentListener getPlaybackFragmentListener() {
-        return mPlaybackFragmentListener;
+    private static OnScrollListener createWideKeyboardSearchResultListener(
+            RecyclerView toolbarSearchResultsView, MediaItemsRepository mediaItemsRepository) {
+        return new OnScrollListener() {
+            List<String> mPrevVisible = new ArrayList<>();
+
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                sendScrollEvent(dx != 0 || dy != 0, false);
+            }
+
+            private void sendScrollEvent(boolean fromScroll, boolean canKeyboardCover) {
+                LimitedBrowseAdapter limitedBrowseAdapter =
+                        (LimitedBrowseAdapter) toolbarSearchResultsView.getAdapter();
+                int currFirst = limitedBrowseAdapter.findFirstVisibleItemIndex();
+                int currLast = limitedBrowseAdapter.findLastVisibleItemIndex(canKeyboardCover);
+                mPrevVisible = AnalyticsHelper.sendVisibleItemsInc(VIEW_COMPONENT_BROWSE_LIST,
+                        mediaItemsRepository, null, mPrevVisible, limitedBrowseAdapter.getItems(),
+                        currFirst, currLast, fromScroll);
+            }
+        };
     }
+
 
     /**
      * Moves the user one level up in the browse/search tree. Returns whether that was possible.
@@ -143,6 +185,7 @@ public class MediaActivityController extends ViewControllerBase {
     private boolean navigateBack() {
         boolean result = false;
         if (isStacked()) {
+            // Clean up previous
             hideAndDestroyStackEntry(mBrowseStack.pop());
 
             // Show the parent (if any)
@@ -191,10 +234,6 @@ public class MediaActivityController extends ViewControllerBase {
         }
     }
 
-    private void updateSearchQuery(@Nullable String query) {
-        mMediaItemsRepository.setSearchQuery(query);
-    }
-
     /**
      * Clears search state, removes any UI elements from previous results.
      */
@@ -222,14 +261,18 @@ public class MediaActivityController extends ViewControllerBase {
 
                 boolean canSearch = MediaBrowserViewModelImpl.getSupportsSearch(browser);
                 mAppBarController.setSearchSupported(canSearch);
-
                 if (mBrowseStack.size() <= 0) {
-                    mBrowseStack.pushRoot(BrowseViewController.newRootController(
-                            mBrowseCallbacks, mBrowseArea, mMediaItemsRepository));
+                    String rootId = newBrowsingState.mBrowser.getRoot();
+                    MediaItemMetadata fakeRootItem = MediaItemMetadata.createEmptyRootData(rootId);
+                    mBrowseStack.pushRoot(fakeRootItem, BrowseViewController.newRootController(
+                            fakeRootItem, mBrowseCallbacks, mBrowseArea, mMediaItemsRepository));
                 }
                 showCurrentNode(true);
-                break;
 
+                if (mPendingMediaId != null) {
+                    navigateTo(mPendingMediaId);
+                }
+                break;
             case DISCONNECTING:
             case REJECTED:
             case SUSPENDED:
@@ -241,24 +284,32 @@ public class MediaActivityController extends ViewControllerBase {
     }
 
 
-    MediaActivityController(Callbacks callbacks, MediaItemsRepository mediaItemsRepo,
-            CarPackageManager carPackageManager, ViewGroup container) {
-        super(callbacks.getActivity(), mediaItemsRepo, carPackageManager, container,
+    MediaActivityController(Callbacks callbacks, MediaActivity.ViewModel viewModel,
+            CarPackageManager carPackageManager, ViewGroup container, ViewGroup playbackContainer) {
+        super(callbacks.getActivity(), carPackageManager, container,
                 R.layout.fragment_browse);
 
         FragmentActivity activity = callbacks.getActivity();
         mCallbacks = callbacks;
-        mMediaItemsRepository = mediaItemsRepo;
-        mViewModel = ViewModelProviders.of(activity).get(MediaActivity.ViewModel.class);
+        mMediaItemsRepository = viewModel.getMediaItemsRepository(MEDIA_SOURCE_MODE_BROWSE);
         mBrowseStack = mViewModel.getBrowseStack();
         mBrowseArea = mContent.requireViewById(R.id.browse_content_area);
         mFpv = activity.requireViewById(R.id.fpv);
+
+        LayoutInflater inflater = LayoutInflater.from(playbackContainer.getContext());
+        View playbackView = inflater.inflate(R.layout.fragment_playback, playbackContainer, false);
+        playbackContainer.addView(playbackView);
+        mNowPlayingController = new NowPlayingController(callbacks, playbackView,
+                viewModel.getPlaybackViewModel(MEDIA_SOURCE_MODE_PLAYBACK),
+                viewModel.getMediaItemsRepository(MEDIA_SOURCE_MODE_PLAYBACK));
 
         mAppBarController.setListener(mAppBarListener);
         mAppBarController.setSearchQuery(mViewModel.getSearchQuery());
         if (mAppBarController.getSearchCapabilities().canShowSearchResultsView()) {
             // TODO(b/180441965) eliminate the need to create a different view
             mToolbarSearchResultsView = new RecyclerView(activity);
+            mToolbarSearchResultsView.addOnScrollListener(createWideKeyboardSearchResultListener(
+                    mToolbarSearchResultsView, mMediaItemsRepository));
 
             ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -277,16 +328,14 @@ public class MediaActivityController extends ViewControllerBase {
         updateAppBar();
 
         // Observe forever ensures the caches are destroyed even while the activity isn't resumed.
-        mediaItemsRepo.getBrowsingState().observeForever(mMediaBrowsingObserver);
+        mMediaItemsRepository.getBrowsingState().observeForever(mMediaBrowsingObserver);
 
-        mViewModel.getBrowsedMediaSource().observeForever(future -> {
-            onMediaSourceChanged(future.isLoading() ? null : future.getData());
-        });
+        mViewModel.getBrowsedMediaSource().observeForever(mFutureMediaSourceObserver);
 
         mMediaItemsRepository.getRootMediaItems().observe(activity, this::onRootMediaItemsUpdate);
         mViewModel.getMiniControlsVisible().observe(activity, this::onPlaybackControlsChanged);
 
-        mPlaybackFragmentListener = (source, mediaItem) -> {
+        mNowPlayingListener = (source, mediaItem) -> {
             if (source == null || mediaItem == null) {
                 Log.e(TAG, "goToMediaItem error S: " + source + " MI: " + mediaItem);
                 return;
@@ -297,22 +346,34 @@ public class MediaActivityController extends ViewControllerBase {
             mCallbacks.changeMode(Mode.BROWSING);
 
             if (!Objects.equals(source, mViewModel.getMediaSourceValue())) {
-                mCallbacks.changeSource(source);
+                mCallbacks.changeSource(source, mediaItem);
+            } else {
+                navigateTo(mediaItem);
             }
-
-            navigateTo(mediaItem);
         };
+        mNowPlayingController.setListener(mNowPlayingListener);
+    }
+
+    /**
+     * Tells the Now Playing View controller what is actually happening to its view, so that it
+     * can be considered hidden right when a hiding animation starts.
+     */
+    public void onNpvActualVisibilityChanged(boolean isShown) {
+        mNowPlayingController.onActualVisibilityChanged(isShown);
     }
 
     private BrowseViewController recreateController(BrowseStack.BrowseEntry entry) {
         switch (entry.mType) {
             case TREE_ROOT:
-                return BrowseViewController.newRootController(
-                        mBrowseCallbacks, mBrowseArea, mMediaItemsRepository);
+                String rootId = mMediaItemsRepository.getRootId();
+                MediaItemMetadata fakeRootItem = MediaItemMetadata.createEmptyRootData(rootId);
+                return BrowseViewController.newRootController(fakeRootItem, mBrowseCallbacks,
+                        mBrowseArea, mMediaItemsRepository);
             case SEARCH_RESULTS:
-                updateSearchQuery(mViewModel.getSearchQuery());
-                return BrowseViewController.newSearchResultsController(
+                BrowseViewController result = BrowseViewController.newSearchResultsController(
                         mBrowseCallbacks, mBrowseArea, mMediaItemsRepository);
+                result.updateSearchQuery(mViewModel.getSearchQuery());
+                return result;
             default:
                 if (entry.mItem == null) {
                     Log.e(TAG, "Can't recreate controller for a null item!");
@@ -329,6 +390,9 @@ public class MediaActivityController extends ViewControllerBase {
         for (BrowseStack.BrowseEntry entry : mBrowseStack.getEntries()) {
             entry.destroyController();
         }
+
+        mViewModel.getBrowsedMediaSource().removeObserver(mFutureMediaSourceObserver);
+
         if (mToolbarSearchResultsView != null) {
             mToolbarSearchResultsView.setAdapter(null);
         }
@@ -338,6 +402,10 @@ public class MediaActivityController extends ViewControllerBase {
         @Override
         public void onTabSelected(MediaItemMetadata item) {
             if (mAcceptTabSelection && (item != null) && (item != getSelectedTab())) {
+                if (item.getId() != null) {
+                    mMediaItemsRepository.getAnalyticsManager()
+                            .sendMediaClickedEvent(item.getId(), VIEW_COMPONENT_BROWSE_TABS);
+                }
                 // Clear the entire stack, including search and links.
                 hideAndDestroyStackEntries(mBrowseStack.removeAllEntriesExceptRoot());
                 mBrowseStack.insertRootTab(item, createControllerForItem(item));
@@ -357,7 +425,14 @@ public class MediaActivityController extends ViewControllerBase {
                 Log.d(TAG, "onSearch: " + query);
             }
             mViewModel.setSearchQuery(query);
-            updateSearchQuery(query);
+
+            BrowseStack.BrowseEntry entry = mBrowseStack.peek();
+            if ((entry != null) && (entry.getController() != null)) {
+                BrowseViewController controller = entry.getController();
+                controller.updateSearchQuery(query);
+            } else {
+                Log.e(TAG, "onSearch needs entry and controller!! " + entry);
+            }
         }
     };
 
@@ -384,6 +459,11 @@ public class MediaActivityController extends ViewControllerBase {
         public void openPlaybackView() {
             hideKeyboard();
             mCallbacks.openPlaybackView();
+        }
+
+        @Override
+        public boolean isBrowseViewVisible() {
+            return mCallbacks.isBrowseViewVisible();
         }
 
         @Override
@@ -450,6 +530,42 @@ public class MediaActivityController extends ViewControllerBase {
         return BrowseEntryType.LINK;
     }
 
+    /** Fetches the given media item and displays it. Can be called before being connected. */
+    public void navigateTo(@Nullable String mediaId) {
+        mPendingMediaId = mediaId;
+        if (TextUtils.isEmpty(mPendingMediaId)) {
+            return;
+        }
+
+        BrowsingState state = mMediaItemsRepository.getBrowsingState().getValue();
+        if ((state != null) && state.mConnectionStatus == CONNECTED) {
+            Log.i(TAG, "Fetching: " + mediaId);
+
+            mMediaItemsRepository.getItem(mPendingMediaId,
+                    new MediaBrowserCompat.ItemCallback() {
+                        @Override
+                        public void onItemLoaded(MediaBrowserCompat.MediaItem item) {
+                            String itemId = (item != null) ? item.getMediaId() : null;
+                            if (Objects.equals(mPendingMediaId, itemId)) {
+                                mPendingMediaId = null;
+                                MediaItemMetadata mim = new MediaItemMetadata(item);
+                                navigateTo(mim);
+                            } else {
+                                Log.e(TAG, "ID mismatch. requested: [" + mPendingMediaId
+                                        + "], received: [" + itemId + "]");
+                            }
+                        }
+
+                        @Override
+                        public void onError(@NonNull String itemId) {
+                            Log.e(TAG, "Failed to fetch item: " + itemId);
+                        }
+                    });
+        } else {
+            Log.i(TAG, "Waiting to fetch: " + mediaId);
+        }
+    }
+
     private void navigateTo(@NonNull MediaItemMetadata item) {
         if (Objects.equals(item, mBrowseStack.getCurrentMediaItem())) {
             Log.i(TAG, "navigateInto item already shown");
@@ -503,6 +619,7 @@ public class MediaActivityController extends ViewControllerBase {
 
         if (controller != null) {
             showHideContentAnimated(show, controller.getContent(), mViewAnimEndListener);
+            controller.onShow(show, entry.mType);
         }
     }
 
@@ -572,6 +689,7 @@ public class MediaActivityController extends ViewControllerBase {
 
         updateAppBar();
         mAppBarController.setSearchQuery(mViewModel.getSearchQuery());
+
     }
 
     @Override
@@ -593,6 +711,10 @@ public class MediaActivityController extends ViewControllerBase {
         }
     }
 
+    NowPlayingController getNowPlayingController() {
+        return mNowPlayingController;
+    }
+
     private void hideKeyboard() {
         InputMethodManager in =
                 (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -609,6 +731,7 @@ public class MediaActivityController extends ViewControllerBase {
             View view = controller.getContent();
             mEntriesToDestroy.put(view, entry);
             showHideContentAnimated(false, view, mViewAnimEndListener);
+            controller.onShow(false, entry.mType);
         } else {
             entry.destroyController();
         }
@@ -644,9 +767,9 @@ public class MediaActivityController extends ViewControllerBase {
             return;
         }
         mTopItems = items;
-
+        String rootId = mBrowseStack.getRootId();
         if (mTopItems == null || mTopItems.isEmpty()) {
-            mAppBarController.setItems(null);
+            mAppBarController.setItems(rootId, null);
             mAppBarController.setActiveItem(null);
             if (items != null) {
                 // Only do this when not loading the tabs or we loose the saved one.
@@ -661,7 +784,7 @@ public class MediaActivityController extends ViewControllerBase {
 
         try {
             mAcceptTabSelection = false;
-            mAppBarController.setItems(mTopItems.size() == 1 ? null : mTopItems);
+            mAppBarController.setItems(rootId, mTopItems.size() == 1 ? null : mTopItems);
             mAppBarController.setActiveItem(newTab);
 
             if (oldTab != newTab) {
@@ -695,7 +818,7 @@ public class MediaActivityController extends ViewControllerBase {
             title = mTopItems.get(0).getTitle();
         } else {
             // Otherwise (no tabs or more than 1 tabs), show the current media source title.
-            MediaSource mediaSource = mMediaSourceVM.getPrimaryMediaSource().getValue();
+            MediaSource mediaSource = mViewModel.getMediaSourceValue();
             title = getAppBarDefaultTitle(mediaSource);
         }
 
@@ -740,5 +863,4 @@ public class MediaActivityController extends ViewControllerBase {
         mCallbacks.onRootLoaded();
         updateTabs(items != null ? items : new ArrayList<>());
     }
-
 }

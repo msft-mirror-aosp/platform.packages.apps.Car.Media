@@ -19,11 +19,29 @@ package com.android.car.media;
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK;
 
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_HIDE;
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_SHOW;
+import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_COMPONENT_BROWSE_LIST;
+import static androidx.recyclerview.widget.RecyclerView.NO_POSITION;
+
 import static com.android.car.apps.common.util.ViewUtils.removeFromParent;
+import static com.android.car.media.browse.BrowseItemViewType.GRID_ITEM;
+import static com.android.car.media.browse.BrowseItemViewType.ICON_GRID_ITEM;
+import static com.android.car.media.browse.BrowseItemViewType.ICON_LIST_ITEM;
+import static com.android.car.media.browse.BrowseItemViewType.LIST_ITEM;
 import static com.android.car.media.common.MediaConstants.BROWSE_CUSTOM_ACTIONS_MEDIA_ITEM_ID;
+import static com.android.car.media.common.MediaConstants.KEY_HINT_HOST_PACKAGE_NAME;
+import static com.android.car.media.common.MediaConstants.KEY_HINT_VIEW_HEIGHT_PIXELS;
+import static com.android.car.media.common.MediaConstants.KEY_HINT_VIEW_MAX_CATEGORY_GRID_ITEMS_COUNT_PER_ROW;
+import static com.android.car.media.common.MediaConstants.KEY_HINT_VIEW_MAX_CATEGORY_LIST_ITEMS_COUNT_PER_ROW;
+import static com.android.car.media.common.MediaConstants.KEY_HINT_VIEW_MAX_GRID_ITEMS_COUNT_PER_ROW;
+import static com.android.car.media.common.MediaConstants.KEY_HINT_VIEW_MAX_ITEMS_WHILE_RESTRICTED;
+import static com.android.car.media.common.MediaConstants.KEY_HINT_VIEW_MAX_LIST_ITEMS_COUNT_PER_ROW;
+import static com.android.car.media.common.MediaConstants.KEY_HINT_VIEW_WIDTH_PIXELS;
 import static com.android.car.ui.recyclerview.CarUiRecyclerView.SCROLL_STATE_DRAGGING;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
@@ -43,10 +61,16 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.OptIn;
+import androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent;
 import androidx.core.util.Pair;
+import androidx.core.util.Preconditions;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsAnimationCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.car.apps.common.imaging.ImageBinder;
@@ -73,8 +97,10 @@ import com.android.car.ui.AlertDialogBuilder;
 import com.android.car.ui.FocusArea;
 import com.android.car.ui.baselayout.Insets;
 import com.android.car.ui.recyclerview.CarUiContentListItem;
+import com.android.car.ui.recyclerview.CarUiLayoutStyle;
 import com.android.car.ui.recyclerview.CarUiListItemAdapter;
 import com.android.car.ui.recyclerview.CarUiRecyclerView;
+import com.android.car.uxr.CarUxRestrictionsAppConfig;
 import com.android.car.uxr.LifeCycleObserverUxrContentLimiter;
 import com.android.car.uxr.UxrContentLimiterImpl;
 
@@ -86,6 +112,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * A view controller that displays the media item children of a {@link MediaItemMetadata}.
@@ -94,10 +121,12 @@ import java.util.Objects;
  * The content view is initialized with 0 alpha and needs to be animated or set to to full opacity
  * to become visible.
  */
+@OptIn(markerClass = androidx.car.app.annotations2.ExperimentalCarApi.class)
 public class BrowseViewController {
     private static final String TAG = "BrowseViewController";
 
     private final Callbacks mCallbacks;
+    private final ViewGroup mContainer;
     private final FocusArea mFocusArea;
     private final MediaItemMetadata mParentItem;
     private List<CustomBrowseAction> mParentActions;
@@ -124,17 +153,29 @@ public class BrowseViewController {
     private final PlaybackViewModel mPlaybackViewModelBrowseSource;
     private MediaItemsRepository mMediaRepo;
     private Map<String, CustomBrowseAction> mGlobalActions = new HashMap<>();
-
     private ActionsHeader mActionBar;
+    /** See {@link #onShow}. */
+    private boolean mIsShown;
+    List<String> mPrevVisible = new ArrayList<>();
+
+
 
     private final BrowseAdapter.Observer mBrowseAdapterObserver = new BrowseAdapter.Observer() {
         @Override
         protected void onPlayableItemClicked(@NonNull MediaItemMetadata item) {
+            if (item.getId() != null) {
+                mMediaRepo.getAnalyticsManager().sendMediaClickedEvent(item.getId(),
+                        VIEW_COMPONENT_BROWSE_LIST);
+            }
             mCallbacks.onPlayableItemClicked(item);
         }
 
         @Override
         protected void onBrowsableItemClicked(@NonNull MediaItemMetadata item) {
+            if (item.getId() != null) {
+                mMediaRepo.getAnalyticsManager().sendMediaClickedEvent(item.getId(),
+                        VIEW_COMPONENT_BROWSE_LIST);
+            }
             mCallbacks.goToMediaItem(item);
         }
 
@@ -147,9 +188,42 @@ public class BrowseViewController {
         @Override
         protected void onBrowseCustomActionOverflowClicked(
                 @NonNull List<CustomBrowseAction> overflowActions, String mediaId) {
+            sendBrowseCustomActionEvent(mediaId, overflowActions, true);
             showOverflowActions(overflowActions, mediaId);
         }
     };
+
+    /**
+     * Called when BVC is shown/hidden by {@link MediaActivityController} (for its associated item)
+     * within the browse view. The given isShown does NOT reflect what is happening to the browse
+     * view itself (like being moved or faded away when going to the playback screen).
+     */
+    public void onShow(boolean isShown, @NonNull BrowseStack.BrowseEntryType type) {
+        mIsShown = isShown;
+
+        // Send analytics
+        String parentId = mParentItem == null ? "" : mParentItem.getId();
+
+        mMediaRepo.getAnalyticsManager().sendBrowseChangeEvent(
+                type.toAnalyticBrowseMode(), isShown ? VIEW_ACTION_SHOW : VIEW_ACTION_HIDE,
+                parentId);
+
+        int firsPos = mLimitedBrowseAdapter.findFirstVisibleItemIndex();
+        int lastPov = mLimitedBrowseAdapter.findLastVisibleItemIndex(false);
+        if (mMediaItems.getValue() != null && mMediaItems.getValue().getData() != null
+                && firsPos != NO_POSITION && lastPov != NO_POSITION) {
+            List<String> itemsSublist = mMediaItems.getValue().getData()
+                    .subList(firsPos, lastPov + 1)
+                    .stream()
+                    .map(MediaItemMetadata::getId)
+                    .collect(Collectors.toCollection(ArrayList::new));
+
+            mMediaRepo.getAnalyticsManager().sendVisibleItemsEvents(
+                    parentId, VIEW_COMPONENT_BROWSE_LIST,
+                    isShown ? AnalyticsEvent.VIEW_ACTION_SHOW : AnalyticsEvent.VIEW_ACTION_HIDE,
+                    AnalyticsEvent.VIEW_ACTION_MODE_NONE, itemsSublist);
+        }
+    }
 
     /** Callback from browse service for custom actions */
     public static class CustomActionCallback extends MediaBrowserCompat.CustomActionCallback {
@@ -225,6 +299,9 @@ public class BrowseViewController {
          */
         void openPlaybackView();
 
+        /** Returns whether the entire browse view is visible. */
+        boolean isBrowseViewVisible();
+
         /** Invoked when child nodes have been removed from this controller. */
         void onChildrenNodesRemoved(@NonNull BrowseViewController controller,
                 @NonNull Collection<MediaItemMetadata> removedNodes);
@@ -251,16 +328,14 @@ public class BrowseViewController {
             MediaItemsRepository mediaRepo,
             int rootBrowsableHint,
             int rootPlayableHint) {
-        return new BrowseViewController(callbacks, container, parentItem,
-                mediaRepo.getMediaChildren(parentItem.getId()), rootBrowsableHint, rootPlayableHint,
-                mediaRepo, true);
+        return new BrowseViewController(callbacks, container, parentItem, rootBrowsableHint,
+                rootPlayableHint, mediaRepo, true);
     }
 
     /** Creates a controller to display the top results of a search query (in a list). */
     static BrowseViewController newSearchResultsController(
             Callbacks callbacks, ViewGroup container, MediaItemsRepository mediaRepo) {
-        return new BrowseViewController(callbacks, container, null, mediaRepo.getSearchMediaItems(),
-                0, 0, mediaRepo, true);
+        return new BrowseViewController(callbacks, container, null, 0, 0, mediaRepo, true);
     }
 
     /**
@@ -269,11 +344,41 @@ public class BrowseViewController {
      * messages.
      */
     static BrowseViewController newRootController(
+            MediaItemMetadata parentItem,
             Callbacks callbacks,
             ViewGroup container,
             MediaItemsRepository mediaRepo) {
-        return new BrowseViewController(callbacks, container, null, mediaRepo.getRootMediaItems(),
-                0, 0, mediaRepo, false);
+        return new BrowseViewController(callbacks, container, parentItem, 0, 0, mediaRepo, false);
+    }
+
+    private static Bundle createItemSubscriptionOptions(View myView, CarUiRecyclerView browseList) {
+        Context ctx = myView.getContext();
+        Bundle options = new Bundle();
+        options.putString(KEY_HINT_HOST_PACKAGE_NAME, ctx.getPackageName());
+        options.putInt(KEY_HINT_VIEW_WIDTH_PIXELS, myView.getWidth());
+        options.putInt(KEY_HINT_VIEW_HEIGHT_PIXELS, myView.getHeight());
+        options.putInt(KEY_HINT_VIEW_MAX_ITEMS_WHILE_RESTRICTED, getMaxItemsWhileDriving(ctx));
+
+        CarUiLayoutStyle style = browseList.getLayoutStyle();
+        Preconditions.checkNotNull(style, "browseList.getLayoutStyle is null!");
+        int maxSpans = style.getSpanCount();
+        int maxListItems = maxSpans / LIST_ITEM.getSpanSize(maxSpans);
+        int maxCatListItems = maxSpans / ICON_LIST_ITEM.getSpanSize(maxSpans);
+        int maxGridItems = maxSpans / GRID_ITEM.getSpanSize(maxSpans);
+        int maxCatGridItems = maxSpans / ICON_GRID_ITEM.getSpanSize(maxSpans);
+        options.putInt(KEY_HINT_VIEW_MAX_LIST_ITEMS_COUNT_PER_ROW, maxListItems);
+        options.putInt(KEY_HINT_VIEW_MAX_CATEGORY_LIST_ITEMS_COUNT_PER_ROW, maxCatListItems);
+        options.putInt(KEY_HINT_VIEW_MAX_GRID_ITEMS_COUNT_PER_ROW, maxGridItems);
+        options.putInt(KEY_HINT_VIEW_MAX_CATEGORY_GRID_ITEMS_COUNT_PER_ROW, maxCatGridItems);
+
+        return options;
+    }
+
+    private static int getMaxItemsWhileDriving(Context context) {
+        Integer maxItems = CarUxRestrictionsAppConfig.getContentLimit(context,
+                R.xml.uxr_config, R.id.browse_list_uxr_config);
+        Preconditions.checkNotNull(maxItems, "Misconfigured list limits.");
+        return maxItems;
     }
 
     /**
@@ -325,19 +430,18 @@ public class BrowseViewController {
             Callbacks callbacks,
             ViewGroup container,
             @Nullable MediaItemMetadata parentItem,
-            MediaItemsLiveData mediaItems,
             int rootBrowsableHint,
             int rootPlayableHint,
             MediaItemsRepository mediaRepo,
             boolean displayMediaItems) {
         mCallbacks = callbacks;
+        mContainer = container;
         mParentItem = parentItem;
-        mMediaItems = mediaItems;
         mDisplayMediaItems = displayMediaItems;
         mMediaRepo = mediaRepo;
 
         FragmentActivity activity = callbacks.getActivity();
-        mViewModel = ViewModelProviders.of(activity).get(MediaActivity.ViewModel.class);
+        mViewModel = new ViewModelProvider(activity).get(MediaActivity.ViewModel.class);
 
         LayoutInflater inflater = LayoutInflater.from(container.getContext());
         mContent = inflater.inflate(R.layout.browse_node, container, false);
@@ -360,19 +464,14 @@ public class BrowseViewController {
         mFadeDuration = mContent.getContext().getResources().getInteger(
                 R.integer.new_album_art_fade_in_duration);
 
-        mPlaybackViewModel = PlaybackViewModel.get(activity.getApplication(),
-                MEDIA_SOURCE_MODE_PLAYBACK);
-        mPlaybackViewModelBrowseSource = PlaybackViewModel.get(activity.getApplication(),
-            MEDIA_SOURCE_MODE_BROWSE);
+        mPlaybackViewModel = mViewModel.getPlaybackViewModel(MEDIA_SOURCE_MODE_PLAYBACK);
+        mPlaybackViewModelBrowseSource = mViewModel.getPlaybackViewModel(MEDIA_SOURCE_MODE_BROWSE);
 
         LiveDataFunctions.pair(mPlaybackViewModel.getProgress(), mPlaybackViewModel.getMetadata())
                 .observe(activity, this::handleProgressUpdate);
 
-        LiveDataFunctions.pair(
-                PlaybackViewModel.get(activity.getApplication(),
-                        MEDIA_SOURCE_MODE_PLAYBACK).getMediaSource(),
-                PlaybackViewModel.get(activity.getApplication(),
-                        MEDIA_SOURCE_MODE_BROWSE).getMediaSource())
+        LiveDataFunctions.pair(mPlaybackViewModel.getMediaSource(),
+                        mPlaybackViewModelBrowseSource.getMediaSource())
                 .observe(activity, this::handleSourceUpdates);
 
         BrowseAdapter browseAdapter = new BrowseAdapter(mBrowseList.getContext());
@@ -382,21 +481,41 @@ public class BrowseViewController {
                 mBrowseAdapterObserver);
         mBrowseList.setHasFixedSize(true);
         mBrowseList.setAdapter(mLimitedBrowseAdapter);
+        mBrowseList.addOnScrollListener(new CarUiRecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(CarUiRecyclerView recyclerView, int dx, int dy) {
+                // dx and dy are 0 when items in RV change or layout is requested. We should
+                // use this to trigger querying what is visible.
+                maybeSendVisibleItemsIncremental(dx != 0 || dy != 0);
+            }
 
-        if (res.getBoolean(R.bool.hide_search_keyboard_on_scroll_state_dragging)) {
-            mBrowseList.addOnScrollListener(new CarUiRecyclerView.OnScrollListener() {
-                @Override
-                public void onScrolled(CarUiRecyclerView recyclerView, int dx, int dy) {
-                }
-
-                @Override
-                public void onScrollStateChanged(CarUiRecyclerView recyclerView, int newState) {
-                    if (newState == SCROLL_STATE_DRAGGING) {
+            @Override
+            public void onScrollStateChanged(CarUiRecyclerView recyclerView, int newState) {
+                if (newState == SCROLL_STATE_DRAGGING) {
+                    if (res.getBoolean(R.bool.hide_search_keyboard_on_scroll_state_dragging)) {
                         mCallbacks.hideKeyboard();
                     }
                 }
-            });
-        }
+            }
+        });
+
+        ViewCompat.setWindowInsetsAnimationCallback(mBrowseList.getView().getRootView(),
+                new WindowInsetsAnimationCompat.Callback(
+                        WindowInsetsAnimationCompat.Callback.DISPATCH_MODE_STOP) {
+                    @NonNull
+                    @Override
+                    public WindowInsetsCompat onProgress(
+                            @NonNull WindowInsetsCompat windowInsetsCompat,
+                            @NonNull List<WindowInsetsAnimationCompat> list) {
+                        return windowInsetsCompat;
+                    }
+
+                    @Override
+                    public void onEnd(@NonNull WindowInsetsAnimationCompat animation) {
+                        super.onEnd(animation);
+                        maybeSendVisibleItemsIncremental(false);
+                    }
+                });
 
         mUxrContentLimiter = new LifeCycleObserverUxrContentLimiter(
                 new UxrContentLimiterImpl(activity, R.xml.uxr_config));
@@ -412,8 +531,28 @@ public class BrowseViewController {
         browseAdapter.setRootBrowsableViewType(rootBrowsableHint);
         browseAdapter.setRootPlayableViewType(rootPlayableHint);
         browseAdapter.setGlobalCustomActions(mGlobalActions);
+
+        Bundle options = createItemSubscriptionOptions(mContainer, mBrowseList);
+        if (parentItem != null) {
+            mMediaItems = mediaRepo.getMediaChildren(parentItem.getId(), options);
+        } else {
+            mMediaItems = mediaRepo.getSearchMediaItems();
+        }
         mMediaItems.observe(activity, mItemsObserver);
+
     }
+
+    private void maybeSendVisibleItemsIncremental(boolean fromScroll) {
+        if (mIsShown && mCallbacks.isBrowseViewVisible() && (mMediaItems.getValue() != null)
+                && mMediaItems.getValue().getData() != null) {
+            int currFirst = mLimitedBrowseAdapter.findFirstVisibleItemIndex();
+            int currLast = mLimitedBrowseAdapter.findLastVisibleItemIndex(true);
+            mPrevVisible = AnalyticsHelper.sendVisibleItemsInc(VIEW_COMPONENT_BROWSE_LIST,
+                    mMediaRepo, mParentItem, mPrevVisible, mMediaItems.getValue().getData(),
+                    currFirst, currLast, fromScroll);
+        }
+    }
+
 
     /**
      * Returns whether the children of the parentItem given to this controller have been loaded and
@@ -431,8 +570,21 @@ public class BrowseViewController {
         mActionBar = mContent.findViewById(R.id.toolbar_container);
         mActionBar.setActionClickedListener(
                 action -> sendBrowseCustomAction(action, parentItem.getId()));
-        mActionBar.setOnOverflowListener(
-                actions -> showOverflowActions(actions, parentItem.getId()));
+        mActionBar.setOnOverflowListener(actions -> {
+            sendBrowseCustomActionEvent(parentItem.getId(), actions, true);
+            showOverflowActions(actions, parentItem.getId());
+        });
+    }
+
+    private void sendBrowseCustomActionEvent(String itemId, List<CustomBrowseAction> actions,
+            boolean isShow) {
+        mMediaRepo.getAnalyticsManager()
+                .sendVisibleItemsEvents(itemId,
+                        AnalyticsEvent.VIEW_COMPONENT_BROWSE_ACTION_OVERFLOW,
+                        isShow ? AnalyticsEvent.VIEW_ACTION_SHOW : AnalyticsEvent.VIEW_ACTION_HIDE,
+                        AnalyticsEvent.VIEW_ACTION_MODE_NONE, actions.stream()
+                                .map(CustomBrowseAction::getId)
+                                .collect(Collectors.toList()));
     }
 
     private void configureCustomActionsHeader(
@@ -469,6 +621,8 @@ public class BrowseViewController {
                         .setAdapter(adapter)
                         .setCancelable(true)
                         .create();
+        dialog.setOnDismissListener(v ->
+                sendBrowseCustomActionEvent(mediaId, overflowActions, false));
 
         for (CustomBrowseAction customBrowseAction : overflowActions) {
             CarUiContentListItem item = new CarUiContentListItem(CarUiContentListItem.Action.ICON);
@@ -607,7 +761,7 @@ public class BrowseViewController {
     String getDebugInfo() {
         StringBuilder log = new StringBuilder();
         log.append("[");
-        log.append((mParentItem != null) ? mParentItem.getTitle() : "Root");
+        log.append((mParentItem != null) ? mParentItem.getTitle() : "Search");
         log.append("]");
         FutureData<List<MediaItemMetadata>> children = mMediaItems.getValue();
         if (children == null) {
@@ -680,6 +834,12 @@ public class BrowseViewController {
         mFocusArea.setBoundsOffset(leftPadding, topPadding, rightPadding, bottomPadding);
     }
 
+    /** Should preferably be called on the SearchResultsController. */
+    void updateSearchQuery(@Nullable String query) {
+        Bundle options = createItemSubscriptionOptions(mContainer, mBrowseList);
+        mMediaRepo.setSearchQuery(query, options);
+    }
+
     void onPlaybackControlsChanged(boolean visible) {
         int leftPadding = mBrowseList.getPaddingLeft();
         int topPadding = mBrowseList.getPaddingTop();
@@ -736,7 +896,7 @@ public class BrowseViewController {
         stopLoadingIndicator();
 
         List<MediaItemMetadata> items = MediaBrowserViewModelImpl.filterItems(
-            /*root*/ !mDisplayMediaItems, futureData.getData());
+                /*root*/ !mDisplayMediaItems, futureData.getData());
 
         boolean sourceHasPlayable = mViewModel.hasPlayableItem();
         if (items != null && !sourceHasPlayable) {
@@ -748,7 +908,7 @@ public class BrowseViewController {
         boolean hasPlayCommand = false;
         if (mPlaybackViewModelBrowseSource.getPlaybackStateWrapper().getValue() != null) {
             hasPlayCommand = (mPlaybackViewModelBrowseSource.getPlaybackStateWrapper().getValue()
-                .getSupportedActions() & PlaybackStateCompat.ACTION_PLAY) != 0;
+                    .getSupportedActions() & PlaybackStateCompat.ACTION_PLAY) != 0;
         }
 
         if (mDisplayMediaItems) {
@@ -802,9 +962,10 @@ public class BrowseViewController {
 
     private boolean isSourcesSame() {
         PlaybackViewModel playbackViewModelBrowse =
-                PlaybackViewModel.get(getActivity().getApplication(), MEDIA_SOURCE_MODE_BROWSE);
+                mViewModel.getPlaybackViewModel(MEDIA_SOURCE_MODE_BROWSE);
         PlaybackViewModel playbackViewModelPlayback =
-                PlaybackViewModel.get(getActivity().getApplication(), MEDIA_SOURCE_MODE_PLAYBACK);
+                mViewModel.getPlaybackViewModel(MEDIA_SOURCE_MODE_PLAYBACK);
+
         return Objects.equals(playbackViewModelPlayback.getMediaSource().getValue(),
                 playbackViewModelBrowse.getMediaSource().getValue());
     }
@@ -819,9 +980,8 @@ public class BrowseViewController {
         ViewUtils.showViewAnimated(mEmptyListPlaybackBar, mFadeDuration);
 
         Size maxArtSize = MediaAppConfig.getMediaItemsBitmapMaxSize(mContent.getContext());
-        PlaybackViewModel playbackViewModel =
-                PlaybackViewModel.get(getActivity().getApplication(), MEDIA_SOURCE_MODE_BROWSE);
-        mEmptyListPlaybackBar.setModel(playbackViewModel, getActivity(), maxArtSize);
+        PlaybackViewModel playViewModel = mViewModel.getPlaybackViewModel(MEDIA_SOURCE_MODE_BROWSE);
+        mEmptyListPlaybackBar.setModel(playViewModel, getActivity(), maxArtSize);
 
         mEmptyListPlaybackBar.setOnClickListener(
                 view -> mCallbacks.onBrowseEmptyListPlayItemClicked());
