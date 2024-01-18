@@ -30,14 +30,11 @@ import static com.android.car.media.browse.BrowseItemViewType.ICON_GRID_ITEM;
 import static com.android.car.media.browse.BrowseItemViewType.ICON_LIST_ITEM;
 import static com.android.car.media.browse.BrowseItemViewType.LIST_ITEM;
 import static com.android.car.media.common.MediaConstants.BROWSE_CUSTOM_ACTIONS_MEDIA_ITEM_ID;
-import static com.android.car.media.common.MediaConstants.KEY_HINT_HOST_PACKAGE_NAME;
-import static com.android.car.media.common.MediaConstants.KEY_HINT_VIEW_HEIGHT_PIXELS;
 import static com.android.car.media.common.MediaConstants.KEY_HINT_VIEW_MAX_CATEGORY_GRID_ITEMS_COUNT_PER_ROW;
 import static com.android.car.media.common.MediaConstants.KEY_HINT_VIEW_MAX_CATEGORY_LIST_ITEMS_COUNT_PER_ROW;
 import static com.android.car.media.common.MediaConstants.KEY_HINT_VIEW_MAX_GRID_ITEMS_COUNT_PER_ROW;
 import static com.android.car.media.common.MediaConstants.KEY_HINT_VIEW_MAX_ITEMS_WHILE_RESTRICTED;
 import static com.android.car.media.common.MediaConstants.KEY_HINT_VIEW_MAX_LIST_ITEMS_COUNT_PER_ROW;
-import static com.android.car.media.common.MediaConstants.KEY_HINT_VIEW_WIDTH_PIXELS;
 import static com.android.car.ui.recyclerview.CarUiRecyclerView.SCROLL_STATE_DRAGGING;
 
 import android.app.AlertDialog;
@@ -354,9 +351,6 @@ public class BrowseViewController {
     private static Bundle createItemSubscriptionOptions(View myView, CarUiRecyclerView browseList) {
         Context ctx = myView.getContext();
         Bundle options = new Bundle();
-        options.putString(KEY_HINT_HOST_PACKAGE_NAME, ctx.getPackageName());
-        options.putInt(KEY_HINT_VIEW_WIDTH_PIXELS, myView.getWidth());
-        options.putInt(KEY_HINT_VIEW_HEIGHT_PIXELS, myView.getHeight());
         options.putInt(KEY_HINT_VIEW_MAX_ITEMS_WHILE_RESTRICTED, getMaxItemsWhileDriving(ctx));
 
         CarUiLayoutStyle style = browseList.getLayoutStyle();
