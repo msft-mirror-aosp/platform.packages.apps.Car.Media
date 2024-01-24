@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.car.media;
+package com.android.car.media.service;
 
 import static android.support.v4.media.session.PlaybackStateCompat.ACTION_PLAY;
 import static android.support.v4.media.session.PlaybackStateCompat.ACTION_PREPARE;
@@ -38,13 +38,14 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.MutableLiveData;
+import androidx.test.annotation.UiThreadTest;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.car.apps.common.IconCropper;
+import com.android.car.media.BaseMockitoTest;
 import com.android.car.media.common.playback.PlaybackViewModel.PlaybackStateWrapper;
 import com.android.car.media.common.source.MediaSource;
-import com.android.car.media.service.MediaConnectorService;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -68,6 +69,7 @@ public class MediaConnectorServiceTests extends BaseMockitoTest {
     @Mock private PlaybackStateCompat mState;
     @Mock MediaControllerCompat.TransportControls mControls;
 
+    @UiThreadTest
     @Before
     public void setup() {
         mPlaybackLiveData = dataOf(null);
@@ -83,7 +85,7 @@ public class MediaConnectorServiceTests extends BaseMockitoTest {
         String displayName = browseService.getClassName();
         Drawable icon = new ColorDrawable();
         IconCropper iconCropper = new IconCropper(new Path());
-        return new MediaSource(browseService, displayName, icon, iconCropper);
+        return new MediaSource(browseService, null, displayName, icon, iconCropper);
     }
 
     private void sendCommand(@Nullable ComponentName source, boolean autoPlay) {
@@ -92,7 +94,7 @@ public class MediaConnectorServiceTests extends BaseMockitoTest {
         if (source != null) {
             intent.putExtra(CarMediaIntents.EXTRA_MEDIA_COMPONENT, source.flattenToString());
         }
-        mService.onStartCommand(intent, 0, 0);
+        mService.prepareToStartService(intent, /* startId= */ 0);
     }
 
     private PlaybackStateWrapper newState(ComponentName comp) {
@@ -107,15 +109,18 @@ public class MediaConnectorServiceTests extends BaseMockitoTest {
 
         PlaybackStateWrapper state = newState(COMP_1_1);
 
-        mPlaybackLiveData.setValue(state);
+        mPlaybackLiveData.postValue(state);
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         verify(mControls, times(0)).prepare();
         verify(mControls, times(0)).play();
 
-        mPlaybackLiveData.setValue(state);
+        mPlaybackLiveData.postValue(state);
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         verify(mControls, times(1)).prepare();
         verify(mControls, times(0)).play();
 
-        mPlaybackLiveData.setValue(state);
+        mPlaybackLiveData.postValue(state);
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         verify(mControls, times(1)).prepare();
         verify(mControls, times(1)).play();
     }
@@ -124,7 +129,8 @@ public class MediaConnectorServiceTests extends BaseMockitoTest {
     public void onlyPrepareWhenPlayNotEnabled() {
         when(mState.getActions()).thenReturn(ACTION_PREPARE);
         sendCommand(COMP_1_1, true);
-        mPlaybackLiveData.setValue(newState(COMP_1_1));
+        mPlaybackLiveData.postValue(newState(COMP_1_1));
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         verify(mControls, times(1)).prepare();
         verify(mControls, times(0)).play();
     }
@@ -133,7 +139,8 @@ public class MediaConnectorServiceTests extends BaseMockitoTest {
     public void onlyPrepareWhenPlayNotRequested() {
         when(mState.getActions()).thenReturn(ACTION_PREPARE | ACTION_PLAY);
         sendCommand(COMP_1_1, false);
-        mPlaybackLiveData.setValue(newState(COMP_1_1));
+        mPlaybackLiveData.postValue(newState(COMP_1_1));
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         verify(mControls, times(1)).prepare();
         verify(mControls, times(0)).play();
     }
@@ -143,11 +150,13 @@ public class MediaConnectorServiceTests extends BaseMockitoTest {
         when(mState.getActions()).thenReturn(ACTION_PREPARE | ACTION_PLAY);
         sendCommand(COMP_1_2, true);
 
-        mPlaybackLiveData.setValue(newState(COMP_1_1));
+        mPlaybackLiveData.postValue(newState(COMP_1_1));
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         verify(mControls, times(0)).prepare();
         verify(mControls, times(0)).play();
 
-        mPlaybackLiveData.setValue(newState(COMP_1_2));
+        mPlaybackLiveData.postValue(newState(COMP_1_2));
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         verify(mControls, times(1)).prepare();
         verify(mControls, times(1)).play();
     }
