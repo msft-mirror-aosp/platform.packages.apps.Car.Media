@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * A {@link RecyclerView.Adapter} that can be used to display a single level of a {@link
@@ -317,6 +318,11 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
             return;
         }
         submitList(generateViewData(children));
+    }
+
+    /** Returns items in the adapter */
+    protected List<MediaItemMetadata> getItems() {
+        return getCurrentList().stream().map((bvd) -> bvd.mMediaItem).collect(Collectors.toList());
     }
 
     private void notify(Consumer<Observer> notification) {

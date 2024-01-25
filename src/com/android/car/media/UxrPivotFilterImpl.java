@@ -35,6 +35,12 @@ public class UxrPivotFilterImpl implements UxrPivotFilter {
     private final ListRange mSavedRange = new ListRange();
 
 
+    /** Rounds maxItems up to the nearest greater odd integer. */
+    public static int adjustMaxItems(int maxItems) {
+        int maxItemsDiv2 = maxItems / 2;
+        return 1 + (maxItemsDiv2 * 2);
+    }
+
     /**
      * Constructor
      * @param adapter the adapter to notify of changes in {@link #updatePivotIndex}.
@@ -49,7 +55,7 @@ public class UxrPivotFilterImpl implements UxrPivotFilter {
             mMaxItems = 0;
         } else {
             mMaxItemsDiv2 = maxItems / 2;
-            mMaxItems = 1 + (mMaxItemsDiv2 * 2);
+            mMaxItems = adjustMaxItems(maxItems);
         }
     }
 

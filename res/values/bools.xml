@@ -54,4 +54,11 @@
        hand side on toolbar) will be hidden. -->
     <bool name="use_media_source_logo_for_app_selector_in_playback_view">false</bool>
 
+    <!-- Controls whether to show menu item selector in toolbar menu items-->
+    <bool name="show_menu_item_selector">true</bool>
+
+    <!-- Controls whether the playback bar shows the playback media source or the browsed source.
+        Override to false if switching to a new source stops the current playback or if the
+        playback bar and Now playing View are never displayed. -->
+    <bool name="show_playback_media_source">true</bool>
 </resources>

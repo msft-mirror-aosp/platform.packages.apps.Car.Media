@@ -28,8 +28,6 @@
     <color name="browse_progress_new_indicator_color">@color/car_green_700</color>
     <!-- Color used on the progress bar background -->
     <color name="progress_bar_background">@color/car_grey_700</color>
-    <!-- Color used on the progress bar -->
-    <color name="progress_bar_highlight">@color/media_source_default_color</color>
     <!-- Color used on the thumb of the progress bar -->
     <color name="progress_bar_thumb_color">@color/media_source_default_color</color>
 
