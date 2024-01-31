@@ -64,7 +64,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.OptIn;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.fragment.app.FragmentActivity;
-import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
@@ -83,11 +82,10 @@ import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaModels;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.common.source.MediaSourceViewModel;
+import com.android.car.media.common.ui.MediaWidgetViewModel;
 import com.android.car.ui.AlertDialogBuilder;
 import com.android.car.ui.utils.CarUxRestrictionsUtil;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -772,21 +770,18 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         return new ViewModelProvider(this).get(MediaActivity.ViewModel.class);
     }
 
-    public static class ViewModel extends AndroidViewModel {
+    /** State tracking ViewModel for the MediaActivity */
+    public static class ViewModel extends MediaWidgetViewModel {
 
-        static class MediaServiceState {
-            Mode mMode = Mode.BROWSING;
-            BrowseStack mBrowseStack = new BrowseStack();
-            String mSearchQuery;
-            boolean mQueueVisible = false;
-            boolean mHasPlayableItem = false;
-        }
+        private Mode mMode = Mode.BROWSING;
+        private BrowseStack mBrowseStack = new BrowseStack();
+        private String mSearchQuery;
+        private boolean mHasPlayableItem = false;
 
         private boolean mNeedsInitialization = true;
         private MediaModels[] mModels;
         private final MutableLiveData<FutureData<MediaSource>> mBrowsedMediaSource =
                 dataOf(FutureData.newLoadingData());
-        private final Map<MediaSource, MediaServiceState> mStates = new HashMap<>();
         private final MutableLiveData<Boolean> mIsMiniControlsVisible = new MutableLiveData<>();
 
         public ViewModel(@NonNull Application application) {
@@ -836,30 +831,12 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
                     .getValue();
         }
 
-        MediaServiceState getSavedState() {
-            MediaSource source = getMediaSourceValue();
-            MediaServiceState state = mStates.get(source);
-            if (state == null) {
-                state = new MediaServiceState();
-                mStates.put(source, state);
-            }
-            return state;
-        }
-
         void saveMode(Mode mode) {
-            getSavedState().mMode = mode;
+            mMode = mode;
         }
 
         Mode getSavedMode() {
-            return getSavedState().mMode;
-        }
-
-        void setQueueVisible(boolean visible) {
-            getSavedState().mQueueVisible = visible;
-        }
-
-        boolean getQueueVisible() {
-            return getSavedState().mQueueVisible;
+            return mMode;
         }
 
         void saveBrowsedMediaSource(MediaSource mediaSource) {
@@ -880,23 +857,23 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         }
 
         @NonNull BrowseStack getBrowseStack() {
-            return getSavedState().mBrowseStack;
+            return mBrowseStack;
         }
 
         String getSearchQuery() {
-            return getSavedState().mSearchQuery;
+            return mSearchQuery;
         }
 
         void setSearchQuery(String searchQuery) {
-            getSavedState().mSearchQuery = searchQuery;
+            mSearchQuery = searchQuery;
         }
 
         void setHasPlayableItem(boolean hasPlayableItem) {
-            getSavedState().mHasPlayableItem = hasPlayableItem;
+            mHasPlayableItem = hasPlayableItem;
         }
 
         boolean hasPlayableItem() {
-            return getSavedState().mHasPlayableItem;
+            return mHasPlayableItem;
         }
     }
 
