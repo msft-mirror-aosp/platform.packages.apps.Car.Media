@@ -43,7 +43,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.car.apps.common.imaging.ImageViewBinder;
 import com.android.car.apps.common.util.ViewUtils;
-import com.android.car.media.MediaActivityController.Callbacks;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.browse.MediaItemsRepository;
 import com.android.car.media.common.playback.PlaybackViewModel;
@@ -69,7 +68,7 @@ public class PlaybackQueueController {
 
     private static final String TAG = "PlaybackQueueController";
 
-    private final Callbacks mCallbacks;
+    private final FragmentActivity mActivity;
     private final LifeCycleObserverUxrContentLimiter mUxrContentLimiter;
     private final PlaybackViewModel mPlaybackViewModel;
     private final MediaItemsRepository mMediaItemsRepository;
@@ -476,12 +475,11 @@ public class PlaybackQueueController {
     public PlaybackQueueController(
             ViewGroup container,
             @LayoutRes int resource,
-            Callbacks callbacks,
+            FragmentActivity activity,
             PlaybackViewModel playbackViewModel,
             MediaItemsRepository itemsRepository) {
 
-        FragmentActivity activity = callbacks.getActivity();
-        mCallbacks = callbacks;
+        mActivity = activity;
         mPlaybackViewModel = playbackViewModel;
         mMediaItemsRepository = itemsRepository;
 
@@ -607,6 +605,6 @@ public class PlaybackQueueController {
     }
 
     private FragmentActivity getActivity() {
-        return mCallbacks.getActivity();
+        return mActivity;
     }
 }
