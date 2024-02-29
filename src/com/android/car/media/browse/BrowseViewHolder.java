@@ -18,6 +18,7 @@ package com.android.car.media.browse;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.Size;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -44,6 +45,9 @@ import java.util.stream.Collectors;
  * Generic {@link RecyclerView.ViewHolder} to use for all views in the {@link BrowseAdapter}
  */
 public class BrowseViewHolder extends RecyclerView.ViewHolder {
+
+    public static final String TAG = "BrowseViewHolder";
+
     private final TextView mTitle;
     private final TextView mSubtitle;
     private final ImageView mAlbumArt;
@@ -191,11 +195,19 @@ public class BrowseViewHolder extends RecyclerView.ViewHolder {
     }
 
     private void bindBrowseCustomActions(Context context, BrowseViewData browseViewData) {
+        int maxVisibleActions = context.getResources().getInteger(R.integer.max_visible_actions);
+
+        if (mCustomActionsContainer == null) {
+            if (maxVisibleActions > 0) {
+                Log.e(TAG, "Custom action container null when max actions > 0");
+            }
+            return; //We have nothing to bind to.
+        }
+
         mCustomActionsContainer.removeAllViews();
         mBrowseActionIcons.forEach((it) -> it.maybeCancelLoading(context));
         mBrowseActionIcons.clear();
 
-        int maxVisibleActions = context.getResources().getInteger(R.integer.max_visible_actions);
         int numActions = browseViewData.mCustomBrowseActions.size();
         boolean willOverflow = numActions > maxVisibleActions;
         int actionsToShow = willOverflow ? Math.max(0, maxVisibleActions - 1) : maxVisibleActions;
