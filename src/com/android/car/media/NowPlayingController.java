@@ -179,7 +179,6 @@ public class NowPlayingController extends MediaWidgetController {
                 R.bool.show_linear_progress_bar);
 
         initPlaybackControls(mView.findViewById(R.id.playback_controls));
-        initQueue();
 
         // Don't update the visibility of seekBar if show_linear_progress_bar is false.
         ViewUtils.Filter ignoreSeekBarFilter =
@@ -303,18 +302,18 @@ public class NowPlayingController extends MediaWidgetController {
         if (mViewModel.getQueueVisible() != visible) {
             mViewModel.setQueueVisible(visible);
             mPlaybackQueueController.onActualVisibilityChanged(mViewModel.getQueueVisible());
-            if (mViewModel.getQueueVisible()) {
-                ViewUtils.showViewsAnimated(mViewsToShowWhenQueueIsVisible, mFadeDuration);
-                ViewUtils.hideViewsAnimated(mViewsToHideWhenQueueIsVisible, mFadeDuration);
-            } else {
-                ViewUtils.hideViewsAnimated(mViewsToShowWhenQueueIsVisible, mFadeDuration);
-                ViewUtils.showViewsAnimated(mViewsToHideWhenQueueIsVisible, mFadeDuration);
-            }
-            ViewUtils.setVisible(mViewsToShowImmediatelyWhenQueueIsVisible,
-                    mViewModel.getQueueVisible());
-            ViewUtils.setVisible(mViewsToHideImmediatelyWhenQueueIsVisible,
-                    !mViewModel.getQueueVisible());
         }
+        if (mViewModel.getQueueVisible()) {
+            ViewUtils.showViewsAnimated(mViewsToShowWhenQueueIsVisible, mFadeDuration);
+            ViewUtils.hideViewsAnimated(mViewsToHideWhenQueueIsVisible, mFadeDuration);
+        } else {
+            ViewUtils.hideViewsAnimated(mViewsToShowWhenQueueIsVisible, mFadeDuration);
+            ViewUtils.showViewsAnimated(mViewsToHideWhenQueueIsVisible, mFadeDuration);
+        }
+        ViewUtils.setVisible(mViewsToShowImmediatelyWhenQueueIsVisible,
+                mViewModel.getQueueVisible());
+        ViewUtils.setVisible(mViewsToHideImmediatelyWhenQueueIsVisible,
+                !mViewModel.getQueueVisible());
     }
 
     private FragmentActivity getActivity() {
@@ -368,6 +367,7 @@ public class NowPlayingController extends MediaWidgetController {
     @Override
     protected void setupController() {
         super.setupController();
+        initQueue();
         setUpMetadataLinkers();
     }
 
