@@ -52,6 +52,7 @@ import com.android.car.media.BrowseStack.BrowseEntryType;
 import com.android.car.media.MediaActivity.Mode;
 import com.android.car.media.browse.LimitedBrowseAdapter;
 import com.android.car.media.common.MediaItemMetadata;
+import com.android.car.media.common.analytics.AnalyticsHelper;
 import com.android.car.media.common.browse.MediaBrowserViewModelImpl;
 import com.android.car.media.common.browse.MediaItemsRepository;
 import com.android.car.media.common.source.MediaBrowserConnector.BrowsingState;

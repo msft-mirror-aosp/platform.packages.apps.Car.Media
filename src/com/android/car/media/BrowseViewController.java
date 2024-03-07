@@ -83,6 +83,7 @@ import com.android.car.media.browse.actionbar.ActionsHeader;
 import com.android.car.media.common.CustomBrowseAction;
 import com.android.car.media.common.MediaConstants;
 import com.android.car.media.common.MediaItemMetadata;
+import com.android.car.media.common.analytics.AnalyticsHelper;
 import com.android.car.media.common.browse.MediaBrowserViewModelImpl;
 import com.android.car.media.common.browse.MediaItemsRepository;
 import com.android.car.media.common.browse.MediaItemsRepository.MediaItemsLiveData;

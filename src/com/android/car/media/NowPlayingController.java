@@ -23,6 +23,7 @@ import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VI
 
 import static com.android.car.apps.common.util.LiveDataFunctions.combine;
 
+import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.PorterDuff;
@@ -44,7 +45,6 @@ import com.android.car.apps.common.BackgroundImageView;
 import com.android.car.apps.common.TappableTextView;
 import com.android.car.apps.common.imaging.ImageBinder;
 import com.android.car.apps.common.util.ViewUtils;
-import com.android.car.media.PlaybackQueueController.PlaybackQueueCallback;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.MediaLinkHandler;
 import com.android.car.media.common.PlaybackControlsActionBar;
@@ -53,12 +53,18 @@ import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.common.source.MediaSourceColors;
 import com.android.car.media.common.ui.MediaWidgetController;
+import com.android.car.media.common.ui.PlaybackQueueController;
+import com.android.car.media.common.ui.PlaybackQueueController.PlaybackQueueCallback;
+import com.android.car.media.common.ui.UxrPivotFilterImpl;
 import com.android.car.media.widgets.AppBarController;
 import com.android.car.ui.core.CarUi;
 import com.android.car.ui.toolbar.MenuItem;
 import com.android.car.ui.toolbar.NavButtonMode;
 import com.android.car.ui.toolbar.ToolbarController;
 import com.android.car.ui.utils.DirectManipulationHelper;
+import com.android.car.uxr.CarUxRestrictionsAppConfig;
+import com.android.car.uxr.LifeCycleObserverUxrContentLimiter;
+import com.android.car.uxr.UxrContentLimiterImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -146,9 +152,21 @@ public class NowPlayingController extends MediaWidgetController {
 
         ViewGroup queueContainer = mView.findViewById(R.id.queue_fragment_container);
         mPlaybackQueueController = new PlaybackQueueController(
-                queueContainer, R.layout.fragment_playback_queue, mActivity, mDataModel,
-                mItemsRepository);
+                queueContainer, R.layout.fragment_playback_queue, R.layout.queue_list_item,
+                mActivity, mDataModel, mItemsRepository, new LifeCycleObserverUxrContentLimiter(
+                new UxrContentLimiterImpl(mView.getContext(), R.xml.uxr_config)),
+                R.id.playback_fragment_now_playing_list_uxr_config);
         mPlaybackQueueController.setCallback(mPlaybackQueueCallback);
+        mPlaybackQueueController.setShowTimeForActiveQueueItem(res.getBoolean(
+                R.bool.show_time_for_now_playing_queue_list_item));
+        mPlaybackQueueController.setShowIconForActiveQueueItem(res.getBoolean(
+                R.bool.show_icon_for_now_playing_queue_list_item));
+        mPlaybackQueueController.setShowThumbnailForQueueItem(res.getBoolean(
+                R.bool.show_thumbnail_for_queue_list_item));
+        mPlaybackQueueController.setShowSubtitleForQueueItem(res.getBoolean(
+                R.bool.show_subtitle_for_queue_list_item));
+        mPlaybackQueueController.setFadingEdgeLengthEnabled(res.getBoolean(
+                R.bool.queue_fading_edge_length_enabled));
 
         mSeekBarContainer = mView.findViewById(R.id.playback_seek_bar_container);
 
@@ -210,6 +228,14 @@ public class NowPlayingController extends MediaWidgetController {
          * Invoked when the user clicks on a browse link
          */
         void goToMediaItem(MediaSource source, MediaItemMetadata mediaItem);
+    }
+
+    /** Returns the maximum number of items in the queue under driving restrictions. */
+    public static int getMaxItemsWhileRestricted(Context context) {
+        Integer maxItems = CarUxRestrictionsAppConfig.getContentLimit(context,
+                R.xml.uxr_config, R.id.playback_fragment_now_playing_list_uxr_config);
+        Preconditions.checkNotNull(maxItems, "Misconfigured list limits.");
+        return (maxItems <= 0) ? -1 : UxrPivotFilterImpl.adjustMaxItems(maxItems);
     }
 
     /**
