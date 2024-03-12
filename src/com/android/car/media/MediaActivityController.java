@@ -57,6 +57,7 @@ import com.android.car.media.common.browse.MediaBrowserViewModelImpl;
 import com.android.car.media.common.browse.MediaItemsRepository;
 import com.android.car.media.common.source.MediaBrowserConnector.BrowsingState;
 import com.android.car.media.common.source.MediaSource;
+import com.android.car.media.common.ui.PlaybackCardController;
 import com.android.car.media.widgets.AppBarController;
 import com.android.car.ui.FocusParkingView;
 import com.android.car.ui.baselayout.Insets;
@@ -362,7 +363,7 @@ public class MediaActivityController extends ViewControllerBase {
     }
 
     /** Instantiates the {@link NowPlayingController}. Method should be overridden if Builder
-     * that extends {@link com.android.car.media.common.ui.MediaWidgetController},
+     * that extends {@link PlaybackCardController},
      * stored in {@link R.string.config_nowPlayingControllerBuilder_className}, needs different
      * parameters or more setters to be called.
      */

@@ -52,7 +52,7 @@ import com.android.car.media.common.playback.PlaybackProgress;
 import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.common.source.MediaSourceColors;
-import com.android.car.media.common.ui.MediaWidgetController;
+import com.android.car.media.common.ui.PlaybackCardController;
 import com.android.car.media.common.ui.PlaybackQueueController;
 import com.android.car.media.common.ui.PlaybackQueueController.PlaybackQueueCallback;
 import com.android.car.media.common.ui.UxrPivotFilterImpl;
@@ -75,7 +75,7 @@ import java.util.List;
  * playing media source through the {@link android.media.session.MediaSession} API.
  */
 @OptIn(markerClass = androidx.car.app.annotations2.ExperimentalCarApi.class)
-public class NowPlayingController extends MediaWidgetController {
+public class NowPlayingController extends PlaybackCardController {
     private static final String TAG = "NowPlayingController";
 
     private final FragmentActivity mActivity;
@@ -121,9 +121,9 @@ public class NowPlayingController extends MediaWidgetController {
     };
 
     /** Builder for {@link NowPlayingController}. Overrides build() method to return
-     * NowPlayingController rather than base {@link MediaWidgetController}
+     * NowPlayingController rather than base {@link PlaybackCardController}
      */
-    public static class Builder extends MediaWidgetController.Builder {
+    public static class Builder extends PlaybackCardController.Builder {
 
         @Override
         public NowPlayingController build() {

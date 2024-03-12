@@ -82,7 +82,7 @@ import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaModels;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.common.source.MediaSourceViewModel;
-import com.android.car.media.common.ui.MediaWidgetViewModel;
+import com.android.car.media.common.ui.PlaybackCardViewModel;
 import com.android.car.ui.AlertDialogBuilder;
 import com.android.car.ui.utils.CarUxRestrictionsUtil;
 
@@ -771,7 +771,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
     }
 
     /** State tracking ViewModel for the MediaActivity */
-    public static class ViewModel extends MediaWidgetViewModel {
+    public static class ViewModel extends PlaybackCardViewModel {
 
         private Mode mMode = Mode.BROWSING;
         private BrowseStack mBrowseStack = new BrowseStack();
