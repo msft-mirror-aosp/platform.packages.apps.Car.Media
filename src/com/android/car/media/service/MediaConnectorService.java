@@ -209,6 +209,21 @@ public class MediaConnectorService extends LifecycleService {
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
 
+        prepareToStartService(intent, startId);
+
+        // Since this service is started from CarMediaService (which runs in background), we need
+        // to call startForeground to prevent the system from stopping this service and ANRing.
+        Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_music)
+                .setContentTitle(getResources().getString(R.string.service_notification_title))
+                .build();
+        startForeground(FOREGROUND_NOTIFICATION_ID, notification);
+        return START_NOT_STICKY;
+    }
+
+    /** Setup to perform before the service is started. */
+    @VisibleForTesting
+    void prepareToStartService(Intent intent, int startId) {
         boolean autoPlay = intent.getBooleanExtra(EXTRA_AUTOPLAY, false);
         ComponentName mediaComp = getMediaComponentFromIntent(intent);
 
@@ -222,15 +237,6 @@ public class MediaConnectorService extends LifecycleService {
         // must take precedence, so just create and assign a new TaskInfo.
         mCurrentTask = new TaskInfo(startId, mediaComp, autoPlay);
         mPlaybackStateListener.onChanged(mPlaybackLiveData.getValue());
-
-        // Since this service is started from CarMediaService (which runs in background), we need
-        // to call startForeground to prevent the system from stopping this service and ANRing.
-        Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_music)
-                .setContentTitle(getResources().getString(R.string.service_notification_title))
-                .build();
-        startForeground(FOREGROUND_NOTIFICATION_ID, notification);
-        return START_NOT_STICKY;
     }
 
     private void stopTask() {
