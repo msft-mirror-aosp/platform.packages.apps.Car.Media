@@ -37,6 +37,7 @@ import static com.android.car.media.common.MediaConstants.KEY_HINT_VIEW_MAX_ITEM
 import static com.android.car.media.common.MediaConstants.KEY_HINT_VIEW_MAX_LIST_ITEMS_COUNT_PER_ROW;
 import static com.android.car.ui.recyclerview.CarUiRecyclerView.SCROLL_STATE_DRAGGING;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.res.Resources;
@@ -68,6 +69,8 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.car.apps.common.imaging.ImageBinder;
@@ -96,7 +99,6 @@ import com.android.car.ui.FocusArea;
 import com.android.car.ui.baselayout.Insets;
 import com.android.car.ui.recyclerview.CarUiContentListItem;
 import com.android.car.ui.recyclerview.CarUiLayoutStyle;
-import com.android.car.ui.recyclerview.CarUiListItemAdapter;
 import com.android.car.ui.recyclerview.CarUiRecyclerView;
 import com.android.car.uxr.CarUxRestrictionsAppConfig;
 import com.android.car.uxr.LifeCycleObserverUxrContentLimiter;
@@ -154,8 +156,8 @@ public class BrowseViewController {
     private ActionsHeader mActionBar;
     /** See {@link #onShow}. */
     private boolean mIsShown;
-    List<String> mPrevVisible = new ArrayList<>();
-
+    List<String> mPrevVisibleBrowseList = new ArrayList<>();
+    List<String> mPrevVisibleBrowseActions = new ArrayList<>();
 
 
     private final BrowseAdapter.Observer mBrowseAdapterObserver = new BrowseAdapter.Observer() {
@@ -186,7 +188,6 @@ public class BrowseViewController {
         @Override
         protected void onBrowseCustomActionOverflowClicked(
                 @NonNull List<CustomBrowseAction> overflowActions, String mediaId) {
-            sendBrowseCustomActionEvent(mediaId, overflowActions, true);
             showOverflowActions(overflowActions, mediaId);
         }
     };
@@ -542,9 +543,9 @@ public class BrowseViewController {
                 && mMediaItems.getValue().getData() != null) {
             int currFirst = mLimitedBrowseAdapter.findFirstVisibleItemIndex();
             int currLast = mLimitedBrowseAdapter.findLastVisibleItemIndex(true);
-            mPrevVisible = AnalyticsHelper.sendVisibleItemsInc(VIEW_COMPONENT_BROWSE_LIST,
-                    mMediaRepo, mParentItem, mPrevVisible, mMediaItems.getValue().getData(),
-                    currFirst, currLast, fromScroll);
+            mPrevVisibleBrowseList = AnalyticsHelper.sendVisibleItemsInc(VIEW_COMPONENT_BROWSE_LIST,
+                    mMediaRepo, mParentItem, mPrevVisibleBrowseList,
+                    mMediaItems.getValue().getData(), currFirst, currLast, fromScroll);
         }
     }
 
@@ -565,21 +566,46 @@ public class BrowseViewController {
         mActionBar = mContent.findViewById(R.id.toolbar_container);
         mActionBar.setActionClickedListener(
                 action -> sendBrowseCustomAction(action, parentItem.getId()));
-        mActionBar.setOnOverflowListener(actions -> {
-            sendBrowseCustomActionEvent(parentItem.getId(), actions, true);
-            showOverflowActions(actions, parentItem.getId());
-        });
+        mActionBar.setOnOverflowListener(actions ->
+                showOverflowActions(actions, parentItem.getId()));
     }
 
     private void sendBrowseCustomActionEvent(String itemId, List<CustomBrowseAction> actions,
-            boolean isShow) {
-        mMediaRepo.getAnalyticsManager()
-                .sendVisibleItemsEvents(itemId,
-                        AnalyticsEvent.VIEW_COMPONENT_BROWSE_ACTION_OVERFLOW,
-                        isShow ? AnalyticsEvent.VIEW_ACTION_SHOW : AnalyticsEvent.VIEW_ACTION_HIDE,
-                        AnalyticsEvent.VIEW_ACTION_MODE_NONE, actions.stream()
-                                .map(CustomBrowseAction::getId)
-                                .collect(Collectors.toList()));
+            RecyclerView list, boolean fromScroll, boolean isDismiss) {
+
+        if (mIsShown && mCallbacks.isBrowseViewVisible()) {
+            int first = 0;
+            int last = 0;
+
+            if (list.getLayoutManager() instanceof LinearLayoutManager) {
+                LinearLayoutManager manager = (LinearLayoutManager) list.getLayoutManager();
+                first = manager.findFirstCompletelyVisibleItemPosition();
+                last = manager.findLastCompletelyVisibleItemPosition();
+            } else if (list.getLayoutManager() instanceof GridLayoutManager) {
+                GridLayoutManager manager = (GridLayoutManager) list.getLayoutManager();
+                first = manager.findFirstCompletelyVisibleItemPosition();
+                last = manager.findLastCompletelyVisibleItemPosition();
+            } else {
+                Log.w(TAG,
+                        "Browse Custom Actions created without using LinearLayoutManager or "
+                                + "GridLayoutManager - Analytics cannot be sent.");
+            }
+
+            List<String> items;
+
+            if (isDismiss) {
+                items = new ArrayList<>();
+            } else {
+                items = actions.stream()
+                        .map(CustomBrowseAction::getId)
+                        .collect(Collectors.toList());
+            }
+
+            mPrevVisibleBrowseActions = AnalyticsHelper.sendVisibleItemsInc(
+                    AnalyticsEvent.VIEW_COMPONENT_BROWSE_ACTION_OVERFLOW,
+                    mMediaRepo, itemId, mPrevVisibleBrowseActions, items,
+                    first, last, fromScroll);
+        }
     }
 
     private void configureCustomActionsHeader(
@@ -605,19 +631,33 @@ public class BrowseViewController {
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void showOverflowActions(List<CustomBrowseAction> overflowActions, String mediaId) {
         final Size mMaxArtSize =
                 MediaAppConfig.getMediaItemsBitmapMaxSize(mContent.getContext());
 
         List<CarUiContentListItem> data = new ArrayList<>();
-        CarUiListItemAdapter adapter = new CarUiListItemAdapter(data);
-        AlertDialog dialog =
-                new AlertDialogBuilder(mContent.getContext())
-                        .setAdapter(adapter)
-                        .setCancelable(true)
-                        .create();
+
+        AlertDialog dialog = new AlertDialogBuilder(mContent.getContext())
+                .setItems(data)
+                .setCancelable(true)
+                .setAllowDismissButton(true)
+                .create();
+
+        dialog.show(); //Show needs to be called first so we use findViewById
+
+        RecyclerView recyclerView = dialog.findViewById(com.android.car.ui.R.id.list);
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                sendBrowseCustomActionEvent(mediaId, overflowActions, recyclerView,
+                        !(dx == 0 && dy == 0), false);
+            }
+        });
+        RecyclerView.Adapter adapter = recyclerView.getAdapter();
+
         dialog.setOnDismissListener(v ->
-                sendBrowseCustomActionEvent(mediaId, overflowActions, false));
+                sendBrowseCustomActionEvent(mediaId, overflowActions, recyclerView, false, true));
 
         for (CustomBrowseAction customBrowseAction : overflowActions) {
             CarUiContentListItem item = new CarUiContentListItem(CarUiContentListItem.Action.ICON);
@@ -639,7 +679,9 @@ public class BrowseViewController {
                     });
             data.add(item);
         }
-        dialog.show();
+
+        // Tell adapter `data` has been changed so RV is redrawn with new CarUiContentListItems.
+        adapter.notifyDataSetChanged();
     }
 
     private boolean handleBrowseCustomActionsExtras(Bundle actionExtras) {
