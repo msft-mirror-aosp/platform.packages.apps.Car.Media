@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2024 The Android Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/media_blocking_activity_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+  <com.android.car.apps.common.BackgroundImageView
+      android:id="@+id/background"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"/>
+
+  <com.android.car.apps.common.UxrButton
+      android:id="@+id/exit_button"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="@dimen/blocking_activity_default_vertical_margin"
+      android:layout_marginStart="@dimen/blocking_activity_default_horizontal_margin"
+      android:text="@string/blocking_activity_exit_button"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  <ImageView
+      android:id="@+id/album_art"
+      android:layout_width="@dimen/blocking_activity_album_art_size"
+      android:layout_height="@dimen/blocking_activity_album_art_size"
+      android:layout_marginEnd="@dimen/blocking_activity_default_horizontal_margin"
+      android:background="@drawable/blocking_activity_album_background"
+      android:clipToOutline="true"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:srcCompat="@drawable/ic_placeholder" />
+
+  <TextView
+      android:id="@+id/title"
+      android:layout_width="@dimen/blocking_activity_title_width"
+      android:layout_height="wrap_content"
+      style="@style/BlockingActivityTitleText"
+      android:gravity="center_vertical"
+      android:layout_marginStart="@dimen/blocking_activity_default_horizontal_margin"
+      android:layout_marginTop="@dimen/blocking_activity_title_top_margin"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      app:layout_constraintBottom_toTopOf="@id/artist" />
+
+  <TextView
+      android:id="@+id/artist"
+      android:layout_width="@dimen/blocking_activity_artist_width"
+      android:layout_height="wrap_content"
+      style="@style/BlockingActivityArtistText"
+      android:layout_marginStart="@dimen/blocking_activity_default_horizontal_margin"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/title"
+      app:layout_constraintBottom_toTopOf="@id/playback_seek_bar" />
+
+  <SeekBar
+      android:id="@+id/playback_seek_bar"
+      style="?android:attr/progressBarStyleHorizontal"
+      android:layout_width="@dimen/blocking_activity_seekbar_width"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="@dimen/blocking_activity_seekbar_margin"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/artist"
+      app:layout_constraintBottom_toTopOf="@id/play_pause_button" />
+
+  <ImageButton
+      android:id="@+id/play_pause_button"
+      android:layout_width="@dimen/blocking_activity_play_pause_width"
+      android:layout_height="@dimen/blocking_activity_play_pause_height"
+      android:layout_marginStart="@dimen/blocking_activity_default_horizontal_margin"
+      app:srcCompat="@drawable/play_pause_button"
+      app:layout_constraintTop_toBottomOf="@id/playback_seek_bar"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintBottom_toBottomOf="parent"/>
+
+  <TextView
+      android:id="@+id/current_time"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:gravity="end"
+      android:padding="@dimen/blocking_activity_time_text_padding"
+      app:layout_constraintTop_toBottomOf="@id/artist"
+      app:layout_constraintBottom_toTopOf="@id/play_pause_button"
+      app:layout_constraintStart_toEndOf="@id/playback_seek_bar"
+      app:layout_constraintEnd_toStartOf="@id/inner_separator" />
+
+  <TextView
+      android:id="@+id/inner_separator"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="@string/blocking_activity_time_separator"
+      android:padding="@dimen/blocking_activity_time_text_padding"
+      app:layout_constraintTop_toBottomOf="@id/artist"
+      app:layout_constraintBottom_toTopOf="@id/play_pause_button"
+      app:layout_constraintStart_toEndOf="@id/current_time"
+      app:layout_constraintEnd_toStartOf="@id/max_time" />
+
+  <TextView
+      android:id="@+id/max_time"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:padding="@dimen/blocking_activity_time_text_padding"
+      android:gravity="start"
+      app:layout_constraintTop_toBottomOf="@id/artist"
+      app:layout_constraintBottom_toTopOf="@id/play_pause_button"
+      app:layout_constraintStart_toEndOf="@id/inner_separator" />
+
+  <androidx.constraintlayout.widget.Group
+      android:id="@+id/media_views_group"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      app:constraint_referenced_ids="exit_button, album_art, title, artist, playback_seek_bar, play_pause_button,
+         current_time, inner_separator, max_time" />
+
+  <TextView
+      android:id="@+id/no_media_text"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:gravity="center"
+      android:text="@string/blocking_activity_no_media_text"
+      android:textAppearance="@style/TextAppearance.Display3"
+      android:visibility="gone"
+      app:layout_constraintTop_toTopOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintBottom_toBottomOf="parent"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

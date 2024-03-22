@@ -42,4 +42,11 @@
     <string name="menu_item_sound_settings_title">Sound Settings</string>
     <!-- Title of the app selector menu item. Will be displayed if the button is in the overflow menu, and used as a content description. [CHAR_LIMIT=50] -->
     <string name="menu_item_app_selector_title">Switch apps</string>
+
+    <!-- MediaBlockingActivity -->
+    <!-- Exit button text -->
+    <string name="blocking_activity_exit_button">Exit Drive View</string>
+    <!-- Separator between current and max time -->
+    <string name="blocking_activity_time_separator">/</string>
+    <string name="blocking_activity_no_media_text">You can\u2019t use this feature while driving</string>
 </resources>

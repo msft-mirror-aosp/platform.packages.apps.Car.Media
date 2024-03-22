@@ -119,4 +119,18 @@
     <style name="ToastErrorIconStyle"/>
 
     <style name="ToastErrorTextStyle"/>
+
+    <!-- MediaBlockingActivity -->
+    <style name="BlockingActivityTitleText">
+        <item name="android:textAppearance">@style/TextAppearance.Body1</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
+    <style name="BlockingActivityArtistText">
+        <item name="android:fontFamily">@style/TextAppearance.Body2</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
 </resources>
