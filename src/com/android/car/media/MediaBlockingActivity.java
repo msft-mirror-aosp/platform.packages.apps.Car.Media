@@ -16,7 +16,6 @@
 
 package com.android.car.media;
 
-import android.car.media.CarMediaIntents;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
@@ -56,12 +55,12 @@ public class MediaBlockingActivity extends AppCompatActivity {
         ViewGroup mRootView = requireViewById(R.id.media_blocking_activity_root);
 
         Intent intent = getIntent();
-        if (!intent.hasExtra(CarMediaIntents.EXTRA_MEDIA_COMPONENT)) {
+        if (!intent.hasExtra(Intent.EXTRA_COMPONENT_NAME)) {
             Log.i(TAG, "Caller must provide valid media activity extra");
             setupNoMediaView();
             return;
         }
-        String targetMediaApp = intent.getStringExtra(CarMediaIntents.EXTRA_MEDIA_COMPONENT);
+        String targetMediaApp = intent.getStringExtra(Intent.EXTRA_COMPONENT_NAME);
         ComponentName componentName = ComponentName.unflattenFromString(targetMediaApp);
         if (componentName == null) {
             Log.i(TAG, "Caller must provide valid media activity extra");
