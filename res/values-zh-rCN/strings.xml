@@ -29,4 +29,7 @@
     <string name="service_notification_title" msgid="8085444675783592744">"正在连接到媒体"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"声音设置"</string>
     <string name="menu_item_app_selector_title" msgid="4587248991114338595">"切换应用"</string>
+    <string name="blocking_activity_exit_button" msgid="2311235552215881142">"退出驾车视图"</string>
+    <string name="blocking_activity_time_separator" msgid="194457998199565809">"/"</string>
+    <string name="blocking_activity_no_media_text" msgid="5619524033914901715">"您不能在驾车时使用此功能"</string>
 </resources>

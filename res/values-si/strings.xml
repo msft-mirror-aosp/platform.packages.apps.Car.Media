@@ -29,4 +29,7 @@
     <string name="service_notification_title" msgid="8085444675783592744">"මාධ්‍ය වෙත සබැඳීම"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"ශබ්ද සැකසීම්"</string>
     <string name="menu_item_app_selector_title" msgid="4587248991114338595">"යෙදුම් මාරු කරන්න"</string>
+    <string name="blocking_activity_exit_button" msgid="2311235552215881142">"ධාවක දසුනෙන් පිටවන්න"</string>
+    <string name="blocking_activity_time_separator" msgid="194457998199565809">"/"</string>
+    <string name="blocking_activity_no_media_text" msgid="5619524033914901715">"රිය පදවන අතරේ ඔබට මෙම විශේෂාංගය භාවිත කළ නොහැක"</string>
 </resources>

@@ -29,4 +29,7 @@
     <string name="service_notification_title" msgid="8085444675783592744">"मीडिया स्रोत से कनेक्ट किया जा रहा है"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"आवाज़ की सेटिंग"</string>
     <string name="menu_item_app_selector_title" msgid="4587248991114338595">"ऐप्लिकेशन स्विच करें"</string>
+    <string name="blocking_activity_exit_button" msgid="2311235552215881142">"ड्राइव व्यू मोड से बाहर निकलें"</string>
+    <string name="blocking_activity_time_separator" msgid="194457998199565809">"/"</string>
+    <string name="blocking_activity_no_media_text" msgid="5619524033914901715">"इस सुविधा का इस्तेमाल, ड्राइव करते समय नहीं किया जा सकता"</string>
 </resources>
