@@ -29,10 +29,7 @@
     <string name="service_notification_title" msgid="8085444675783592744">"Підключення до джерела медіавмісту"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"Налаштування звуку"</string>
     <string name="menu_item_app_selector_title" msgid="4587248991114338595">"Змінити додаток"</string>
-    <!-- no translation found for blocking_activity_exit_button (2311235552215881142) -->
-    <skip />
-    <!-- no translation found for blocking_activity_time_separator (194457998199565809) -->
-    <skip />
-    <!-- no translation found for blocking_activity_no_media_text (5619524033914901715) -->
-    <skip />
+    <string name="blocking_activity_exit_button" msgid="2311235552215881142">"Вийти з режиму руху"</string>
+    <string name="blocking_activity_time_separator" msgid="194457998199565809">"/"</string>
+    <string name="blocking_activity_no_media_text" msgid="5619524033914901715">"Ця функція недоступна під час руху"</string>
 </resources>
