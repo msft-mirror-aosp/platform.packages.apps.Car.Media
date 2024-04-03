@@ -153,8 +153,9 @@ public class NowPlayingController extends PlaybackCardController {
         ViewGroup queueContainer = mView.findViewById(R.id.queue_fragment_container);
         mPlaybackQueueController = new PlaybackQueueController(
                 queueContainer, R.layout.fragment_playback_queue, R.layout.queue_list_item,
-                mActivity, mDataModel, mItemsRepository, new LifeCycleObserverUxrContentLimiter(
-                new UxrContentLimiterImpl(mView.getContext(), R.xml.uxr_config)),
+                Resources.ID_NULL, mActivity, mDataModel, mItemsRepository,
+                new LifeCycleObserverUxrContentLimiter(
+                        new UxrContentLimiterImpl(mView.getContext(), R.xml.uxr_config)),
                 R.id.playback_fragment_now_playing_list_uxr_config);
         mPlaybackQueueController.setCallback(mPlaybackQueueCallback);
         mPlaybackQueueController.setShowTimeForActiveQueueItem(res.getBoolean(
