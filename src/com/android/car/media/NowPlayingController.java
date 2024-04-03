@@ -165,7 +165,7 @@ public class NowPlayingController extends PlaybackCardController {
                 R.bool.show_thumbnail_for_queue_list_item));
         mPlaybackQueueController.setShowSubtitleForQueueItem(res.getBoolean(
                 R.bool.show_subtitle_for_queue_list_item));
-        mPlaybackQueueController.setFadingEdgeLengthEnabled(res.getBoolean(
+        mPlaybackQueueController.setVerticalFadingEdgeLengthEnabled(res.getBoolean(
                 R.bool.queue_fading_edge_length_enabled));
 
         mSeekBarContainer = mView.findViewById(R.id.playback_seek_bar_container);
