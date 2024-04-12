@@ -24,6 +24,8 @@ import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ServiceInfo;
+import android.os.Build;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
@@ -215,7 +217,12 @@ public class MediaConnectorService extends LifecycleService {
                 .setSmallIcon(R.drawable.ic_music)
                 .setContentTitle(getResources().getString(R.string.service_notification_title))
                 .build();
-        startForeground(FOREGROUND_NOTIFICATION_ID, notification);
+        if (Build.VERSION.SDK_INT < 34) {
+            startForeground(FOREGROUND_NOTIFICATION_ID, notification);
+        } else {
+            startForeground(FOREGROUND_NOTIFICATION_ID, notification,
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
+        }
 
         prepareToStartService(intent, startId);
         return START_NOT_STICKY;
