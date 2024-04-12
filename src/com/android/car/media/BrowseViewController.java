@@ -207,13 +207,15 @@ public class BrowseViewController {
                 type.toAnalyticBrowseMode(), isShown ? VIEW_ACTION_SHOW : VIEW_ACTION_HIDE,
                 parentId);
 
+        List<MediaItemMetadata> items = mLimitedBrowseAdapter.getItems();
+
         int firsPos = mLimitedBrowseAdapter.findFirstVisibleItemIndex();
-        int lastPov = mLimitedBrowseAdapter.findLastVisibleItemIndex(false);
-        if (mMediaItems.getValue() != null && mMediaItems.getValue().getData() != null
-                && firsPos != NO_POSITION && lastPov != NO_POSITION) {
-            List<String> itemsSublist = mMediaItems.getValue().getData()
-                    .subList(firsPos, lastPov + 1)
+        int lastPos = mLimitedBrowseAdapter.findLastVisibleItemIndex(false);
+        if (items != null && firsPos != NO_POSITION && lastPos != NO_POSITION) {
+            List<String> itemsSublist = items
+                    .subList(firsPos, lastPos + 1)
                     .stream()
+                    .filter(Objects::nonNull)
                     .map(MediaItemMetadata::getId)
                     .collect(Collectors.toCollection(ArrayList::new));
 
