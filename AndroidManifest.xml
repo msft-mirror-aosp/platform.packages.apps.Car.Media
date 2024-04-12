@@ -95,6 +95,7 @@
         <!-- Only the system should call this service => exported=false. -->
         <service
             android:name=".service.MediaConnectorService"
+            android:foregroundServiceType="mediaPlayback"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.android.car.media.MEDIA_CONNECTION"/>
