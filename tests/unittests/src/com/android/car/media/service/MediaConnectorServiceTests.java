@@ -27,6 +27,7 @@ import static org.mockito.Mockito.when;
 
 import android.car.media.CarMediaIntents;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Path;
 import android.graphics.drawable.ColorDrawable;
@@ -39,6 +40,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.MutableLiveData;
 import androidx.test.annotation.UiThreadTest;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -52,7 +54,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
-
 @RunWith(AndroidJUnit4.class)
 public class MediaConnectorServiceTests extends BaseMockitoTest {
 
@@ -61,6 +62,7 @@ public class MediaConnectorServiceTests extends BaseMockitoTest {
     private static final ComponentName COMP_1_1 = new ComponentName("package1", "class1");
     private static final ComponentName COMP_1_2 = new ComponentName("package1", "class2");
 
+    private Context mContext;
     private MutableLiveData<PlaybackStateWrapper> mPlaybackLiveData;
     private MediaConnectorService mService;
 
@@ -72,20 +74,23 @@ public class MediaConnectorServiceTests extends BaseMockitoTest {
     @UiThreadTest
     @Before
     public void setup() {
+        mContext = ApplicationProvider.getApplicationContext();
         mPlaybackLiveData = dataOf(null);
         mService = new MediaConnectorService(mPlaybackLiveData);
-        mService.attachBaseContext(InstrumentationRegistry.getInstrumentation().getTargetContext());
+        mService.attachBaseContext(mContext);
         mService.onCreate();
         mService.onBind(new Intent());
 
         when(mMediaController.getTransportControls()).thenReturn(mControls);
     }
 
-    public static MediaSource newFakeMediaSource(@NonNull ComponentName browseService) {
+    public static MediaSource newFakeMediaSource(
+            Context context, @NonNull ComponentName browseService) {
         String displayName = browseService.getClassName();
         Drawable icon = new ColorDrawable();
         IconCropper iconCropper = new IconCropper(new Path());
-        return new MediaSource(browseService, null, displayName, icon, iconCropper);
+        return new MediaSource(browseService, null, displayName, icon, iconCropper,
+                context.getPackageManager());
     }
 
     private void sendCommand(@Nullable ComponentName source, boolean autoPlay) {
@@ -98,7 +103,7 @@ public class MediaConnectorServiceTests extends BaseMockitoTest {
     }
 
     private PlaybackStateWrapper newState(ComponentName comp) {
-        MediaSource source = newFakeMediaSource(comp);
+        MediaSource source = newFakeMediaSource(mContext, comp);
         return new PlaybackStateWrapper(source, mMediaController, mMetadata, mState);
     }
 
