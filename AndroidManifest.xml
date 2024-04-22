@@ -84,6 +84,7 @@
             android:excludeFromRecents="true"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:showForAllUsers="true"
+            android:launchMode="singleTask"
             android:permission="android.permission.MANAGE_ACTIVITY_TASKS">
             <meta-data android:name="distractionOptimized" android:value="true"/>
             <!-- go/safer-intents-v-guide -->
