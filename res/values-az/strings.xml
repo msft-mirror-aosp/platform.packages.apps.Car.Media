@@ -29,4 +29,7 @@
     <string name="service_notification_title" msgid="8085444675783592744">"Mediaya qoşulur"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"Səs ayarları"</string>
     <string name="menu_item_app_selector_title" msgid="4587248991114338595">"Tətbiqləri dəyişdirin"</string>
+    <string name="blocking_activity_exit_button" msgid="2311235552215881142">"Sürmə Görünüşündən çıxın"</string>
+    <string name="blocking_activity_time_separator" msgid="194457998199565809">"/"</string>
+    <string name="blocking_activity_no_media_text" msgid="5619524033914901715">"Avtomobil sürərkən bu funksiyanı istifadə edə bilməzsiniz"</string>
 </resources>

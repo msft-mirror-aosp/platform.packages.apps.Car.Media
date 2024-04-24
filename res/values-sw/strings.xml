@@ -29,4 +29,7 @@
     <string name="service_notification_title" msgid="8085444675783592744">"Inaunganisha kwenye chanzo cha maudhui"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"Mipangilio ya Sauti"</string>
     <string name="menu_item_app_selector_title" msgid="4587248991114338595">"Badilisha programu"</string>
+    <string name="blocking_activity_exit_button" msgid="2311235552215881142">"Funga Mwonekano wa Kuendesha Gari"</string>
+    <string name="blocking_activity_time_separator" msgid="194457998199565809">"/"</string>
+    <string name="blocking_activity_no_media_text" msgid="5619524033914901715">"Huwezi kutumia kipengele hiki wakati unaendesha gari"</string>
 </resources>

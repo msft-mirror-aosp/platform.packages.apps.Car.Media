@@ -39,7 +39,7 @@ public class CarMediaApp extends Application {
         super.onCreate();
         Bundle mediaSessionRootHints = new Bundle();
         int maxTabs = AppBarController.getMaxTabs(this);
-        int maxQueue = PlaybackQueueController.getMaxItemsWhileRestricted(this);
+        int maxQueue = NowPlayingController.getMaxItemsWhileRestricted(this);
         mediaSessionRootHints.putInt(BROWSER_ROOT_HINTS_KEY_ROOT_CHILDREN_LIMIT, maxTabs);
         mediaSessionRootHints.putInt(KEY_ROOT_HINT_MAX_QUEUE_ITEMS_WHILE_RESTRICTED, maxQueue);
         MediaBrowserConnector.addRootHints(mediaSessionRootHints);

@@ -76,9 +76,27 @@
             </intent-filter>
         </activity>
 
+        <!-- Blocking UI for background audio playing NDO apps while driving. -->
+        <activity
+            android:name=".MediaBlockingActivity"
+            android:exported="true"
+            android:documentLaunchMode="always"
+            android:excludeFromRecents="true"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:showForAllUsers="true"
+            android:launchMode="singleTask"
+            android:permission="android.permission.MANAGE_ACTIVITY_TASKS">
+            <meta-data android:name="distractionOptimized" android:value="true"/>
+            <!-- go/safer-intents-v-guide -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+            </intent-filter>
+        </activity>
+
         <!-- Only the system should call this service => exported=false. -->
         <service
             android:name=".service.MediaConnectorService"
+            android:foregroundServiceType="mediaPlayback"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.android.car.media.MEDIA_CONNECTION"/>
