@@ -117,7 +117,9 @@
 
     <!-- media_browse_header_item.xml -->
     <dimen name="media_browse_header_item_height">76dp</dimen>
-    <dimen name="media_browse_header_action_margin">88dp</dimen>
+    <dimen name="media_browse_header_margin">0dp</dimen>
+    <dimen name="media_browse_action_header_height">60dp</dimen>
+    <dimen name="media_browse_action_header_margin">112dp</dimen>
 
     <!-- media_browse_list_[icons_]item.xml -->
     <dimen name="media_browse_list_item_height">116dp</dimen>

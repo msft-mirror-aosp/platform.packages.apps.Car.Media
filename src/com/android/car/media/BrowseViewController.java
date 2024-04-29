@@ -153,7 +153,7 @@ public class BrowseViewController {
     private final PlaybackViewModel mPlaybackViewModelBrowseSource;
     private MediaItemsRepository mMediaRepo;
     private Map<String, CustomBrowseAction> mGlobalActions = new HashMap<>();
-    private ActionsHeader mActionBar;
+    private ActionsHeader mCustomActionsBar;
     /** See {@link #onShow}. */
     private boolean mIsShown;
     List<String> mPrevVisibleBrowseList = new ArrayList<>();
@@ -565,10 +565,10 @@ public class BrowseViewController {
         if (parentItem == null || maxActions <= 0) {
             return;
         }
-        mActionBar = mContent.findViewById(R.id.toolbar_container);
-        mActionBar.setActionClickedListener(
+        mCustomActionsBar = mContent.findViewById(R.id.toolbar_container);
+        mCustomActionsBar.setActionClickedListener(
                 action -> sendBrowseCustomAction(action, parentItem.getId()));
-        mActionBar.setOnOverflowListener(actions ->
+        mCustomActionsBar.setOnOverflowListener(actions ->
                 showOverflowActions(actions, parentItem.getId()));
     }
 
@@ -612,13 +612,12 @@ public class BrowseViewController {
 
     private void configureCustomActionsHeader(
             @NonNull Map<String, CustomBrowseAction> globalActions, int maxActions) {
-        if (mActionBar == null || maxActions <= 0) return;
-        mParentActions =
-                BrowseAdapterUtils.buildBrowseCustomActions(
-                        mContent.getContext(), mParentItem, globalActions);
+        if (mCustomActionsBar == null || maxActions <= 0) return;
+        mParentActions = BrowseAdapterUtils.buildBrowseCustomActions(
+                mContent.getContext(), mParentItem, globalActions);
         if (mParentActions == null || mParentActions.isEmpty()) return;
-        mActionBar.setVisibility(true);
-        mActionBar.setActions(mParentActions);
+        mCustomActionsBar.setVisibility(true);
+        mCustomActionsBar.setActions(mParentActions);
     }
 
     private void sendBrowseCustomAction(CustomBrowseAction customBrowseAction, String mediaItemId) {
@@ -752,7 +751,7 @@ public class BrowseViewController {
                             mContent.getContext(),
                             new MediaItemMetadata(item),
                             mGlobalActions);
-            mActionBar.setActions(mParentActions);
+            mCustomActionsBar.setActions(mParentActions);
         } else {
             mLimitedBrowseAdapter.updateItemMetaData(
                     new MediaItemMetadata(item),
@@ -778,10 +777,10 @@ public class BrowseViewController {
         if (isSourcesSame()) {
             hideEmptyListPlayItem();
         }
-        if (mediaSourceMediaSourcePair.second != null && mActionBar != null) {
+        if (mediaSourceMediaSourcePair.second != null && mCustomActionsBar != null) {
             CharSequence browseSourceName = mediaSourceMediaSourcePair.second.getDisplayName(
                     getActivity());
-            mActionBar.setTitle(browseSourceName);
+            mCustomActionsBar.setTitle(browseSourceName);
         }
     }
 
@@ -856,9 +855,10 @@ public class BrowseViewController {
 
     public void onCarUiInsetsChanged(@NonNull Insets insets) {
         int actionHeaderOffset = 0;
-        if (mActionBar != null && mActionBar.isShown()) {
+        if (mCustomActionsBar != null && mCustomActionsBar.isShown()) {
             Resources res = getActivity().getResources();
-            actionHeaderOffset = res.getDimensionPixelSize(R.dimen.media_browse_header_item_height);
+            actionHeaderOffset =
+                    res.getDimensionPixelSize(R.dimen.media_browse_action_header_height);
         }
         int leftPadding = mBrowseList.getPaddingLeft();
         int rightPadding = mBrowseList.getPaddingRight();
