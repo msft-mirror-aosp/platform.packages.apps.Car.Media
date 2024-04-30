@@ -345,7 +345,10 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
 
     @Override
     protected void onDestroy() {
-        mCar.disconnect();
+        if (mCar != null) {
+            mCar.disconnect();
+            mCar = null;
+        }
         mMediaActivityController.onDestroy();
         super.onDestroy();
     }
