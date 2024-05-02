@@ -345,7 +345,10 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
 
     @Override
     protected void onDestroy() {
-        mCar.disconnect();
+        if (mCar != null) {
+            mCar.disconnect();
+            mCar = null;
+        }
         mMediaActivityController.onDestroy();
         super.onDestroy();
     }
@@ -776,7 +779,6 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         private Mode mMode = Mode.BROWSING;
         private BrowseStack mBrowseStack = new BrowseStack();
         private String mSearchQuery;
-        private boolean mHasPlayableItem = false;
         private MediaModels mBrowseModels;
         private final MutableLiveData<FutureData<MediaSource>> mBrowsedMediaSource =
                 dataOf(FutureData.newLoadingData());
@@ -872,14 +874,6 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
 
         void setSearchQuery(String searchQuery) {
             mSearchQuery = searchQuery;
-        }
-
-        void setHasPlayableItem(boolean hasPlayableItem) {
-            mHasPlayableItem = hasPlayableItem;
-        }
-
-        boolean hasPlayableItem() {
-            return mHasPlayableItem;
         }
     }
 

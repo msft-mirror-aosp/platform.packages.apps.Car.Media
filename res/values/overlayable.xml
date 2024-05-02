@@ -184,6 +184,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="layout" name="fragment_playback_queue"/>
       <item type="layout" name="media_activity"/>
       <item type="layout" name="media_blocking_activity"/>
+      <item type="layout" name="media_browse_action_header"/>
       <item type="layout" name="media_browse_grid_icons_item"/>
       <item type="layout" name="media_browse_grid_item"/>
       <item type="layout" name="media_browse_header_item"/>

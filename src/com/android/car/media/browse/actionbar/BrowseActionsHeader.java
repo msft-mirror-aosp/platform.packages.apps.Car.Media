@@ -51,8 +51,8 @@ public class BrowseActionsHeader extends LinearLayout implements ActionsHeader {
     }
 
     private void initView() {
-        inflate(getContext(), R.layout.media_browse_header_item, this);
-        mActionsContainer = (LinearLayout) findViewById(R.id.browse_item_actions_container);
+        inflate(getContext(), R.layout.media_browse_action_header, this);
+        mActionsContainer = findViewById(R.id.browse_item_actions_container);
     }
 
     @Override
@@ -115,7 +115,6 @@ public class BrowseActionsHeader extends LinearLayout implements ActionsHeader {
 
     @Override
     public void setTitle(CharSequence sourceName) {
-        //TODO(b/264473064): Add a text view for title
     }
 
     @Override

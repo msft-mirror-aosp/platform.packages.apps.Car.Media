@@ -18,6 +18,7 @@ package com.android.car.media;
 
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK;
+import static android.media.session.PlaybackState.STATE_ERROR;
 
 import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_HIDE;
 import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_SHOW;
@@ -153,7 +154,7 @@ public class BrowseViewController {
     private final PlaybackViewModel mPlaybackViewModelBrowseSource;
     private MediaItemsRepository mMediaRepo;
     private Map<String, CustomBrowseAction> mGlobalActions = new HashMap<>();
-    private ActionsHeader mActionBar;
+    private ActionsHeader mCustomActionsBar;
     /** See {@link #onShow}. */
     private boolean mIsShown;
     List<String> mPrevVisibleBrowseList = new ArrayList<>();
@@ -565,10 +566,10 @@ public class BrowseViewController {
         if (parentItem == null || maxActions <= 0) {
             return;
         }
-        mActionBar = mContent.findViewById(R.id.toolbar_container);
-        mActionBar.setActionClickedListener(
+        mCustomActionsBar = mContent.findViewById(R.id.toolbar_container);
+        mCustomActionsBar.setActionClickedListener(
                 action -> sendBrowseCustomAction(action, parentItem.getId()));
-        mActionBar.setOnOverflowListener(actions ->
+        mCustomActionsBar.setOnOverflowListener(actions ->
                 showOverflowActions(actions, parentItem.getId()));
     }
 
@@ -612,13 +613,12 @@ public class BrowseViewController {
 
     private void configureCustomActionsHeader(
             @NonNull Map<String, CustomBrowseAction> globalActions, int maxActions) {
-        if (mActionBar == null || maxActions <= 0) return;
-        mParentActions =
-                BrowseAdapterUtils.buildBrowseCustomActions(
-                        mContent.getContext(), mParentItem, globalActions);
+        if (mCustomActionsBar == null || maxActions <= 0) return;
+        mParentActions = BrowseAdapterUtils.buildBrowseCustomActions(
+                mContent.getContext(), mParentItem, globalActions);
         if (mParentActions == null || mParentActions.isEmpty()) return;
-        mActionBar.setVisibility(true);
-        mActionBar.setActions(mParentActions);
+        mCustomActionsBar.setVisibility(true);
+        mCustomActionsBar.setActions(mParentActions);
     }
 
     private void sendBrowseCustomAction(CustomBrowseAction customBrowseAction, String mediaItemId) {
@@ -752,7 +752,7 @@ public class BrowseViewController {
                             mContent.getContext(),
                             new MediaItemMetadata(item),
                             mGlobalActions);
-            mActionBar.setActions(mParentActions);
+            mCustomActionsBar.setActions(mParentActions);
         } else {
             mLimitedBrowseAdapter.updateItemMetaData(
                     new MediaItemMetadata(item),
@@ -776,12 +776,12 @@ public class BrowseViewController {
     private void handleSourceUpdates(Pair<MediaSource, MediaSource> mediaSourceMediaSourcePair) {
         // If sources are the same, make sure we aren't showing the mini item bar.
         if (isSourcesSame()) {
-            hideEmptyListPlayItem();
+            hideEmptyListPlayBar();
         }
-        if (mediaSourceMediaSourcePair.second != null && mActionBar != null) {
+        if (mediaSourceMediaSourcePair.second != null && mCustomActionsBar != null) {
             CharSequence browseSourceName = mediaSourceMediaSourcePair.second.getDisplayName(
                     getActivity());
-            mActionBar.setTitle(browseSourceName);
+            mCustomActionsBar.setTitle(browseSourceName);
         }
     }
 
@@ -856,9 +856,10 @@ public class BrowseViewController {
 
     public void onCarUiInsetsChanged(@NonNull Insets insets) {
         int actionHeaderOffset = 0;
-        if (mActionBar != null && mActionBar.isShown()) {
+        if (mCustomActionsBar != null && mCustomActionsBar.isShown()) {
             Resources res = getActivity().getResources();
-            actionHeaderOffset = res.getDimensionPixelSize(R.dimen.media_browse_header_item_height);
+            actionHeaderOffset =
+                    res.getDimensionPixelSize(R.dimen.media_browse_action_header_height);
         }
         int leftPadding = mBrowseList.getPaddingLeft();
         int rightPadding = mBrowseList.getPaddingRight();
@@ -901,6 +902,8 @@ public class BrowseViewController {
                 (ViewGroup.MarginLayoutParams) mMessage.getLayoutParams();
         messageLayout.bottomMargin = bottomPadding;
         mMessage.setLayoutParams(messageLayout);
+
+        evaluateShowEmptyListPlayBar();
     }
 
     private String getErrorMessage() {
@@ -937,19 +940,6 @@ public class BrowseViewController {
         List<MediaItemMetadata> items = MediaBrowserViewModelImpl.filterItems(
                 /*root*/ !mDisplayMediaItems, futureData.getData());
 
-        boolean sourceHasPlayable = mViewModel.hasPlayableItem();
-        if (items != null && !sourceHasPlayable) {
-            mViewModel.setHasPlayableItem(items.stream().anyMatch(MediaItemMetadata::isPlayable));
-        }
-
-        boolean hasMetaData = mPlaybackViewModelBrowseSource.getMetadata().getValue() != null;
-
-        boolean hasPlayCommand = false;
-        if (mPlaybackViewModelBrowseSource.getPlaybackStateWrapper().getValue() != null) {
-            hasPlayCommand = (mPlaybackViewModelBrowseSource.getPlaybackStateWrapper().getValue()
-                    .getSupportedActions() & PlaybackStateCompat.ACTION_PLAY) != 0;
-        }
-
         if (mDisplayMediaItems) {
             mLimitedBrowseAdapter.submitItems(mParentItem, items);
 
@@ -968,30 +958,14 @@ public class BrowseViewController {
             ViewUtils.hideViewAnimated(mBrowseList.getView(), duration);
             ViewUtils.showViewAnimated(mMessage, duration);
             ViewUtils.showViewAnimated(mErrorIcon, duration);
-            hideEmptyListPlayItem();
+            hideEmptyListPlayBar();
         } else if (items.isEmpty()) {
-            boolean shouldShowEmptyListPlayItem =
-                    !isSourcesSame()
-                            && !mViewModel.hasPlayableItem()
-                            && hasMetaData
-                            && hasPlayCommand;
-            if (shouldShowEmptyListPlayItem) {
-                ViewUtils.hideViewAnimated(mBrowseList.getView(), duration);
-                ViewUtils.hideViewAnimated(mErrorIcon, duration);
-                ViewUtils.hideViewAnimated(mMessage, duration);
-                showEmptyListPlayItem();
-            } else {
-                mMessage.setText(R.string.nothing_to_play);
-                ViewUtils.hideViewAnimated(mBrowseList.getView(), duration);
-                ViewUtils.hideViewAnimated(mErrorIcon, duration);
-                ViewUtils.showViewAnimated(mMessage, duration);
-                hideEmptyListPlayItem();
-            }
+            evaluateShowEmptyListPlayBar();
         } else {
             ViewUtils.showViewAnimated(mBrowseList.getView(), duration);
             ViewUtils.hideViewAnimated(mErrorIcon, duration);
             ViewUtils.hideViewAnimated(mMessage, duration);
-            hideEmptyListPlayItem();
+            hideEmptyListPlayBar();
         }
 
         if (Log.isLoggable(TAG, Log.VERBOSE)) {
@@ -1009,7 +983,64 @@ public class BrowseViewController {
                 playbackViewModelBrowse.getMediaSource().getValue());
     }
 
-    private void showEmptyListPlayItem() {
+    private void evaluateShowEmptyListPlayBar() {
+        //Check if we have an error state - don't show in that case
+        if (mPlaybackViewModelBrowseSource.getPlaybackStateWrapper().getValue() == null
+                || mPlaybackViewModelBrowseSource.getPlaybackStateWrapper().getValue().getState()
+                        == STATE_ERROR) {
+            hideEmptyListPlayBar();
+            return;
+        }
+
+        //Don't show if null - this is error. Don't show if not empty - valid items to display
+        if (mMediaItems.getValue() == null) {
+            hideEmptyListPlayBar();
+            return;
+        }
+
+        List<MediaItemMetadata> filteredItems = MediaBrowserViewModelImpl.filterItems(
+                /*root*/ !mDisplayMediaItems, mMediaItems.getValue().getData());
+        if (filteredItems == null || !filteredItems.isEmpty()) {
+            hideEmptyListPlayBar();
+            return;
+        }
+
+        //Keep track of if we have metadata data in session for browse source.
+        boolean hasMetaData = mPlaybackViewModelBrowseSource.getMetadata().getValue() != null;
+
+        boolean hasPlayableItems = filteredItems.stream().anyMatch(MediaItemMetadata::isPlayable);
+
+        //Check for commands.
+        boolean hasPlayCommand = false;
+        if (mPlaybackViewModelBrowseSource.getPlaybackStateWrapper().getValue() != null) {
+            long supportedActions = mPlaybackViewModelBrowseSource
+                    .getPlaybackStateWrapper()
+                    .getValue()
+                    .getSupportedActions();
+            hasPlayCommand = (supportedActions & PlaybackStateCompat.ACTION_PLAY) != 0;
+        }
+
+
+        boolean shouldShowEmptyListPlayItem =
+                (!isSourcesSame() && !hasPlayableItems)
+                        && (hasPlayCommand || hasMetaData);
+        int duration = mFadeDuration;
+        if (shouldShowEmptyListPlayItem) {
+            ViewUtils.hideViewAnimated(mBrowseList.getView(), duration);
+            ViewUtils.hideViewAnimated(mErrorIcon, duration);
+            ViewUtils.hideViewAnimated(mMessage, duration);
+            showEmptyListPlayBar();
+        } else {
+            mMessage.setText(R.string.nothing_to_play);
+            ViewUtils.hideViewAnimated(mBrowseList.getView(), duration);
+            ViewUtils.hideViewAnimated(mErrorIcon, duration);
+            ViewUtils.showViewAnimated(mMessage, duration);
+            hideEmptyListPlayBar();
+        }
+    }
+
+
+    private void showEmptyListPlayBar() {
         if (mEmptyListPlaybackBar == null) {
             View inflatedView = LayoutInflater.from(getActivity())
                     .inflate(R.layout.browse_mini_bar_container, (ViewGroup) getContent());
@@ -1026,7 +1057,7 @@ public class BrowseViewController {
                 view -> mCallbacks.onBrowseEmptyListPlayItemClicked());
     }
 
-    private void hideEmptyListPlayItem() {
+    private void hideEmptyListPlayBar() {
         if (mEmptyListPlaybackBar != null) {
             ViewUtils.hideViewAnimated(mEmptyListPlaybackBar, mFadeDuration);
         }
