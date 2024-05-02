@@ -39,6 +39,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="bool" name="switch_to_playback_view_when_playable_item_is_clicked"/>
       <item type="bool" name="use_media_source_color_for_progress_bar"/>
       <item type="bool" name="use_media_source_logo_for_app_selector_in_playback_view"/>
+      <item type="color" name="blocking_activity_exit_button_selector"/>
       <item type="color" name="progress_bar_highlight"/>
       <item type="dimen" name="browse_fragment_bottom_padding"/>
       <item type="dimen" name="browse_fragment_top_padding"/>
@@ -51,7 +52,9 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="dimen" name="playback_seekbar_margin_x"/>
       <item type="dimen" name="queue_list_item_padding_x"/>
       <item type="dimen" name="queue_list_item_thumbnail_container_width"/>
+      <item type="drawable" name="blocking_activity_action_item_background"/>
       <item type="drawable" name="blocking_activity_album_background"/>
+      <item type="drawable" name="blocking_activity_exit_button_background"/>
       <item type="drawable" name="browser_progress_new_indicator"/>
       <item type="drawable" name="error_illustration"/>
       <item type="drawable" name="ic_arrow_back"/>
@@ -129,6 +132,8 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="now_playing_icon"/>
       <item type="id" name="outer_separator"/>
       <item type="id" name="play_pause_button"/>
+      <item type="id" name="playback_action_id1"/>
+      <item type="id" name="playback_action_id2"/>
       <item type="id" name="playback_background"/>
       <item type="id" name="playback_container"/>
       <item type="id" name="playback_controls"/>

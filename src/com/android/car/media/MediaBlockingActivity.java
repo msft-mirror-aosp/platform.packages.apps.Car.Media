@@ -20,11 +20,13 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.android.car.apps.common.util.IntentUtils;
 import com.android.car.media.common.source.MediaModels;
 import com.android.car.media.common.source.MediaSessionHelper;
 import com.android.car.media.common.source.MediaSource;
@@ -50,16 +52,24 @@ public class MediaBlockingActivity extends AppCompatActivity {
         setContentView(R.layout.media_blocking_activity);
 
         Intent intent = getIntent();
+        int exitButtonVisibility = intent.getIntExtra(
+                IntentUtils.EXTRA_MEDIA_BLOCKING_ACTIVITY_EXIT_BUTTON_VISIBILITY, View.VISIBLE);
+        // Ensure the visibility value is valid
+        if (exitButtonVisibility != View.VISIBLE && exitButtonVisibility != View.INVISIBLE
+                && exitButtonVisibility != View.GONE) {
+            exitButtonVisibility = View.VISIBLE;
+        }
+
         if (!intent.hasExtra(Intent.EXTRA_COMPONENT_NAME)) {
             Log.i(TAG, "Caller must provide valid media activity extra");
-            setupController(/* mediaSource= */ null);
+            setupController(/* mediaSource= */ null, exitButtonVisibility);
             return;
         }
         String targetMediaApp = intent.getStringExtra(Intent.EXTRA_COMPONENT_NAME);
         ComponentName componentName = ComponentName.unflattenFromString(targetMediaApp);
         if (componentName == null) {
             Log.i(TAG, "Caller must provide valid media activity extra");
-            setupController(/* mediaSource= */ null);
+            setupController(/* mediaSource= */ null, exitButtonVisibility);
             return;
         }
         MediaSource mediaSource = findMediaSource(componentName);
@@ -67,20 +77,23 @@ public class MediaBlockingActivity extends AppCompatActivity {
             Log.i(TAG, "Unable to find media session associated with " + componentName);
         }
 
-        setupController(mediaSource);
+        setupController(mediaSource, exitButtonVisibility);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
 
-        // As a blocking activity, MediaBlockingActivity is only meant to be a foreground activity.
+        // MediaBlockingActivity is only meant to be a foreground activity.
         if (!isFinishing()) {
             Log.d(TAG, "User navigated away, calling finish()");
             finish();
         }
     }
 
+    /**
+     * Finds media source that matches the component name passed in from the activity intent
+     */
     private MediaSource findMediaSource(ComponentName componentName) {
         MediaSessionHelper mediaSessionHelper = MediaSessionHelper.getInstance(this);
         List<MediaSource> mediaSources = mediaSessionHelper.getPlayableMediaSources().getValue();
@@ -94,7 +107,7 @@ public class MediaBlockingActivity extends AppCompatActivity {
         return null;
     }
 
-    private void setupController(MediaSource mediaSource) {
+    private void setupController(MediaSource mediaSource, int exitButtonVisibility) {
         ViewGroup mRootView = requireViewById(R.id.media_blocking_activity_root);
 
         MediaModels mediaModels = new MediaModels(this, mediaSource);
@@ -105,6 +118,7 @@ public class MediaBlockingActivity extends AppCompatActivity {
         }
         MediaBlockingActivityController controller =
                 (MediaBlockingActivityController) new MediaBlockingActivityController.Builder()
+                        .setExitButtonVisibility(exitButtonVisibility)
                         .setExitButtonOnClick(view -> finish())
                         .setModels(mediaModels.getPlaybackViewModel(), viewModel,
                                 mediaModels.getMediaItemsRepository())

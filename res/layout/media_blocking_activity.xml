@@ -33,7 +33,10 @@
       android:layout_height="wrap_content"
       android:layout_marginTop="@dimen/blocking_activity_default_vertical_margin"
       android:layout_marginStart="@dimen/blocking_activity_default_horizontal_margin"
+      android:padding="@dimen/blocking_activity_exit_button_padding"
       android:text="@string/blocking_activity_exit_button"
+      android:textColor="@color/primary_text_color"
+      android:background="@drawable/blocking_activity_exit_button_background"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toTopOf="parent" />
 
@@ -58,7 +61,7 @@
       android:layout_marginStart="@dimen/blocking_activity_default_horizontal_margin"
       android:layout_marginTop="@dimen/blocking_activity_title_top_margin"
       app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toTopOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/exit_button"
       app:layout_constraintBottom_toTopOf="@id/subtitle" />
 
   <TextView
@@ -87,9 +90,30 @@
       android:layout_height="@dimen/blocking_activity_play_pause_height"
       android:layout_marginStart="@dimen/blocking_activity_default_horizontal_margin"
       app:srcCompat="@drawable/play_pause_button"
+      android:background="@drawable/blocking_activity_action_item_background"
       app:layout_constraintTop_toBottomOf="@id/playback_seek_bar"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintBottom_toBottomOf="parent"/>
+
+  <ImageButton
+      android:id="@+id/playback_action_id1"
+      android:layout_width="@dimen/blocking_activity_action_item_width"
+      android:layout_height="@dimen/blocking_activity_action_item_height"
+      android:layout_marginStart="@dimen/blocking_activity_action_item_horizontal_margin"
+      android:background="@drawable/blocking_activity_action_item_background"
+      app:layout_constraintTop_toTopOf="@id/play_pause_button"
+      app:layout_constraintStart_toEndOf="@id/play_pause_button"
+      app:layout_constraintBottom_toBottomOf="@id/play_pause_button"/>
+
+  <ImageButton
+      android:id="@+id/playback_action_id2"
+      android:layout_width="@dimen/blocking_activity_action_item_width"
+      android:layout_height="@dimen/blocking_activity_action_item_height"
+      android:layout_marginStart="@dimen/blocking_activity_action_item_horizontal_margin"
+      android:background="@drawable/blocking_activity_action_item_background"
+      app:layout_constraintTop_toTopOf="@id/play_pause_button"
+      app:layout_constraintStart_toEndOf="@id/playback_action_id1"
+      app:layout_constraintBottom_toBottomOf="@id/play_pause_button"/>
 
   <TextView
       android:id="@+id/current_time"
@@ -127,8 +151,8 @@
       android:id="@+id/media_views_group"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      app:constraint_referenced_ids="exit_button, album_art, title, subtitle, playback_seek_bar, play_pause_button,
-         current_time, inner_separator, max_time" />
+      app:constraint_referenced_ids="album_art, title, subtitle, playback_seek_bar, play_pause_button,
+         playback_action_id1, playback_action_id2, current_time, inner_separator, max_time" />
 
   <TextView
       android:id="@+id/no_media_text"

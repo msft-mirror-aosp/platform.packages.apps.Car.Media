@@ -15,6 +15,11 @@
  */
 package com.android.car.media;
 
+import static com.android.car.media.common.ui.PlaybackCardControllerUtilities.updateActionsWithPlaybackState;
+import static com.android.car.media.common.ui.PlaybackCardControllerUtilities.updatePlayButtonWithPlaybackState;
+
+import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
@@ -34,6 +39,9 @@ public class MediaBlockingActivityController extends PlaybackCardController {
     private static final String TAG = "MediaBlockingActivityController";
     private final Group mMediaViews;
     private final TextView mNoMediaView;
+    private Drawable mSkipPreviousDrawable;
+    private Drawable mSkipNextDrawable;
+    private Drawable mActionItemBackgroundDrawable;
 
     /**
      * Builder for {@link NowPlayingController}. Overrides build() method to return
@@ -42,8 +50,20 @@ public class MediaBlockingActivityController extends PlaybackCardController {
     public static class Builder extends PlaybackCardController.Builder {
 
         private OnClickListener mOnClickListener;
+        private int mExitButtonVisibility;
 
-        /** OnClickListener for the exit button */
+        /**
+         * Visibility for the exit button. Should be either View.VISIBLE, View.INVISIBLE, or
+         * View.GONE.
+         */
+        public Builder setExitButtonVisibility(int exitButtonVisibility) {
+            mExitButtonVisibility = exitButtonVisibility;
+            return this;
+        }
+
+        /**
+         * OnClickListener for the exit button
+         */
         public Builder setExitButtonOnClick(OnClickListener onClickListener) {
             mOnClickListener = onClickListener;
             return this;
@@ -64,6 +84,7 @@ public class MediaBlockingActivityController extends PlaybackCardController {
 
         // Set up exit button
         UxrButton exitButton = mView.requireViewById(R.id.exit_button);
+        exitButton.setVisibility(builder.mExitButtonVisibility);
         OnClickListener exitClickListener = builder.mOnClickListener;
         exitButton.setOnClickListener(exitClickListener);
     }
@@ -72,14 +93,34 @@ public class MediaBlockingActivityController extends PlaybackCardController {
     protected void updatePlaybackState(PlaybackViewModel.PlaybackStateWrapper playbackState) {
         if (playbackState != null) {
             showViews(/* showMedia= */true);
-            super.updatePlaybackState(playbackState);
+            updatePlayButtonWithPlaybackState(mPlayPauseButton, playbackState);
+            Context context = mView.getContext();
+
+            if (mSkipPreviousDrawable == null) {
+                mSkipPreviousDrawable = context.getDrawable(
+                        com.android.car.media.common.R.drawable.ic_skip_previous);
+            }
+            if (mSkipNextDrawable == null) {
+                mSkipNextDrawable = context.getDrawable(
+                        com.android.car.media.common.R.drawable.ic_skip_next);
+            }
+            if (mActionItemBackgroundDrawable == null) {
+                mActionItemBackgroundDrawable =
+                        context.getDrawable(R.drawable.blocking_activity_action_item_background);
+            }
+            updateActionsWithPlaybackState(mView.getContext(), mActions, playbackState,
+                    mDataModel.getPlaybackController().getValue(), mSkipPreviousDrawable,
+                    mSkipNextDrawable, mActionItemBackgroundDrawable, mActionItemBackgroundDrawable,
+                    false, null);
         } else {
             Log.d(TAG, "No PlaybackState found");
             showViews(/* showMedia= */ false);
         }
     }
 
-    /** Show or hide media UI */
+    /**
+     * Show or hide media UI
+     */
     public void showViews(boolean showMedia) {
         ViewUtils.setVisible(mMediaViews, showMedia);
         ViewUtils.setVisible(mNoMediaView, !showMedia);
