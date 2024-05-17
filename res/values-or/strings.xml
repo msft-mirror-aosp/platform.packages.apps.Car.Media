@@ -29,4 +29,7 @@
     <string name="service_notification_title" msgid="8085444675783592744">"ମିଡ଼ିଆ ସହ ସଂଯୋଗ ହେଉଛି"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"ସାଉଣ୍ଡ ସେଟିଂସ୍"</string>
     <string name="menu_item_app_selector_title" msgid="4587248991114338595">"ଆପଗୁଡ଼ିକୁ ବଦଳାନ୍ତୁ"</string>
+    <string name="blocking_activity_exit_button" msgid="2311235552215881142">"ଡ୍ରାଇଭ ଭ୍ୟୁରୁ ବାହାରି ଯାଆନ୍ତୁ"</string>
+    <string name="blocking_activity_time_separator" msgid="194457998199565809">"/"</string>
+    <string name="blocking_activity_no_media_text" msgid="5619524033914901715">"ଆପଣ ଡ୍ରାଇଭ୍‍ କରିବା ସମୟରେ ଏହି ଫିଚର୍‍ ବ୍ୟବହାର କରିପାରିବେ ନାହିଁ"</string>
 </resources>

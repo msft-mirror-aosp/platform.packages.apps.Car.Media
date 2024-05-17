@@ -82,7 +82,7 @@ import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaModels;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.common.source.MediaSourceViewModel;
-import com.android.car.media.common.ui.MediaWidgetViewModel;
+import com.android.car.media.common.ui.PlaybackCardViewModel;
 import com.android.car.ui.AlertDialogBuilder;
 import com.android.car.ui.utils.CarUxRestrictionsUtil;
 
@@ -345,7 +345,10 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
 
     @Override
     protected void onDestroy() {
-        mCar.disconnect();
+        if (mCar != null) {
+            mCar.disconnect();
+            mCar = null;
+        }
         mMediaActivityController.onDestroy();
         super.onDestroy();
     }
@@ -771,15 +774,12 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
     }
 
     /** State tracking ViewModel for the MediaActivity */
-    public static class ViewModel extends MediaWidgetViewModel {
+    public static class ViewModel extends PlaybackCardViewModel {
 
         private Mode mMode = Mode.BROWSING;
         private BrowseStack mBrowseStack = new BrowseStack();
         private String mSearchQuery;
-        private boolean mHasPlayableItem = false;
-
-        private boolean mNeedsInitialization = true;
-        private MediaModels[] mModels;
+        private MediaModels mBrowseModels;
         private final MutableLiveData<FutureData<MediaSource>> mBrowsedMediaSource =
                 dataOf(FutureData.newLoadingData());
         private final MutableLiveData<Boolean> mIsMiniControlsVisible = new MutableLiveData<>();
@@ -789,32 +789,40 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         }
 
         void init(MediaModels[] models) {
-            mModels = models;
-            mNeedsInitialization = false;
+            mBrowseModels = models[MEDIA_SOURCE_MODE_BROWSE];
+            super.init(models[MEDIA_SOURCE_MODE_PLAYBACK]);
         }
 
         @Override
         protected void onCleared() {
-            if (!mNeedsInitialization) {
+            if (!needsInitialization()) {
                 getMediaSourceViewModel(MEDIA_SOURCE_MODE_BROWSE).onCleared();
             }
             super.onCleared();
         }
 
-        boolean needsInitialization() {
-            return mNeedsInitialization;
-        }
-
         MediaItemsRepository getMediaItemsRepository(int mode) {
-            return mModels[mode].getMediaItemsRepository();
+            if (mode == MEDIA_SOURCE_MODE_BROWSE) {
+                return mBrowseModels.getMediaItemsRepository();
+            } else {
+                return super.getMediaItemsRepository();
+            }
         }
 
         MediaSourceViewModel getMediaSourceViewModel(int mode) {
-            return mModels[mode].getMediaSourceViewModel();
+            if (mode == MEDIA_SOURCE_MODE_BROWSE) {
+                return mBrowseModels.getMediaSourceViewModel();
+            } else {
+                return super.getMediaSourceViewModel();
+            }
         }
 
         PlaybackViewModel getPlaybackViewModel(int mode) {
-            return mModels[mode].getPlaybackViewModel();
+            if (mode == MEDIA_SOURCE_MODE_BROWSE) {
+                return mBrowseModels.getPlaybackViewModel();
+            } else {
+                return super.getPlaybackViewModel();
+            }
         }
 
         void setMiniControlsVisible(boolean visible) {
@@ -866,14 +874,6 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
 
         void setSearchQuery(String searchQuery) {
             mSearchQuery = searchQuery;
-        }
-
-        void setHasPlayableItem(boolean hasPlayableItem) {
-            mHasPlayableItem = hasPlayableItem;
-        }
-
-        boolean hasPlayableItem() {
-            return mHasPlayableItem;
         }
     }
 

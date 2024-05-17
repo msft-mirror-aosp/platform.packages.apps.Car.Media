@@ -18,6 +18,7 @@ package com.android.car.media;
 
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK;
+import static android.media.session.PlaybackState.STATE_ERROR;
 
 import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_HIDE;
 import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_SHOW;
@@ -37,6 +38,7 @@ import static com.android.car.media.common.MediaConstants.KEY_HINT_VIEW_MAX_ITEM
 import static com.android.car.media.common.MediaConstants.KEY_HINT_VIEW_MAX_LIST_ITEMS_COUNT_PER_ROW;
 import static com.android.car.ui.recyclerview.CarUiRecyclerView.SCROLL_STATE_DRAGGING;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.res.Resources;
@@ -68,6 +70,8 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.car.apps.common.imaging.ImageBinder;
@@ -83,6 +87,7 @@ import com.android.car.media.browse.actionbar.ActionsHeader;
 import com.android.car.media.common.CustomBrowseAction;
 import com.android.car.media.common.MediaConstants;
 import com.android.car.media.common.MediaItemMetadata;
+import com.android.car.media.common.analytics.AnalyticsHelper;
 import com.android.car.media.common.browse.MediaBrowserViewModelImpl;
 import com.android.car.media.common.browse.MediaItemsRepository;
 import com.android.car.media.common.browse.MediaItemsRepository.MediaItemsLiveData;
@@ -95,7 +100,6 @@ import com.android.car.ui.FocusArea;
 import com.android.car.ui.baselayout.Insets;
 import com.android.car.ui.recyclerview.CarUiContentListItem;
 import com.android.car.ui.recyclerview.CarUiLayoutStyle;
-import com.android.car.ui.recyclerview.CarUiListItemAdapter;
 import com.android.car.ui.recyclerview.CarUiRecyclerView;
 import com.android.car.uxr.CarUxRestrictionsAppConfig;
 import com.android.car.uxr.LifeCycleObserverUxrContentLimiter;
@@ -150,11 +154,11 @@ public class BrowseViewController {
     private final PlaybackViewModel mPlaybackViewModelBrowseSource;
     private MediaItemsRepository mMediaRepo;
     private Map<String, CustomBrowseAction> mGlobalActions = new HashMap<>();
-    private ActionsHeader mActionBar;
+    private ActionsHeader mCustomActionsBar;
     /** See {@link #onShow}. */
     private boolean mIsShown;
-    List<String> mPrevVisible = new ArrayList<>();
-
+    List<String> mPrevVisibleBrowseList = new ArrayList<>();
+    List<String> mPrevVisibleBrowseActions = new ArrayList<>();
 
 
     private final BrowseAdapter.Observer mBrowseAdapterObserver = new BrowseAdapter.Observer() {
@@ -185,7 +189,6 @@ public class BrowseViewController {
         @Override
         protected void onBrowseCustomActionOverflowClicked(
                 @NonNull List<CustomBrowseAction> overflowActions, String mediaId) {
-            sendBrowseCustomActionEvent(mediaId, overflowActions, true);
             showOverflowActions(overflowActions, mediaId);
         }
     };
@@ -205,13 +208,15 @@ public class BrowseViewController {
                 type.toAnalyticBrowseMode(), isShown ? VIEW_ACTION_SHOW : VIEW_ACTION_HIDE,
                 parentId);
 
+        List<MediaItemMetadata> items = mLimitedBrowseAdapter.getItems();
+
         int firsPos = mLimitedBrowseAdapter.findFirstVisibleItemIndex();
-        int lastPov = mLimitedBrowseAdapter.findLastVisibleItemIndex(false);
-        if (mMediaItems.getValue() != null && mMediaItems.getValue().getData() != null
-                && firsPos != NO_POSITION && lastPov != NO_POSITION) {
-            List<String> itemsSublist = mMediaItems.getValue().getData()
-                    .subList(firsPos, lastPov + 1)
+        int lastPos = mLimitedBrowseAdapter.findLastVisibleItemIndex(false);
+        if (items != null && firsPos != NO_POSITION && lastPos != NO_POSITION) {
+            List<String> itemsSublist = items
+                    .subList(firsPos, lastPos + 1)
                     .stream()
+                    .filter(Objects::nonNull)
                     .map(MediaItemMetadata::getId)
                     .collect(Collectors.toCollection(ArrayList::new));
 
@@ -541,9 +546,9 @@ public class BrowseViewController {
                 && mMediaItems.getValue().getData() != null) {
             int currFirst = mLimitedBrowseAdapter.findFirstVisibleItemIndex();
             int currLast = mLimitedBrowseAdapter.findLastVisibleItemIndex(true);
-            mPrevVisible = AnalyticsHelper.sendVisibleItemsInc(VIEW_COMPONENT_BROWSE_LIST,
-                    mMediaRepo, mParentItem, mPrevVisible, mMediaItems.getValue().getData(),
-                    currFirst, currLast, fromScroll);
+            mPrevVisibleBrowseList = AnalyticsHelper.sendVisibleItemsInc(VIEW_COMPONENT_BROWSE_LIST,
+                    mMediaRepo, mParentItem, mPrevVisibleBrowseList,
+                    mMediaItems.getValue().getData(), currFirst, currLast, fromScroll);
         }
     }
 
@@ -561,35 +566,59 @@ public class BrowseViewController {
         if (parentItem == null || maxActions <= 0) {
             return;
         }
-        mActionBar = mContent.findViewById(R.id.toolbar_container);
-        mActionBar.setActionClickedListener(
+        mCustomActionsBar = mContent.findViewById(R.id.toolbar_container);
+        mCustomActionsBar.setActionClickedListener(
                 action -> sendBrowseCustomAction(action, parentItem.getId()));
-        mActionBar.setOnOverflowListener(actions -> {
-            sendBrowseCustomActionEvent(parentItem.getId(), actions, true);
-            showOverflowActions(actions, parentItem.getId());
-        });
+        mCustomActionsBar.setOnOverflowListener(actions ->
+                showOverflowActions(actions, parentItem.getId()));
     }
 
     private void sendBrowseCustomActionEvent(String itemId, List<CustomBrowseAction> actions,
-            boolean isShow) {
-        mMediaRepo.getAnalyticsManager()
-                .sendVisibleItemsEvents(itemId,
-                        AnalyticsEvent.VIEW_COMPONENT_BROWSE_ACTION_OVERFLOW,
-                        isShow ? AnalyticsEvent.VIEW_ACTION_SHOW : AnalyticsEvent.VIEW_ACTION_HIDE,
-                        AnalyticsEvent.VIEW_ACTION_MODE_NONE, actions.stream()
-                                .map(CustomBrowseAction::getId)
-                                .collect(Collectors.toList()));
+            RecyclerView list, boolean fromScroll, boolean isDismiss) {
+
+        if (mIsShown && mCallbacks.isBrowseViewVisible()) {
+            int first = 0;
+            int last = 0;
+
+            if (list.getLayoutManager() instanceof LinearLayoutManager) {
+                LinearLayoutManager manager = (LinearLayoutManager) list.getLayoutManager();
+                first = manager.findFirstCompletelyVisibleItemPosition();
+                last = manager.findLastCompletelyVisibleItemPosition();
+            } else if (list.getLayoutManager() instanceof GridLayoutManager) {
+                GridLayoutManager manager = (GridLayoutManager) list.getLayoutManager();
+                first = manager.findFirstCompletelyVisibleItemPosition();
+                last = manager.findLastCompletelyVisibleItemPosition();
+            } else {
+                Log.w(TAG,
+                        "Browse Custom Actions created without using LinearLayoutManager or "
+                                + "GridLayoutManager - Analytics cannot be sent.");
+            }
+
+            List<String> items;
+
+            if (isDismiss) {
+                items = new ArrayList<>();
+            } else {
+                items = actions.stream()
+                        .map(CustomBrowseAction::getId)
+                        .collect(Collectors.toList());
+            }
+
+            mPrevVisibleBrowseActions = AnalyticsHelper.sendVisibleItemsInc(
+                    AnalyticsEvent.VIEW_COMPONENT_BROWSE_ACTION_OVERFLOW,
+                    mMediaRepo, itemId, mPrevVisibleBrowseActions, items,
+                    first, last, fromScroll);
+        }
     }
 
     private void configureCustomActionsHeader(
             @NonNull Map<String, CustomBrowseAction> globalActions, int maxActions) {
-        if (mActionBar == null || maxActions <= 0) return;
-        mParentActions =
-                BrowseAdapterUtils.buildBrowseCustomActions(
-                        mContent.getContext(), mParentItem, globalActions);
+        if (mCustomActionsBar == null || maxActions <= 0) return;
+        mParentActions = BrowseAdapterUtils.buildBrowseCustomActions(
+                mContent.getContext(), mParentItem, globalActions);
         if (mParentActions == null || mParentActions.isEmpty()) return;
-        mActionBar.setVisibility(true);
-        mActionBar.setActions(mParentActions);
+        mCustomActionsBar.setVisibility(true);
+        mCustomActionsBar.setActions(mParentActions);
     }
 
     private void sendBrowseCustomAction(CustomBrowseAction customBrowseAction, String mediaItemId) {
@@ -604,19 +633,33 @@ public class BrowseViewController {
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void showOverflowActions(List<CustomBrowseAction> overflowActions, String mediaId) {
         final Size mMaxArtSize =
                 MediaAppConfig.getMediaItemsBitmapMaxSize(mContent.getContext());
 
         List<CarUiContentListItem> data = new ArrayList<>();
-        CarUiListItemAdapter adapter = new CarUiListItemAdapter(data);
-        AlertDialog dialog =
-                new AlertDialogBuilder(mContent.getContext())
-                        .setAdapter(adapter)
-                        .setCancelable(true)
-                        .create();
+
+        AlertDialog dialog = new AlertDialogBuilder(mContent.getContext())
+                .setItems(data)
+                .setCancelable(true)
+                .setAllowDismissButton(true)
+                .create();
+
+        dialog.show(); //Show needs to be called first so we use findViewById
+
+        RecyclerView recyclerView = dialog.findViewById(com.android.car.ui.R.id.list);
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                sendBrowseCustomActionEvent(mediaId, overflowActions, recyclerView,
+                        !(dx == 0 && dy == 0), false);
+            }
+        });
+        RecyclerView.Adapter adapter = recyclerView.getAdapter();
+
         dialog.setOnDismissListener(v ->
-                sendBrowseCustomActionEvent(mediaId, overflowActions, false));
+                sendBrowseCustomActionEvent(mediaId, overflowActions, recyclerView, false, true));
 
         for (CustomBrowseAction customBrowseAction : overflowActions) {
             CarUiContentListItem item = new CarUiContentListItem(CarUiContentListItem.Action.ICON);
@@ -638,7 +681,9 @@ public class BrowseViewController {
                     });
             data.add(item);
         }
-        dialog.show();
+
+        // Tell adapter `data` has been changed so RV is redrawn with new CarUiContentListItems.
+        adapter.notifyDataSetChanged();
     }
 
     private boolean handleBrowseCustomActionsExtras(Bundle actionExtras) {
@@ -707,7 +752,7 @@ public class BrowseViewController {
                             mContent.getContext(),
                             new MediaItemMetadata(item),
                             mGlobalActions);
-            mActionBar.setActions(mParentActions);
+            mCustomActionsBar.setActions(mParentActions);
         } else {
             mLimitedBrowseAdapter.updateItemMetaData(
                     new MediaItemMetadata(item),
@@ -731,12 +776,12 @@ public class BrowseViewController {
     private void handleSourceUpdates(Pair<MediaSource, MediaSource> mediaSourceMediaSourcePair) {
         // If sources are the same, make sure we aren't showing the mini item bar.
         if (isSourcesSame()) {
-            hideEmptyListPlayItem();
+            hideEmptyListPlayBar();
         }
-        if (mediaSourceMediaSourcePair.second != null && mActionBar != null) {
+        if (mediaSourceMediaSourcePair.second != null && mCustomActionsBar != null) {
             CharSequence browseSourceName = mediaSourceMediaSourcePair.second.getDisplayName(
                     getActivity());
-            mActionBar.setTitle(browseSourceName);
+            mCustomActionsBar.setTitle(browseSourceName);
         }
     }
 
@@ -811,9 +856,10 @@ public class BrowseViewController {
 
     public void onCarUiInsetsChanged(@NonNull Insets insets) {
         int actionHeaderOffset = 0;
-        if (mActionBar != null && mActionBar.isShown()) {
+        if (mCustomActionsBar != null && mCustomActionsBar.isShown()) {
             Resources res = getActivity().getResources();
-            actionHeaderOffset = res.getDimensionPixelSize(R.dimen.media_browse_header_item_height);
+            actionHeaderOffset =
+                    res.getDimensionPixelSize(R.dimen.media_browse_action_header_height);
         }
         int leftPadding = mBrowseList.getPaddingLeft();
         int rightPadding = mBrowseList.getPaddingRight();
@@ -856,6 +902,8 @@ public class BrowseViewController {
                 (ViewGroup.MarginLayoutParams) mMessage.getLayoutParams();
         messageLayout.bottomMargin = bottomPadding;
         mMessage.setLayoutParams(messageLayout);
+
+        evaluateShowEmptyListPlayBar();
     }
 
     private String getErrorMessage() {
@@ -892,19 +940,6 @@ public class BrowseViewController {
         List<MediaItemMetadata> items = MediaBrowserViewModelImpl.filterItems(
                 /*root*/ !mDisplayMediaItems, futureData.getData());
 
-        boolean sourceHasPlayable = mViewModel.hasPlayableItem();
-        if (items != null && !sourceHasPlayable) {
-            mViewModel.setHasPlayableItem(items.stream().anyMatch(MediaItemMetadata::isPlayable));
-        }
-
-        boolean hasMetaData = mPlaybackViewModelBrowseSource.getMetadata().getValue() != null;
-
-        boolean hasPlayCommand = false;
-        if (mPlaybackViewModelBrowseSource.getPlaybackStateWrapper().getValue() != null) {
-            hasPlayCommand = (mPlaybackViewModelBrowseSource.getPlaybackStateWrapper().getValue()
-                    .getSupportedActions() & PlaybackStateCompat.ACTION_PLAY) != 0;
-        }
-
         if (mDisplayMediaItems) {
             mLimitedBrowseAdapter.submitItems(mParentItem, items);
 
@@ -923,30 +958,14 @@ public class BrowseViewController {
             ViewUtils.hideViewAnimated(mBrowseList.getView(), duration);
             ViewUtils.showViewAnimated(mMessage, duration);
             ViewUtils.showViewAnimated(mErrorIcon, duration);
-            hideEmptyListPlayItem();
+            hideEmptyListPlayBar();
         } else if (items.isEmpty()) {
-            boolean shouldShowEmptyListPlayItem =
-                    !isSourcesSame()
-                            && !mViewModel.hasPlayableItem()
-                            && hasMetaData
-                            && hasPlayCommand;
-            if (shouldShowEmptyListPlayItem) {
-                ViewUtils.hideViewAnimated(mBrowseList.getView(), duration);
-                ViewUtils.hideViewAnimated(mErrorIcon, duration);
-                ViewUtils.hideViewAnimated(mMessage, duration);
-                showEmptyListPlayItem();
-            } else {
-                mMessage.setText(R.string.nothing_to_play);
-                ViewUtils.hideViewAnimated(mBrowseList.getView(), duration);
-                ViewUtils.hideViewAnimated(mErrorIcon, duration);
-                ViewUtils.showViewAnimated(mMessage, duration);
-                hideEmptyListPlayItem();
-            }
+            evaluateShowEmptyListPlayBar();
         } else {
             ViewUtils.showViewAnimated(mBrowseList.getView(), duration);
             ViewUtils.hideViewAnimated(mErrorIcon, duration);
             ViewUtils.hideViewAnimated(mMessage, duration);
-            hideEmptyListPlayItem();
+            hideEmptyListPlayBar();
         }
 
         if (Log.isLoggable(TAG, Log.VERBOSE)) {
@@ -964,7 +983,64 @@ public class BrowseViewController {
                 playbackViewModelBrowse.getMediaSource().getValue());
     }
 
-    private void showEmptyListPlayItem() {
+    private void evaluateShowEmptyListPlayBar() {
+        //Check if we have an error state - don't show in that case
+        if (mPlaybackViewModelBrowseSource.getPlaybackStateWrapper().getValue() == null
+                || mPlaybackViewModelBrowseSource.getPlaybackStateWrapper().getValue().getState()
+                        == STATE_ERROR) {
+            hideEmptyListPlayBar();
+            return;
+        }
+
+        //Don't show if null - this is error. Don't show if not empty - valid items to display
+        if (mMediaItems.getValue() == null) {
+            hideEmptyListPlayBar();
+            return;
+        }
+
+        List<MediaItemMetadata> filteredItems = MediaBrowserViewModelImpl.filterItems(
+                /*root*/ !mDisplayMediaItems, mMediaItems.getValue().getData());
+        if (filteredItems == null || !filteredItems.isEmpty()) {
+            hideEmptyListPlayBar();
+            return;
+        }
+
+        //Keep track of if we have metadata data in session for browse source.
+        boolean hasMetaData = mPlaybackViewModelBrowseSource.getMetadata().getValue() != null;
+
+        boolean hasPlayableItems = filteredItems.stream().anyMatch(MediaItemMetadata::isPlayable);
+
+        //Check for commands.
+        boolean hasPlayCommand = false;
+        if (mPlaybackViewModelBrowseSource.getPlaybackStateWrapper().getValue() != null) {
+            long supportedActions = mPlaybackViewModelBrowseSource
+                    .getPlaybackStateWrapper()
+                    .getValue()
+                    .getSupportedActions();
+            hasPlayCommand = (supportedActions & PlaybackStateCompat.ACTION_PLAY) != 0;
+        }
+
+
+        boolean shouldShowEmptyListPlayItem =
+                (!isSourcesSame() && !hasPlayableItems)
+                        && (hasPlayCommand || hasMetaData);
+        int duration = mFadeDuration;
+        if (shouldShowEmptyListPlayItem) {
+            ViewUtils.hideViewAnimated(mBrowseList.getView(), duration);
+            ViewUtils.hideViewAnimated(mErrorIcon, duration);
+            ViewUtils.hideViewAnimated(mMessage, duration);
+            showEmptyListPlayBar();
+        } else {
+            mMessage.setText(R.string.nothing_to_play);
+            ViewUtils.hideViewAnimated(mBrowseList.getView(), duration);
+            ViewUtils.hideViewAnimated(mErrorIcon, duration);
+            ViewUtils.showViewAnimated(mMessage, duration);
+            hideEmptyListPlayBar();
+        }
+    }
+
+
+    private void showEmptyListPlayBar() {
         if (mEmptyListPlaybackBar == null) {
             View inflatedView = LayoutInflater.from(getActivity())
                     .inflate(R.layout.browse_mini_bar_container, (ViewGroup) getContent());
@@ -981,7 +1057,7 @@ public class BrowseViewController {
                 view -> mCallbacks.onBrowseEmptyListPlayItemClicked());
     }
 
-    private void hideEmptyListPlayItem() {
+    private void hideEmptyListPlayBar() {
         if (mEmptyListPlaybackBar != null) {
             ViewUtils.hideViewAnimated(mEmptyListPlaybackBar, mFadeDuration);
         }

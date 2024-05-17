@@ -117,7 +117,9 @@
 
     <!-- media_browse_header_item.xml -->
     <dimen name="media_browse_header_item_height">76dp</dimen>
-    <dimen name="media_browse_header_action_margin">88dp</dimen>
+    <dimen name="media_browse_header_margin">0dp</dimen>
+    <dimen name="media_browse_action_header_height">60dp</dimen>
+    <dimen name="media_browse_action_header_margin">112dp</dimen>
 
     <!-- media_browse_list_[icons_]item.xml -->
     <dimen name="media_browse_list_item_height">116dp</dimen>
@@ -196,4 +198,16 @@
 
     <dimen name="minimized_control_bar_margin_bottom">@dimen/car_ui_padding_3</dimen>
 
+    <!-- MediaBlockingActivity -->
+    <dimen name="blocking_activity_default_vertical_margin">@dimen/car_ui_padding_5</dimen>
+    <dimen name="blocking_activity_default_horizontal_margin">@dimen/car_ui_padding_6</dimen>
+    <dimen name="blocking_activity_title_top_margin">150dp</dimen>
+    <dimen name="blocking_activity_seekbar_margin">@dimen/car_ui_padding_4</dimen>
+    <dimen name="blocking_activity_title_width">500dp</dimen>
+    <dimen name="blocking_activity_artist_width">500dp</dimen>
+    <dimen name="blocking_activity_seekbar_width">675dp</dimen>
+    <dimen name="blocking_activity_time_text_padding">@dimen/car_ui_padding_0</dimen>
+    <dimen name="blocking_activity_play_pause_height">90dp</dimen>
+    <dimen name="blocking_activity_play_pause_width">188dp</dimen>
+    <dimen name="blocking_activity_album_art_size">300dp</dimen>
 </resources>

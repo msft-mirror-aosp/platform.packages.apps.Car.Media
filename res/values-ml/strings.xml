@@ -29,4 +29,7 @@
     <string name="service_notification_title" msgid="8085444675783592744">"മീഡിയയിലേക്ക് കണക്‌റ്റ് ചെയ്യുന്നു"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"ശബ്‌ദ ക്രമീകരണം"</string>
     <string name="menu_item_app_selector_title" msgid="4587248991114338595">"ആപ്പുകൾ മാറുക"</string>
+    <string name="blocking_activity_exit_button" msgid="2311235552215881142">"ഡ്രൈവ് കാഴ്ചയിൽ നിന്ന് പുറത്തുകടക്കുക"</string>
+    <string name="blocking_activity_time_separator" msgid="194457998199565809">"/"</string>
+    <string name="blocking_activity_no_media_text" msgid="5619524033914901715">"ഡ്രെെവ് ചെയ്യുമ്പോൾ നിങ്ങൾക്ക് ഈ ഫീച്ചർ ഉപയോഗിക്കാനാകില്ല"</string>
 </resources>

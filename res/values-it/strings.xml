@@ -29,4 +29,7 @@
     <string name="service_notification_title" msgid="8085444675783592744">"Connessione ai contenuti multimediali"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"Impostazioni audio"</string>
     <string name="menu_item_app_selector_title" msgid="4587248991114338595">"Cambia app"</string>
+    <string name="blocking_activity_exit_button" msgid="2311235552215881142">"Esci da visualizzazione guida"</string>
+    <string name="blocking_activity_time_separator" msgid="194457998199565809">"/"</string>
+    <string name="blocking_activity_no_media_text" msgid="5619524033914901715">"Non è possibile usare questa funzionalità durante la guida"</string>
 </resources>

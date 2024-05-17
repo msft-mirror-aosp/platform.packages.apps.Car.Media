@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Copyright (C) 2023 The Android Open Source Project
+<!-- Copyright (C) 2024 The Android Open Source Project
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -39,7 +39,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="bool" name="switch_to_playback_view_when_playable_item_is_clicked"/>
       <item type="bool" name="use_media_source_color_for_progress_bar"/>
       <item type="bool" name="use_media_source_logo_for_app_selector_in_playback_view"/>
-      <item type="color" name="progress_bar_highlight" />
+      <item type="color" name="progress_bar_highlight"/>
       <item type="dimen" name="browse_fragment_bottom_padding"/>
       <item type="dimen" name="browse_fragment_top_padding"/>
       <item type="dimen" name="browse_fragment_top_padding_stacked"/>
@@ -51,6 +51,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="dimen" name="playback_seekbar_margin_x"/>
       <item type="dimen" name="queue_list_item_padding_x"/>
       <item type="dimen" name="queue_list_item_thumbnail_container_width"/>
+      <item type="drawable" name="blocking_activity_album_background"/>
       <item type="drawable" name="browser_progress_new_indicator"/>
       <item type="drawable" name="error_illustration"/>
       <item type="drawable" name="ic_arrow_back"/>
@@ -66,12 +67,14 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="drawable" name="media_app_title_background"/>
       <item type="drawable" name="media_item_divider"/>
       <item type="drawable" name="music_overflow_action_background"/>
+      <item type="drawable" name="play_pause_button"/>
       <item type="drawable" name="seekbar_foreground"/>
       <item type="drawable" name="seekbar_progress"/>
       <item type="drawable" name="seekbar_thumb"/>
       <item type="id" name="album_art"/>
       <item type="id" name="album_title"/>
       <item type="id" name="artist"/>
+      <item type="id" name="background"/>
       <item type="id" name="background_scrim"/>
       <item type="id" name="browse_content_area"/>
       <item type="id" name="browse_item_actions_container"/>
@@ -100,6 +103,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="error_container"/>
       <item type="id" name="error_icon"/>
       <item type="id" name="error_message"/>
+      <item type="id" name="exit_button"/>
       <item type="id" name="explicit_icon_with_subtitle"/>
       <item type="id" name="explicit_icon_with_title"/>
       <item type="id" name="focus_area"/>
@@ -111,7 +115,9 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="logo_separator"/>
       <item type="id" name="max_time"/>
       <item type="id" name="media_activity_root"/>
+      <item type="id" name="media_blocking_activity_root"/>
       <item type="id" name="media_item_click_target"/>
+      <item type="id" name="media_views_group"/>
       <item type="id" name="menu_item_equalizer"/>
       <item type="id" name="menu_item_search"/>
       <item type="id" name="menu_item_selector"/>
@@ -119,8 +125,10 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="menu_item_setting"/>
       <item type="id" name="metadata_container"/>
       <item type="id" name="minimized_playback_controls"/>
+      <item type="id" name="no_media_text"/>
       <item type="id" name="now_playing_icon"/>
       <item type="id" name="outer_separator"/>
+      <item type="id" name="play_pause_button"/>
       <item type="id" name="playback_background"/>
       <item type="id" name="playback_container"/>
       <item type="id" name="playback_controls"/>
@@ -175,6 +183,8 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="layout" name="fragment_playback"/>
       <item type="layout" name="fragment_playback_queue"/>
       <item type="layout" name="media_activity"/>
+      <item type="layout" name="media_blocking_activity"/>
+      <item type="layout" name="media_browse_action_header"/>
       <item type="layout" name="media_browse_grid_icons_item"/>
       <item type="layout" name="media_browse_grid_item"/>
       <item type="layout" name="media_browse_header_item"/>
@@ -185,8 +195,12 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="layout" name="time_progress_text"/>
       <item type="layout" name="toast_error"/>
       <item type="layout" name="ui_guides"/>
+      <item type="string" name="blocking_activity_exit_button"/>
+      <item type="string" name="blocking_activity_no_media_text"/>
+      <item type="string" name="blocking_activity_time_separator"/>
       <item type="string" name="browser_loading"/>
       <item type="string" name="cannot_connect_to_app"/>
+      <item type="string" name="config_nowPlayingControllerBuilder_className"/>
       <item type="string" name="dash_separator"/>
       <item type="string" name="fragment_playback_title"/>
       <item type="string" name="media_app_title"/>
@@ -199,6 +213,8 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="string" name="slash_separator"/>
       <item type="string" name="unknown_error"/>
       <item type="string" name="unknown_media_provider_name"/>
+      <item type="style" name="BlockingActivityArtistText"/>
+      <item type="style" name="BlockingActivityTitleText"/>
       <item type="style" name="BrowseGridSubtitleStyle"/>
       <item type="style" name="BrowseGridTitleStyle"/>
       <item type="style" name="BrowseListItemRightArrowStyle"/>

@@ -52,10 +52,12 @@ import com.android.car.media.BrowseStack.BrowseEntryType;
 import com.android.car.media.MediaActivity.Mode;
 import com.android.car.media.browse.LimitedBrowseAdapter;
 import com.android.car.media.common.MediaItemMetadata;
+import com.android.car.media.common.analytics.AnalyticsHelper;
 import com.android.car.media.common.browse.MediaBrowserViewModelImpl;
 import com.android.car.media.common.browse.MediaItemsRepository;
 import com.android.car.media.common.source.MediaBrowserConnector.BrowsingState;
 import com.android.car.media.common.source.MediaSource;
+import com.android.car.media.common.ui.PlaybackCardController;
 import com.android.car.media.widgets.AppBarController;
 import com.android.car.ui.FocusParkingView;
 import com.android.car.ui.baselayout.Insets;
@@ -117,7 +119,7 @@ public class MediaActivityController extends ViewControllerBase {
     private final Observer<FutureData<MediaSource>> mFutureMediaSourceObserver =
         future -> onMediaSourceChanged(future.isLoading() ? null : future.getData());
 
-    private final NowPlayingController mNowPlayingController;
+    private NowPlayingController mNowPlayingController;
     private final NowPlayingController.NowPlayingListener mNowPlayingListener;
 
     /**
@@ -299,9 +301,7 @@ public class MediaActivityController extends ViewControllerBase {
         LayoutInflater inflater = LayoutInflater.from(playbackContainer.getContext());
         View playbackView = inflater.inflate(R.layout.fragment_playback, playbackContainer, false);
         playbackContainer.addView(playbackView);
-        mNowPlayingController = new NowPlayingController(callbacks, playbackView,
-                viewModel.getPlaybackViewModel(MEDIA_SOURCE_MODE_PLAYBACK),
-                viewModel.getMediaItemsRepository(MEDIA_SOURCE_MODE_PLAYBACK));
+        instantiateNowPlayingController((ViewGroup) playbackView, viewModel);
 
         mAppBarController.setListener(mAppBarListener);
         mAppBarController.setSearchQuery(mViewModel.getSearchQuery());
@@ -360,6 +360,31 @@ public class MediaActivityController extends ViewControllerBase {
      */
     public void onNpvActualVisibilityChanged(boolean isShown) {
         mNowPlayingController.onActualVisibilityChanged(isShown);
+    }
+
+    /** Instantiates the {@link NowPlayingController}. Method should be overridden if Builder
+     * that extends {@link PlaybackCardController},
+     * stored in {@link R.string.config_nowPlayingControllerBuilder_className}, needs different
+     * parameters or more setters to be called.
+     */
+    protected void instantiateNowPlayingController(ViewGroup playbackView,
+            MediaActivity.ViewModel viewModel) {
+        String className = playbackView.getContext().getResources()
+                .getString(R.string.config_nowPlayingControllerBuilder_className);
+        try {
+            NowPlayingController.Builder builder =
+                    (NowPlayingController.Builder) Class.forName(className).newInstance();
+            mNowPlayingController = (NowPlayingController) builder
+                    .setModels(viewModel.getPlaybackViewModel(MEDIA_SOURCE_MODE_PLAYBACK),
+                            viewModel,
+                            viewModel.getMediaItemsRepository(MEDIA_SOURCE_MODE_PLAYBACK))
+                    .setViewGroup(playbackView)
+                    .build();
+        } catch (IllegalAccessException | InstantiationException | ClassNotFoundException e) {
+            Log.e(TAG, "Exception " + e.getClass()
+                    + " when instantiating the NowPlayingController.Builder via reflection");
+            throw new RuntimeException(e);
+        }
     }
 
     private BrowseViewController recreateController(BrowseStack.BrowseEntry entry) {
