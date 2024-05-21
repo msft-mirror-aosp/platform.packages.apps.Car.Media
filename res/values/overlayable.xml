@@ -39,7 +39,6 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="bool" name="switch_to_playback_view_when_playable_item_is_clicked"/>
       <item type="bool" name="use_media_source_color_for_progress_bar"/>
       <item type="bool" name="use_media_source_logo_for_app_selector_in_playback_view"/>
-      <item type="color" name="blocking_activity_exit_button_selector"/>
       <item type="color" name="progress_bar_highlight"/>
       <item type="dimen" name="browse_fragment_bottom_padding"/>
       <item type="dimen" name="browse_fragment_top_padding"/>
@@ -54,7 +53,6 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="dimen" name="queue_list_item_thumbnail_container_width"/>
       <item type="drawable" name="blocking_activity_action_item_background"/>
       <item type="drawable" name="blocking_activity_album_background"/>
-      <item type="drawable" name="blocking_activity_exit_button_background"/>
       <item type="drawable" name="browser_progress_new_indicator"/>
       <item type="drawable" name="error_illustration"/>
       <item type="drawable" name="ic_arrow_back"/>
@@ -106,7 +104,6 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="error_container"/>
       <item type="id" name="error_icon"/>
       <item type="id" name="error_message"/>
-      <item type="id" name="exit_button"/>
       <item type="id" name="explicit_icon_with_subtitle"/>
       <item type="id" name="explicit_icon_with_title"/>
       <item type="id" name="focus_area"/>
@@ -166,6 +163,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="ui_content_start_guideline"/>
       <item type="id" name="ui_content_top_guideline"/>
       <item type="id" name="ui_content_top_guideline2"/>
+      <item type="integer" name="blocking_activity_relaunch_time_ms"/>
       <item type="integer" name="fragment_playback_queue_fade_duration_ms"/>
       <item type="integer" name="max_tabs"/>
       <item type="integer" name="max_visible_actions"/>
