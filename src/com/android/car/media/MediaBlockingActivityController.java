@@ -29,6 +29,7 @@ import androidx.constraintlayout.widget.Group;
 import com.android.car.apps.common.UxrButton;
 import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.media.common.playback.PlaybackViewModel;
+import com.android.car.media.common.playback.PlaybackViewModel.PlaybackController;
 import com.android.car.media.common.ui.PlaybackCardController;
 
 /**
@@ -93,7 +94,8 @@ public class MediaBlockingActivityController extends PlaybackCardController {
     protected void updatePlaybackState(PlaybackViewModel.PlaybackStateWrapper playbackState) {
         if (playbackState != null) {
             showViews(/* showMedia= */true);
-            updatePlayButtonWithPlaybackState(mPlayPauseButton, playbackState);
+            PlaybackController playbackController = mDataModel.getPlaybackController().getValue();
+            updatePlayButtonWithPlaybackState(mPlayPauseButton, playbackState, playbackController);
             Context context = mView.getContext();
 
             if (mSkipPreviousDrawable == null) {
