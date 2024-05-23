@@ -89,8 +89,8 @@ public class MediaConnectorServiceTests extends BaseMockitoTest {
         String displayName = browseService.getClassName();
         Drawable icon = new ColorDrawable();
         IconCropper iconCropper = new IconCropper(new Path());
-        return new MediaSource(browseService, null, displayName, icon, iconCropper,
-                context.getPackageManager());
+        return new MediaSource(browseService, null, browseService.getPackageName(), displayName,
+                icon, iconCropper, context.getPackageManager());
     }
 
     private void sendCommand(@Nullable ComponentName source, boolean autoPlay) {
