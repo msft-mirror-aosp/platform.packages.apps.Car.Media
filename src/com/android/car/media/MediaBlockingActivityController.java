@@ -21,12 +21,10 @@ import static com.android.car.media.common.ui.PlaybackCardControllerUtilities.up
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
-import android.view.View.OnClickListener;
 import android.widget.TextView;
 
 import androidx.constraintlayout.widget.Group;
 
-import com.android.car.apps.common.UxrButton;
 import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.playback.PlaybackViewModel.PlaybackController;
@@ -50,26 +48,6 @@ public class MediaBlockingActivityController extends PlaybackCardController {
      */
     public static class Builder extends PlaybackCardController.Builder {
 
-        private OnClickListener mOnClickListener;
-        private int mExitButtonVisibility;
-
-        /**
-         * Visibility for the exit button. Should be either View.VISIBLE, View.INVISIBLE, or
-         * View.GONE.
-         */
-        public Builder setExitButtonVisibility(int exitButtonVisibility) {
-            mExitButtonVisibility = exitButtonVisibility;
-            return this;
-        }
-
-        /**
-         * OnClickListener for the exit button
-         */
-        public Builder setExitButtonOnClick(OnClickListener onClickListener) {
-            mOnClickListener = onClickListener;
-            return this;
-        }
-
         @Override
         public MediaBlockingActivityController build() {
             MediaBlockingActivityController controller = new MediaBlockingActivityController(this);
@@ -82,12 +60,6 @@ public class MediaBlockingActivityController extends PlaybackCardController {
         super(builder);
         mMediaViews = mView.requireViewById(R.id.media_views_group);
         mNoMediaView = mView.requireViewById(R.id.no_media_text);
-
-        // Set up exit button
-        UxrButton exitButton = mView.requireViewById(R.id.exit_button);
-        exitButton.setVisibility(builder.mExitButtonVisibility);
-        OnClickListener exitClickListener = builder.mOnClickListener;
-        exitButton.setOnClickListener(exitClickListener);
     }
 
     @Override

@@ -201,7 +201,7 @@
     <!-- MediaBlockingActivity -->
     <dimen name="blocking_activity_default_vertical_margin">@dimen/car_ui_padding_5</dimen>
     <dimen name="blocking_activity_default_horizontal_margin">@dimen/car_ui_padding_6</dimen>
-    <dimen name="blocking_activity_title_top_margin">30dp</dimen>
+    <dimen name="blocking_activity_title_top_margin">40dp</dimen>
     <dimen name="blocking_activity_seekbar_margin">@dimen/car_ui_padding_4</dimen>
     <dimen name="blocking_activity_title_width">500dp</dimen>
     <dimen name="blocking_activity_artist_width">500dp</dimen>
