@@ -58,8 +58,9 @@ public class MediaBlockingActivityController extends PlaybackCardController {
 
     public MediaBlockingActivityController(Builder builder) {
         super(builder);
-        mMediaViews = mView.requireViewById(R.id.media_views_group);
-        mNoMediaView = mView.requireViewById(R.id.no_media_text);
+
+        mMediaViews = mView.requireViewById(R.id.blocking_activity_media_views_group);
+        mNoMediaView = mView.requireViewById(R.id.blocking_activity_no_media_text);
     }
 
     @Override
@@ -82,7 +83,7 @@ public class MediaBlockingActivityController extends PlaybackCardController {
                 mActionItemBackgroundDrawable =
                         context.getDrawable(R.drawable.blocking_activity_action_item_background);
             }
-            updateActionsWithPlaybackState(mView.getContext(), mActions, playbackState,
+            updateActionsWithPlaybackState(context, mActions, playbackState,
                     mDataModel.getPlaybackController().getValue(), mSkipPreviousDrawable,
                     mSkipNextDrawable, mActionItemBackgroundDrawable, mActionItemBackgroundDrawable,
                     false, null);

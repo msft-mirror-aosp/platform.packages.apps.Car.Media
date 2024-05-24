@@ -214,6 +214,8 @@
     <dimen name="blocking_activity_action_item_radius">40dp</dimen>
     <dimen name="blocking_activity_action_item_horizontal_margin">@dimen/car_ui_padding_2</dimen>
     <dimen name="blocking_activity_album_art_size">300dp</dimen>
+    <dimen name="blocking_activity_app_icon_size">35dp</dimen>
+    <dimen name="blocking_activity_app_icon_margin">3dp</dimen>
     <dimen name="blocking_activity_exit_button_padding">@dimen/car_ui_padding_2</dimen>
     <dimen name="blocking_activity_exit_button_radius">30dp</dimen>
 </resources>

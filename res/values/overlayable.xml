@@ -53,6 +53,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="dimen" name="queue_list_item_thumbnail_container_width"/>
       <item type="drawable" name="blocking_activity_action_item_background"/>
       <item type="drawable" name="blocking_activity_album_background"/>
+      <item type="drawable" name="blocking_activity_app_icon_background"/>
       <item type="drawable" name="browser_progress_new_indicator"/>
       <item type="drawable" name="error_illustration"/>
       <item type="drawable" name="ic_arrow_back"/>
@@ -75,8 +76,11 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="album_art"/>
       <item type="id" name="album_title"/>
       <item type="id" name="artist"/>
-      <item type="id" name="background"/>
       <item type="id" name="background_scrim"/>
+      <item type="id" name="blocking_activity_background"/>
+      <item type="id" name="blocking_activity_media_views_group"/>
+      <item type="id" name="blocking_activity_no_media_text"/>
+      <item type="id" name="blocking_activity_seekbar_width_guideline"/>
       <item type="id" name="browse_content_area"/>
       <item type="id" name="browse_item_actions_container"/>
       <item type="id" name="browse_item_custom_action"/>
@@ -117,7 +121,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="media_activity_root"/>
       <item type="id" name="media_blocking_activity_root"/>
       <item type="id" name="media_item_click_target"/>
-      <item type="id" name="media_views_group"/>
+      <item type="id" name="media_widget_app_icon"/>
       <item type="id" name="menu_item_equalizer"/>
       <item type="id" name="menu_item_search"/>
       <item type="id" name="menu_item_selector"/>
@@ -125,7 +129,6 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="menu_item_setting"/>
       <item type="id" name="metadata_container"/>
       <item type="id" name="minimized_playback_controls"/>
-      <item type="id" name="no_media_text"/>
       <item type="id" name="now_playing_icon"/>
       <item type="id" name="outer_separator"/>
       <item type="id" name="play_pause_button"/>
