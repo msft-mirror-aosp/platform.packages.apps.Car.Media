@@ -125,7 +125,8 @@ public class MediaBlockingActivity extends AppCompatActivity {
      */
     private MediaSource findMediaSource(ComponentName componentName) {
         MediaSessionHelper mediaSessionHelper = MediaSessionHelper.getInstance(this);
-        List<MediaSource> mediaSources = mediaSessionHelper.getActiveMediaSources().getValue();
+        List<MediaSource> mediaSources =
+                mediaSessionHelper.getActiveOrPausedMediaSources().getValue();
 
         for (MediaSource mediaSource : mediaSources) {
             if (mediaSource.getPackageName().equals(componentName.getPackageName())) {
