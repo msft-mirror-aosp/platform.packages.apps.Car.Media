@@ -25,6 +25,7 @@ import android.widget.TextView;
 
 import androidx.constraintlayout.widget.Group;
 
+import com.android.car.apps.common.RoundedDrawable;
 import com.android.car.apps.common.util.ViewUtils;
 import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.playback.PlaybackViewModel.PlaybackController;
@@ -61,6 +62,13 @@ public class MediaBlockingActivityController extends PlaybackCardController {
 
         mMediaViews = mView.requireViewById(R.id.blocking_activity_media_views_group);
         mNoMediaView = mView.requireViewById(R.id.blocking_activity_no_media_text);
+    }
+
+    @Override
+    protected void updateAlbumCoverWithDrawable(Drawable drawable) {
+        RoundedDrawable roundedDrawable = new RoundedDrawable(drawable, mView.getResources()
+                .getFloat(R.dimen.blocking_activity_album_art_corner_ratio));
+        super.updateAlbumCoverWithDrawable(roundedDrawable);
     }
 
     @Override

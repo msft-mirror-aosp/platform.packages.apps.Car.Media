@@ -29,13 +29,10 @@
 
   <ImageView
       android:id="@+id/album_art"
-      android:layout_width="@dimen/blocking_activity_album_art_size"
-      android:layout_height="@dimen/blocking_activity_album_art_size"
+      android:layout_width="@dimen/blocking_activity_album_art_max_size"
+      android:layout_height="@dimen/blocking_activity_album_art_max_size"
       android:layout_marginStart="@dimen/blocking_activity_default_horizontal_margin"
       android:layout_marginEnd="@dimen/blocking_activity_default_horizontal_margin"
-      android:background="@drawable/blocking_activity_album_background"
-      android:scaleType="centerInside"
-      android:clipToOutline="true"
       app:layout_constraintStart_toEndOf="@id/max_time"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintTop_toTopOf="parent"
