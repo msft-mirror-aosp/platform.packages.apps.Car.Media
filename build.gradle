@@ -104,9 +104,6 @@ android {
         animationsDisabled = true
     }
 
-    // This is the gradle equivalent of the libs: ["android.car"] in the Android.bp
-    useLibrary 'android.car'
-
     useLibrary 'android.test.runner'
     useLibrary 'android.test.base'
     useLibrary 'android.test.mock'
