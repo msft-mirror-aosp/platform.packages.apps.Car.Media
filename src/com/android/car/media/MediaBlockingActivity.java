@@ -89,8 +89,8 @@ public class MediaBlockingActivity extends AppCompatActivity {
                             cleanupCarManagers();
                         } else {
                             mCar = car;
-                            mCarDrivingStateManager =
-                                    mCar.getCarManager(CarDrivingStateManager.class);
+                            mCarDrivingStateManager = (CarDrivingStateManager)
+                                    mCar.getCarManager(Car.CAR_DRIVING_STATE_SERVICE);
                             if (mCarDrivingStateManager.getCurrentCarDrivingState().eventValue
                                     == DRIVING_STATE_PARKED) {
                                 launchActivityAndFinish(mediaSource);
