@@ -104,9 +104,6 @@ android {
         animationsDisabled = true
     }
 
-    // This is the gradle equivalent of the libs: ["android.car"] in the Android.bp
-    useLibrary 'android.car'
-
     useLibrary 'android.test.runner'
     useLibrary 'android.test.base'
     useLibrary 'android.test.mock'
@@ -123,7 +120,7 @@ dependencies {
 
     implementation files(gradle.ext.lib_car_system_stubs)
 
-    implementation "androidx.media:media:1.6.0"
+    implementation "androidx.media:media:1.7.0"
 
     implementation project(":car-ui-lib")
     implementation project(":car-apps-common")
