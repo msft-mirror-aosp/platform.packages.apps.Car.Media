@@ -78,9 +78,9 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="artist"/>
       <item type="id" name="background_scrim"/>
       <item type="id" name="blocking_activity_background"/>
+      <item type="id" name="blocking_activity_content_guideline"/>
       <item type="id" name="blocking_activity_media_views_group"/>
       <item type="id" name="blocking_activity_no_media_text"/>
-      <item type="id" name="blocking_activity_seekbar_width_guideline"/>
       <item type="id" name="browse_content_area"/>
       <item type="id" name="browse_item_actions_container"/>
       <item type="id" name="browse_item_custom_action"/>

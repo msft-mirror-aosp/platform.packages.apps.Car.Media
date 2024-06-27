@@ -17,6 +17,7 @@ package com.android.car.media;
 
 import static com.android.car.media.common.ui.PlaybackCardControllerUtilities.updateActionsWithPlaybackState;
 import static com.android.car.media.common.ui.PlaybackCardControllerUtilities.updatePlayButtonWithPlaybackState;
+import static com.android.car.media.common.ui.PlaybackCardControllerUtilities.updateSeekbarWithPlaybackState;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -74,7 +75,7 @@ public class MediaBlockingActivityController extends PlaybackCardController {
     @Override
     protected void updatePlaybackState(PlaybackViewModel.PlaybackStateWrapper playbackState) {
         if (playbackState != null) {
-            showViews(/* showMedia= */true);
+            showViews(/* showMedia= */ true);
             PlaybackController playbackController = mDataModel.getPlaybackController().getValue();
             updatePlayButtonWithPlaybackState(mPlayPauseButton, playbackState, playbackController);
             Context context = mView.getContext();
@@ -95,6 +96,8 @@ public class MediaBlockingActivityController extends PlaybackCardController {
                     mDataModel.getPlaybackController().getValue(), mSkipPreviousDrawable,
                     mSkipNextDrawable, mActionItemBackgroundDrawable, mActionItemBackgroundDrawable,
                     false, null);
+
+            updateSeekbar(playbackState);
         } else {
             Log.d(TAG, "No PlaybackState found");
             showViews(/* showMedia= */ false);
@@ -107,5 +110,15 @@ public class MediaBlockingActivityController extends PlaybackCardController {
     public void showViews(boolean showMedia) {
         ViewUtils.setVisible(mMediaViews, showMedia);
         ViewUtils.setVisible(mNoMediaView, !showMedia);
+    }
+
+    private void updateSeekbar(PlaybackViewModel.PlaybackStateWrapper playbackState) {
+        if (mSeekBar != null) {
+            updateSeekbarWithPlaybackState(mSeekBar, playbackState);
+            boolean enabled = playbackState != null && playbackState.isSeekToEnabled();
+            if (mSeekBar.getThumb() != null) {
+                mSeekBar.getThumb().mutate().setAlpha(enabled ? 255 : 0);
+            }
+        }
     }
 }

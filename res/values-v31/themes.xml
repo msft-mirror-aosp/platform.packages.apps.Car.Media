@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- The theme for the Media Center application. -->
+  <style name="Theme.Media" parent="Theme.CarUi" >
+    <item name="textAppearanceGridItem">@android:style/TextAppearance.DeviceDefault.Medium</item>
+    <item name="textAppearanceGridItemSecondary">@android:style/TextAppearance.DeviceDefault.Small</item>
+    <item name="android:splitMotionEvents">false</item>
+    <item name="android:windowSplashScreenAnimatedIcon">@android:color/transparent</item>
+    <item name="android:windowSplashScreenAnimationDuration">0</item>
+    <item name="android:windowAnimationStyle">@null</item>
+  </style>
+</resources>

@@ -29,14 +29,16 @@
 
   <ImageView
       android:id="@+id/album_art"
-      android:layout_width="@dimen/blocking_activity_album_art_max_size"
-      android:layout_height="@dimen/blocking_activity_album_art_max_size"
-      android:layout_marginStart="@dimen/blocking_activity_default_horizontal_margin"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
       android:layout_marginEnd="@dimen/blocking_activity_default_horizontal_margin"
-      app:layout_constraintStart_toEndOf="@id/max_time"
+      app:layout_constraintStart_toEndOf="@id/blocking_activity_content_guideline"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintTop_toTopOf="parent"
       app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintHorizontal_bias="1"
+      app:layout_constraintWidth_max="@dimen/blocking_activity_album_art_max_size"
+      app:layout_constraintHeight_max="@dimen/blocking_activity_album_art_max_size"
       app:srcCompat="@drawable/ic_placeholder" />
 
   <ImageView
@@ -53,13 +55,14 @@
 
   <TextView
       android:id="@+id/title"
-      android:layout_width="@dimen/blocking_activity_title_width"
+      android:layout_width="0dp"
       android:layout_height="wrap_content"
       style="@style/BlockingActivityTitleText"
       android:gravity="center_vertical"
       android:layout_marginStart="@dimen/blocking_activity_default_horizontal_margin"
       android:layout_marginTop="@dimen/blocking_activity_title_top_margin"
       app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintEnd_toStartOf="@id/blocking_activity_content_guideline"
       app:layout_constraintTop_toTopOf="parent"
       app:layout_constraintBottom_toTopOf="@id/subtitle" />
 
@@ -74,7 +77,7 @@
       app:layout_constraintBottom_toTopOf="@id/playback_seek_bar" />
 
   <androidx.constraintlayout.widget.Guideline
-      android:id="@+id/blocking_activity_seekbar_width_guideline"
+      android:id="@+id/blocking_activity_content_guideline"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:orientation="vertical"
@@ -82,14 +85,14 @@
 
   <SeekBar
       android:id="@+id/playback_seek_bar"
-      style="?android:attr/progressBarStyleHorizontal"
+      style="@style/Widget.CarUi.SeekbarPreference.Seekbar"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
       android:layout_marginStart="@dimen/blocking_activity_seekbar_margin"
       app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintEnd_toStartOf="@id/blocking_activity_seekbar_width_guideline"
+      app:layout_constraintEnd_toStartOf="@id/blocking_activity_content_guideline"
       app:layout_constraintTop_toBottomOf="@id/subtitle"
-      app:layout_constraintBottom_toTopOf="@id/play_pause_button" />
+      app:layout_constraintBottom_toTopOf="@id/play_pause_button"/>
 
   <ImageButton
       android:id="@+id/play_pause_button"
@@ -158,6 +161,7 @@
       android:id="@+id/blocking_activity_media_views_group"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
+      android:visibility="gone"
       app:constraint_referenced_ids="album_art, media_widget_app_icon, title, subtitle, playback_seek_bar, play_pause_button,
          playback_action_id1, playback_action_id2, current_time, inner_separator, max_time" />
 
@@ -168,7 +172,7 @@
       android:gravity="center"
       android:text="@string/blocking_activity_no_media_text"
       android:textAppearance="@style/TextAppearance.Display3"
-      android:visibility="gone"
+      android:visibility="visible"
       app:layout_constraintTop_toTopOf="parent"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintEnd_toEndOf="parent"
