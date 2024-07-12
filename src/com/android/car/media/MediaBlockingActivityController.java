@@ -97,7 +97,7 @@ public class MediaBlockingActivityController extends PlaybackCardController {
                     mSkipNextDrawable, mActionItemBackgroundDrawable, mActionItemBackgroundDrawable,
                     false, null);
 
-            updateSeekbar(playbackState);
+            updateSeekbarWithPlaybackState(mSeekBar, playbackState);
         } else {
             Log.d(TAG, "No PlaybackState found");
             showViews(/* showMedia= */ false);
@@ -110,15 +110,5 @@ public class MediaBlockingActivityController extends PlaybackCardController {
     public void showViews(boolean showMedia) {
         ViewUtils.setVisible(mMediaViews, showMedia);
         ViewUtils.setVisible(mNoMediaView, !showMedia);
-    }
-
-    private void updateSeekbar(PlaybackViewModel.PlaybackStateWrapper playbackState) {
-        if (mSeekBar != null) {
-            updateSeekbarWithPlaybackState(mSeekBar, playbackState);
-            boolean enabled = playbackState != null && playbackState.isSeekToEnabled();
-            if (mSeekBar.getThumb() != null) {
-                mSeekBar.getThumb().mutate().setAlpha(enabled ? 255 : 0);
-            }
-        }
     }
 }
