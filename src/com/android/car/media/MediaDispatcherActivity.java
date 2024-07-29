@@ -1,7 +1,13 @@
 package com.android.car.media;
 
 import static android.car.media.CarMediaIntents.EXTRA_MEDIA_COMPONENT;
+import static android.car.media.CarMediaIntents.EXTRA_SEARCH_QUERY;
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
+
+import static androidx.car.app.mediaextensions.MediaIntentExtras.ACTION_MEDIA_TEMPLATE_V2;
+import static androidx.car.app.mediaextensions.MediaIntentExtras.EXTRA_KEY_MEDIA_ID;
+import static androidx.car.app.mediaextensions.MediaIntentExtras.EXTRA_KEY_SEARCH_ACTION;
+import static androidx.car.app.mediaextensions.MediaIntentExtras.EXTRA_VALUE_NO_SEARCH_ACTION;
 
 import android.car.Car;
 import android.car.media.CarMediaIntents;
@@ -32,8 +38,6 @@ public class MediaDispatcherActivity extends FragmentActivity {
 
     private static final String TAG = "MediaDispatcherActivity";
     private static Set<String> sCustomMediaComponents = null;
-
-    static final String KEY_MEDIA_ID = "com.android.car.media.intent.extra.MEDIA_ID";
 
     static boolean isCustomMediaSource(Resources res, @Nullable MediaSource source) {
         if (sCustomMediaComponents == null) {
@@ -67,10 +71,15 @@ public class MediaDispatcherActivity extends FragmentActivity {
         String action = null;
         String componentName = null;
         String mediaId = null;
+        String searchQuery = null;
+        int searchAction = EXTRA_VALUE_NO_SEARCH_ACTION;
         if (intent != null) {
             action = intent.getAction();
             componentName = intent.getStringExtra(EXTRA_MEDIA_COMPONENT);
-            mediaId = intent.getStringExtra(KEY_MEDIA_ID);
+            mediaId = intent.getStringExtra(EXTRA_KEY_MEDIA_ID);
+            searchQuery = intent.getStringExtra(EXTRA_SEARCH_QUERY);
+            searchAction = intent.getIntExtra(EXTRA_KEY_SEARCH_ACTION,
+                    EXTRA_VALUE_NO_SEARCH_ACTION);
         }
 
         if (Log.isLoggable(TAG, Log.INFO)) {
@@ -78,7 +87,8 @@ public class MediaDispatcherActivity extends FragmentActivity {
         }
 
         MediaSource mediaSrc = null;
-        if (CarMediaIntents.ACTION_MEDIA_TEMPLATE.equals(action)) {
+        if (CarMediaIntents.ACTION_MEDIA_TEMPLATE.equals(action)
+                || ACTION_MEDIA_TEMPLATE_V2.equals(action)) {
             if (componentName != null) {
                 ComponentName mediaSrcComp = ComponentName.unflattenFromString(componentName);
                 if (mediaSrcComp != null) {
@@ -111,7 +121,8 @@ public class MediaDispatcherActivity extends FragmentActivity {
 
         // Launch media center only if there is a media source
         if ((newIntent == null) && (mediaSrc != null)) {
-            newIntent = MediaActivity.createMediaActivityIntent(ctx, mediaSrc, mediaId);
+            newIntent = MediaActivity.createMediaActivityIntent(ctx, mediaSrc, mediaId,
+                searchQuery, searchAction);
         }
 
         if (newIntent != null) {

@@ -74,6 +74,10 @@
                 <action android:name="android.car.intent.action.MEDIA_TEMPLATE" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="androidx.car.app.mediaextensions.action.MEDIA_TEMPLATE_V2" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
 
         <!-- Blocking UI for background audio playing NDO apps while driving. -->
