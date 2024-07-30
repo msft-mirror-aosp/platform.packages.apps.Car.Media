@@ -16,15 +16,21 @@
 
 package com.android.car.media;
 
+import static android.car.drivingstate.CarDrivingStateEvent.DRIVING_STATE_PARKED;
+
+import android.car.Car;
+import android.car.drivingstate.CarDrivingStateManager;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.ViewGroup;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.android.car.apps.common.util.IntentUtils;
 import com.android.car.media.common.source.MediaModels;
 import com.android.car.media.common.source.MediaSessionHelper;
 import com.android.car.media.common.source.MediaSource;
@@ -43,6 +49,9 @@ public class MediaBlockingActivity extends AppCompatActivity {
 
     private static final String TAG = "MediaBlockingActivity";
 
+    private Car mCar;
+    private CarDrivingStateManager mCarDrivingStateManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,6 +59,7 @@ public class MediaBlockingActivity extends AppCompatActivity {
         setContentView(R.layout.media_blocking_activity);
 
         Intent intent = getIntent();
+
         if (!intent.hasExtra(Intent.EXTRA_COMPONENT_NAME)) {
             Log.i(TAG, "Caller must provide valid media activity extra");
             setupController(/* mediaSource= */ null);
@@ -68,22 +78,55 @@ public class MediaBlockingActivity extends AppCompatActivity {
         }
 
         setupController(mediaSource);
+
+        boolean shouldDismissOnPark  = intent.getBooleanExtra(
+                IntentUtils.EXTRA_MEDIA_BLOCKING_ACTIVITY_DISMISS_ON_PARK, true);
+
+        if (shouldDismissOnPark) {
+            Car.createCar(this, null, Car.CAR_WAIT_TIMEOUT_WAIT_FOREVER,
+                    (car, ready) -> {
+                        if (!ready) {
+                            cleanupCarManagers();
+                        } else {
+                            mCar = car;
+                            mCarDrivingStateManager = (CarDrivingStateManager)
+                                    mCar.getCarManager(Car.CAR_DRIVING_STATE_SERVICE);
+                            if (mCarDrivingStateManager.getCurrentCarDrivingState().eventValue
+                                    == DRIVING_STATE_PARKED) {
+                                launchActivityAndFinish(mediaSource);
+                            }
+                            mCarDrivingStateManager.registerListener(
+                                    carDrivingStateEvent -> {
+                                        if (carDrivingStateEvent.eventValue
+                                                == DRIVING_STATE_PARKED) {
+                                            launchActivityAndFinish(mediaSource);
+                                        }
+                                    });
+                        }
+                    });
+        }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
 
-        // As a blocking activity, MediaBlockingActivity is only meant to be a foreground activity.
+        // MediaBlockingActivity is only meant to be a foreground activity.
         if (!isFinishing()) {
             Log.d(TAG, "User navigated away, calling finish()");
             finish();
         }
+
+        cleanupCarManagers();
     }
 
+    /**
+     * Finds media source that matches the component name passed in from the activity intent
+     */
     private MediaSource findMediaSource(ComponentName componentName) {
         MediaSessionHelper mediaSessionHelper = MediaSessionHelper.getInstance(this);
-        List<MediaSource> mediaSources = mediaSessionHelper.getPlayableMediaSources().getValue();
+        List<MediaSource> mediaSources =
+                mediaSessionHelper.getActiveOrPausedMediaSources().getValue();
 
         for (MediaSource mediaSource : mediaSources) {
             if (mediaSource.getPackageName().equals(componentName.getPackageName())) {
@@ -105,7 +148,6 @@ public class MediaBlockingActivity extends AppCompatActivity {
         }
         MediaBlockingActivityController controller =
                 (MediaBlockingActivityController) new MediaBlockingActivityController.Builder()
-                        .setExitButtonOnClick(view -> finish())
                         .setModels(mediaModels.getPlaybackViewModel(), viewModel,
                                 mediaModels.getMediaItemsRepository())
                         .setViewGroup(mRootView)
@@ -113,6 +155,29 @@ public class MediaBlockingActivity extends AppCompatActivity {
 
         if (mediaSource == null) {
             controller.showViews(/* showMedia= */ false);
+        }
+    }
+
+    private void launchActivityAndFinish(MediaSource mediaSource) {
+        if (mediaSource != null) {
+            // Relaunch blocked app in case it crashed or isn't behind the blocking activity anymore
+            new Handler(getMainLooper()).postDelayed(() ->
+                    startActivity(mediaSource.getIntent()),
+                    R.integer.blocking_activity_relaunch_time_ms);
+        }
+
+        finish();
+    }
+
+    private void cleanupCarManagers() {
+        if (mCarDrivingStateManager != null) {
+            mCarDrivingStateManager.unregisterListener();
+            mCarDrivingStateManager = null;
+        }
+
+        if (mCar != null) {
+            mCar.disconnect();
+            mCar = null;
         }
     }
 }

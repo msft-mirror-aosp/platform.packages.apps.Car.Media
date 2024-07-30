@@ -23,31 +23,33 @@
     android:layout_height="match_parent">
 
   <com.android.car.apps.common.BackgroundImageView
-      android:id="@+id/background"
+      android:id="@+id/blocking_activity_background"
       android:layout_width="match_parent"
       android:layout_height="match_parent"/>
 
-  <com.android.car.apps.common.UxrButton
-      android:id="@+id/exit_button"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_marginTop="@dimen/blocking_activity_default_vertical_margin"
-      android:layout_marginStart="@dimen/blocking_activity_default_horizontal_margin"
-      android:text="@string/blocking_activity_exit_button"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toTopOf="parent" />
-
   <ImageView
       android:id="@+id/album_art"
-      android:layout_width="@dimen/blocking_activity_album_art_size"
-      android:layout_height="@dimen/blocking_activity_album_art_size"
+      android:layout_width="@dimen/blocking_activity_album_art_max_size"
+      android:layout_height="@dimen/blocking_activity_album_art_max_size"
+      android:layout_marginStart="@dimen/blocking_activity_default_horizontal_margin"
       android:layout_marginEnd="@dimen/blocking_activity_default_horizontal_margin"
-      android:background="@drawable/blocking_activity_album_background"
-      android:clipToOutline="true"
+      app:layout_constraintStart_toEndOf="@id/max_time"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintTop_toTopOf="parent"
       app:layout_constraintBottom_toBottomOf="parent"
       app:srcCompat="@drawable/ic_placeholder" />
+
+  <ImageView
+      android:id="@+id/media_widget_app_icon"
+      android:layout_width="@dimen/blocking_activity_app_icon_size"
+      android:layout_height="@dimen/blocking_activity_app_icon_size"
+      android:layout_marginTop="@dimen/blocking_activity_app_icon_margin"
+      android:layout_marginEnd="@dimen/blocking_activity_app_icon_margin"
+      android:background="@drawable/blocking_activity_app_icon_background"
+      android:scaleType="centerInside"
+      android:clipToOutline="true"
+      app:layout_constraintEnd_toEndOf="@id/album_art"
+      app:layout_constraintTop_toTopOf="@id/album_art" />
 
   <TextView
       android:id="@+id/title"
@@ -59,10 +61,10 @@
       android:layout_marginTop="@dimen/blocking_activity_title_top_margin"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toTopOf="parent"
-      app:layout_constraintBottom_toTopOf="@id/artist" />
+      app:layout_constraintBottom_toTopOf="@id/subtitle" />
 
   <TextView
-      android:id="@+id/artist"
+      android:id="@+id/subtitle"
       android:layout_width="@dimen/blocking_activity_artist_width"
       android:layout_height="wrap_content"
       style="@style/BlockingActivityArtistText"
@@ -71,14 +73,22 @@
       app:layout_constraintTop_toBottomOf="@id/title"
       app:layout_constraintBottom_toTopOf="@id/playback_seek_bar" />
 
+  <androidx.constraintlayout.widget.Guideline
+      android:id="@+id/blocking_activity_seekbar_width_guideline"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      app:layout_constraintGuide_percent="0.5" />
+
   <SeekBar
       android:id="@+id/playback_seek_bar"
       style="?android:attr/progressBarStyleHorizontal"
-      android:layout_width="@dimen/blocking_activity_seekbar_width"
+      android:layout_width="0dp"
       android:layout_height="wrap_content"
       android:layout_marginStart="@dimen/blocking_activity_seekbar_margin"
       app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@id/artist"
+      app:layout_constraintEnd_toStartOf="@id/blocking_activity_seekbar_width_guideline"
+      app:layout_constraintTop_toBottomOf="@id/subtitle"
       app:layout_constraintBottom_toTopOf="@id/play_pause_button" />
 
   <ImageButton
@@ -87,9 +97,30 @@
       android:layout_height="@dimen/blocking_activity_play_pause_height"
       android:layout_marginStart="@dimen/blocking_activity_default_horizontal_margin"
       app:srcCompat="@drawable/play_pause_button"
+      android:background="@drawable/blocking_activity_action_item_background"
       app:layout_constraintTop_toBottomOf="@id/playback_seek_bar"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintBottom_toBottomOf="parent"/>
+
+  <ImageButton
+      android:id="@+id/playback_action_id1"
+      android:layout_width="@dimen/blocking_activity_action_item_width"
+      android:layout_height="@dimen/blocking_activity_action_item_height"
+      android:layout_marginStart="@dimen/blocking_activity_action_item_horizontal_margin"
+      android:background="@drawable/blocking_activity_action_item_background"
+      app:layout_constraintTop_toTopOf="@id/play_pause_button"
+      app:layout_constraintStart_toEndOf="@id/play_pause_button"
+      app:layout_constraintBottom_toBottomOf="@id/play_pause_button"/>
+
+  <ImageButton
+      android:id="@+id/playback_action_id2"
+      android:layout_width="@dimen/blocking_activity_action_item_width"
+      android:layout_height="@dimen/blocking_activity_action_item_height"
+      android:layout_marginStart="@dimen/blocking_activity_action_item_horizontal_margin"
+      android:background="@drawable/blocking_activity_action_item_background"
+      app:layout_constraintTop_toTopOf="@id/play_pause_button"
+      app:layout_constraintStart_toEndOf="@id/playback_action_id1"
+      app:layout_constraintBottom_toBottomOf="@id/play_pause_button"/>
 
   <TextView
       android:id="@+id/current_time"
@@ -97,7 +128,7 @@
       android:layout_height="wrap_content"
       android:gravity="end"
       android:padding="@dimen/blocking_activity_time_text_padding"
-      app:layout_constraintTop_toBottomOf="@id/artist"
+      app:layout_constraintTop_toBottomOf="@id/subtitle"
       app:layout_constraintBottom_toTopOf="@id/play_pause_button"
       app:layout_constraintStart_toEndOf="@id/playback_seek_bar"
       app:layout_constraintEnd_toStartOf="@id/inner_separator" />
@@ -108,7 +139,7 @@
       android:layout_height="wrap_content"
       android:text="@string/blocking_activity_time_separator"
       android:padding="@dimen/blocking_activity_time_text_padding"
-      app:layout_constraintTop_toBottomOf="@id/artist"
+      app:layout_constraintTop_toBottomOf="@id/subtitle"
       app:layout_constraintBottom_toTopOf="@id/play_pause_button"
       app:layout_constraintStart_toEndOf="@id/current_time"
       app:layout_constraintEnd_toStartOf="@id/max_time" />
@@ -119,19 +150,19 @@
       android:layout_height="wrap_content"
       android:padding="@dimen/blocking_activity_time_text_padding"
       android:gravity="start"
-      app:layout_constraintTop_toBottomOf="@id/artist"
+      app:layout_constraintTop_toBottomOf="@id/subtitle"
       app:layout_constraintBottom_toTopOf="@id/play_pause_button"
       app:layout_constraintStart_toEndOf="@id/inner_separator" />
 
   <androidx.constraintlayout.widget.Group
-      android:id="@+id/media_views_group"
+      android:id="@+id/blocking_activity_media_views_group"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      app:constraint_referenced_ids="exit_button, album_art, title, artist, playback_seek_bar, play_pause_button,
-         current_time, inner_separator, max_time" />
+      app:constraint_referenced_ids="album_art, media_widget_app_icon, title, subtitle, playback_seek_bar, play_pause_button,
+         playback_action_id1, playback_action_id2, current_time, inner_separator, max_time" />
 
   <TextView
-      android:id="@+id/no_media_text"
+      android:id="@+id/blocking_activity_no_media_text"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:gravity="center"

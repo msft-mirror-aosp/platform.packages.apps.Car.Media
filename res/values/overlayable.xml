@@ -40,6 +40,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="bool" name="use_media_source_color_for_progress_bar"/>
       <item type="bool" name="use_media_source_logo_for_app_selector_in_playback_view"/>
       <item type="color" name="progress_bar_highlight"/>
+      <item type="dimen" name="blocking_activity_album_art_corner_ratio"/>
       <item type="dimen" name="browse_fragment_bottom_padding"/>
       <item type="dimen" name="browse_fragment_top_padding"/>
       <item type="dimen" name="browse_fragment_top_padding_stacked"/>
@@ -51,7 +52,8 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="dimen" name="playback_seekbar_margin_x"/>
       <item type="dimen" name="queue_list_item_padding_x"/>
       <item type="dimen" name="queue_list_item_thumbnail_container_width"/>
-      <item type="drawable" name="blocking_activity_album_background"/>
+      <item type="drawable" name="blocking_activity_action_item_background"/>
+      <item type="drawable" name="blocking_activity_app_icon_background"/>
       <item type="drawable" name="browser_progress_new_indicator"/>
       <item type="drawable" name="error_illustration"/>
       <item type="drawable" name="ic_arrow_back"/>
@@ -74,8 +76,11 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="album_art"/>
       <item type="id" name="album_title"/>
       <item type="id" name="artist"/>
-      <item type="id" name="background"/>
       <item type="id" name="background_scrim"/>
+      <item type="id" name="blocking_activity_background"/>
+      <item type="id" name="blocking_activity_media_views_group"/>
+      <item type="id" name="blocking_activity_no_media_text"/>
+      <item type="id" name="blocking_activity_seekbar_width_guideline"/>
       <item type="id" name="browse_content_area"/>
       <item type="id" name="browse_item_actions_container"/>
       <item type="id" name="browse_item_custom_action"/>
@@ -103,7 +108,6 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="error_container"/>
       <item type="id" name="error_icon"/>
       <item type="id" name="error_message"/>
-      <item type="id" name="exit_button"/>
       <item type="id" name="explicit_icon_with_subtitle"/>
       <item type="id" name="explicit_icon_with_title"/>
       <item type="id" name="focus_area"/>
@@ -117,7 +121,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="media_activity_root"/>
       <item type="id" name="media_blocking_activity_root"/>
       <item type="id" name="media_item_click_target"/>
-      <item type="id" name="media_views_group"/>
+      <item type="id" name="media_widget_app_icon"/>
       <item type="id" name="menu_item_equalizer"/>
       <item type="id" name="menu_item_search"/>
       <item type="id" name="menu_item_selector"/>
@@ -125,10 +129,11 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="menu_item_setting"/>
       <item type="id" name="metadata_container"/>
       <item type="id" name="minimized_playback_controls"/>
-      <item type="id" name="no_media_text"/>
       <item type="id" name="now_playing_icon"/>
       <item type="id" name="outer_separator"/>
       <item type="id" name="play_pause_button"/>
+      <item type="id" name="playback_action_id1"/>
+      <item type="id" name="playback_action_id2"/>
       <item type="id" name="playback_background"/>
       <item type="id" name="playback_container"/>
       <item type="id" name="playback_controls"/>
@@ -161,6 +166,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="ui_content_start_guideline"/>
       <item type="id" name="ui_content_top_guideline"/>
       <item type="id" name="ui_content_top_guideline2"/>
+      <item type="integer" name="blocking_activity_relaunch_time_ms"/>
       <item type="integer" name="fragment_playback_queue_fade_duration_ms"/>
       <item type="integer" name="max_tabs"/>
       <item type="integer" name="max_visible_actions"/>
