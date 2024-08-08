@@ -79,7 +79,8 @@ abstract class ViewControllerBase implements InsetsChangedListener {
         mViewModel = new ViewModelProvider(activity).get(MediaActivity.ViewModel.class);
         mMediaItemsRepository = mViewModel.getMediaItemsRepository(MEDIA_SOURCE_MODE_BROWSE);
         Resources res = mActivity.getResources();
-        mFadeDuration = res.getInteger(R.integer.new_album_art_fade_in_duration);
+        mFadeDuration = res.getInteger(
+            com.android.car.media.common.R.integer.new_album_art_fade_in_duration);
         mShouldShowSoundSettings = res.getBoolean(R.bool.show_sound_settings);
 
         LayoutInflater inflater = LayoutInflater.from(container.getContext());
@@ -92,7 +93,8 @@ abstract class ViewControllerBase implements InsetsChangedListener {
 
         mAppBarController = new AppBarController(activity, mMediaItemsRepository, toolbar,
                 R.xml.menuitems_browse,
-                res.getBoolean(R.bool.use_media_source_logo_for_app_selector));
+                res.getBoolean(
+                    com.android.car.media.common.R.bool.use_media_source_logo_for_app_selector));
         mAppBarController.checkBrowseMenus();
         mAppBarController.setSearchSupported(false);
         mAppBarController.setHasEqualizer(false);

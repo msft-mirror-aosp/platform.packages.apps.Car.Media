@@ -54,7 +54,7 @@ public class BrowseMiniMediaItemView extends BrowseMiniMediaItemBar {
     public BrowseMiniMediaItemView(Context context, AttributeSet attrs, int defStyleAttrs) {
         super(context, attrs, defStyleAttrs, com.android.car.media.R.layout.browse_mini_bar_view);
         BackgroundImageView artBackground =
-                findViewById(com.android.car.media.common.R.id.art_background);
+                findViewById(com.android.car.apps.common.R.id.art_background);
         if (artBackground != null) {
             int max = getResources()
                     .getInteger(

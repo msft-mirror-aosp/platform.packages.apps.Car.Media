@@ -37,7 +37,8 @@ public class MediaDispatcherActivity extends FragmentActivity {
         if (sCustomMediaComponents == null) {
             sCustomMediaComponents = new HashSet<>();
             sCustomMediaComponents.addAll(
-                    Arrays.asList(res.getStringArray(R.array.custom_media_packages)));
+                    Arrays.asList(res.getStringArray(
+                        com.android.car.media.common.R.array.custom_media_packages)));
         }
 
         return (source != null)
