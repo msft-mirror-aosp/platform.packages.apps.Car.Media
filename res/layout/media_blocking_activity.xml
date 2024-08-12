@@ -27,6 +27,18 @@
       android:layout_width="match_parent"
       android:layout_height="match_parent"/>
 
+  <com.android.car.apps.common.UxrButton
+      android:id="@+id/blocking_activity_exit_button"
+      android:layout_width="wrap_content"
+      android:layout_height="@dimen/blocking_activity_exit_button_height"
+      android:layout_marginTop="@dimen/blocking_activity_default_vertical_margin"
+      android:layout_marginStart="@dimen/blocking_activity_default_horizontal_margin"
+      android:text="@string/blocking_activity_exit_button"
+      style="@style/BlockingActivityExitButtonStyle"
+      app:carUxRestrictions="UX_RESTRICTIONS_FULLY_RESTRICTED"
+      app:layout_constraintTop_toTopOf="parent"
+      app:layout_constraintStart_toStartOf="parent"/>
+
   <ImageView
       android:id="@+id/album_art"
       android:layout_width="0dp"
@@ -45,13 +57,13 @@
       android:id="@+id/media_widget_app_icon"
       android:layout_width="@dimen/blocking_activity_app_icon_size"
       android:layout_height="@dimen/blocking_activity_app_icon_size"
-      android:layout_marginTop="@dimen/blocking_activity_app_icon_margin"
-      android:layout_marginEnd="@dimen/blocking_activity_app_icon_margin"
+      android:layout_marginBottom="@dimen/blocking_activity_app_icon_vertical_margin"
+      android:layout_marginEnd="@dimen/blocking_activity_app_icon_horizontal_margin"
       android:background="@drawable/blocking_activity_app_icon_background"
       android:scaleType="centerInside"
       android:clipToOutline="true"
       app:layout_constraintEnd_toEndOf="@id/album_art"
-      app:layout_constraintTop_toTopOf="@id/album_art" />
+      app:layout_constraintBottom_toTopOf="@id/album_art" />
 
   <TextView
       android:id="@+id/title"
@@ -63,18 +75,18 @@
       android:layout_marginTop="@dimen/blocking_activity_title_top_margin"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintEnd_toStartOf="@id/blocking_activity_content_guideline"
-      app:layout_constraintTop_toTopOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/blocking_activity_exit_button"
       app:layout_constraintBottom_toTopOf="@id/subtitle" />
 
   <TextView
       android:id="@+id/subtitle"
       android:layout_width="@dimen/blocking_activity_artist_width"
       android:layout_height="wrap_content"
-      style="@style/BlockingActivityArtistText"
+      style="@style/BlockingActivitySubtitleText"
+      android:layout_marginTop="@dimen/blocking_activity_subtitle_top_margin"
       android:layout_marginStart="@dimen/blocking_activity_default_horizontal_margin"
       app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@id/title"
-      app:layout_constraintBottom_toTopOf="@id/playback_seek_bar" />
+      app:layout_constraintTop_toBottomOf="@id/title" />
 
   <androidx.constraintlayout.widget.Guideline
       android:id="@+id/blocking_activity_content_guideline"
@@ -89,6 +101,12 @@
       android:layout_width="0dp"
       android:layout_height="wrap_content"
       android:layout_marginStart="@dimen/blocking_activity_seekbar_margin"
+      android:progressDrawable="@drawable/blocking_activity_seekbar_progress"
+      android:progressBackgroundTint="@color/car_seekbar_background_color"
+      android:progressTint="@color/car_ui_color_accent"
+      android:splitTrack="true"
+      android:thumb="@drawable/blocking_activity_seekbar_thumb"
+      android:thumbOffset="0px"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintEnd_toStartOf="@id/blocking_activity_content_guideline"
       app:layout_constraintTop_toBottomOf="@id/subtitle"
@@ -99,9 +117,9 @@
       android:layout_width="@dimen/blocking_activity_play_pause_width"
       android:layout_height="@dimen/blocking_activity_play_pause_height"
       android:layout_marginStart="@dimen/blocking_activity_default_horizontal_margin"
+      android:layout_marginBottom="@dimen/blocking_activity_default_vertical_margin"
       app:srcCompat="@drawable/play_pause_button"
       android:background="@drawable/blocking_activity_action_item_background"
-      app:layout_constraintTop_toBottomOf="@id/playback_seek_bar"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintBottom_toBottomOf="parent"/>
 
@@ -141,6 +159,7 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:text="@string/blocking_activity_time_separator"
+      android:textColor="@color/car_grey_600"
       android:padding="@dimen/blocking_activity_time_text_padding"
       app:layout_constraintTop_toBottomOf="@id/subtitle"
       app:layout_constraintBottom_toTopOf="@id/play_pause_button"
@@ -153,6 +172,7 @@
       android:layout_height="wrap_content"
       android:padding="@dimen/blocking_activity_time_text_padding"
       android:gravity="start"
+      android:textColor="@color/car_grey_600"
       app:layout_constraintTop_toBottomOf="@id/subtitle"
       app:layout_constraintBottom_toTopOf="@id/play_pause_button"
       app:layout_constraintStart_toEndOf="@id/inner_separator" />
