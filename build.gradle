@@ -16,6 +16,7 @@
 
 plugins {
     id 'com.android.application'
+    id 'buildSrc.jdk.jdk8'
 }
 
 android {
@@ -29,11 +30,6 @@ android {
         testInstrumentationRunnerArguments clearPackageData: 'true', coverage: 'true'
         versionCode gradle.ext.getVersionCode()
         versionName gradle.ext.getVersionName()
-    }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
     }
 
     lintOptions {
