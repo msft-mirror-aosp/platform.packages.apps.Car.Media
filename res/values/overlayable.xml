@@ -39,6 +39,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="bool" name="switch_to_playback_view_when_playable_item_is_clicked"/>
       <item type="bool" name="use_media_source_color_for_progress_bar"/>
       <item type="bool" name="use_media_source_logo_for_app_selector_in_playback_view"/>
+      <item type="color" name="blocking_activity_exit_button_selector"/>
       <item type="color" name="progress_bar_highlight"/>
       <item type="dimen" name="blocking_activity_album_art_corner_ratio"/>
       <item type="dimen" name="browse_fragment_bottom_padding"/>
@@ -54,6 +55,9 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="dimen" name="queue_list_item_thumbnail_container_width"/>
       <item type="drawable" name="blocking_activity_action_item_background"/>
       <item type="drawable" name="blocking_activity_app_icon_background"/>
+      <item type="drawable" name="blocking_activity_exit_button_background"/>
+      <item type="drawable" name="blocking_activity_seekbar_progress"/>
+      <item type="drawable" name="blocking_activity_seekbar_thumb"/>
       <item type="drawable" name="browser_progress_new_indicator"/>
       <item type="drawable" name="error_illustration"/>
       <item type="drawable" name="ic_arrow_back"/>
@@ -79,6 +83,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="background_scrim"/>
       <item type="id" name="blocking_activity_background"/>
       <item type="id" name="blocking_activity_content_guideline"/>
+      <item type="id" name="blocking_activity_exit_button"/>
       <item type="id" name="blocking_activity_media_views_group"/>
       <item type="id" name="blocking_activity_no_media_text"/>
       <item type="id" name="browse_content_area"/>
@@ -219,7 +224,8 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="string" name="slash_separator"/>
       <item type="string" name="unknown_error"/>
       <item type="string" name="unknown_media_provider_name"/>
-      <item type="style" name="BlockingActivityArtistText"/>
+      <item type="style" name="BlockingActivityExitButtonStyle"/>
+      <item type="style" name="BlockingActivitySubtitleText"/>
       <item type="style" name="BlockingActivityTitleText"/>
       <item type="style" name="BrowseGridSubtitleStyle"/>
       <item type="style" name="BrowseGridTitleStyle"/>
