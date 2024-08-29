@@ -25,7 +25,7 @@ android {
     defaultConfig {
         applicationId "com.android.car.media"
         minSdkVersion 30 // Media requires apis that became public in R.
-        targetSdkVersion gradle.ext.aaosTargetSDK
+        targetSdkVersion 33
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         testInstrumentationRunnerArguments clearPackageData: 'true', coverage: 'true'
         versionCode gradle.ext.getVersionCode()
