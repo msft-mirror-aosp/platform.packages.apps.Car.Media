@@ -21,6 +21,7 @@ plugins {
 
 android {
     compileSdkVersion gradle.ext.aaosLatestSDK
+    namespace "com.android.car.media"
 
     defaultConfig {
         applicationId "com.android.car.media"
