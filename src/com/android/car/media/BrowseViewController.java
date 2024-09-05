@@ -20,6 +20,8 @@ import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK;
 import static android.media.session.PlaybackState.STATE_ERROR;
 
+import static androidx.car.app.mediaextensions.MediaIntentExtras.EXTRA_VALUE_NO_SEARCH_ACTION;
+import static androidx.car.app.mediaextensions.MediaIntentExtras.EXTRA_VALUE_PLAY_FIRST_ITEM_FROM_SEARCH;
 import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_HIDE;
 import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_SHOW;
 import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_COMPONENT_BROWSE_LIST;
@@ -157,6 +159,7 @@ public class BrowseViewController {
     private ActionsHeader mCustomActionsBar;
     /** See {@link #onShow}. */
     private boolean mIsShown;
+    private int mSearchAction;
     List<String> mPrevVisibleBrowseList = new ArrayList<>();
     List<String> mPrevVisibleBrowseActions = new ArrayList<>();
 
@@ -266,7 +269,7 @@ public class BrowseViewController {
                 }
             }
         }
-    };
+    }
 
     /**
      * The bottom padding of the FocusArea highlight.
@@ -414,7 +417,7 @@ public class BrowseViewController {
         }
     }
 
-    private abstract static class BrowseActionCallback extends ItemCallback{
+    private abstract static class BrowseActionCallback extends ItemCallback {
         @Override
         public abstract void onItemLoaded(MediaItem item);
 
@@ -875,9 +878,10 @@ public class BrowseViewController {
     }
 
     /** Should preferably be called on the SearchResultsController. */
-    void updateSearchQuery(@Nullable String query) {
+    void updateSearchQuery(@Nullable String query, int searchAction) {
         Bundle options = createItemSubscriptionOptions(mContainer, mBrowseList);
         mMediaRepo.setSearchQuery(query, options);
+        mSearchAction = searchAction;
     }
 
     void onPlaybackControlsChanged(boolean visible) {
@@ -966,7 +970,17 @@ public class BrowseViewController {
             ViewUtils.hideViewAnimated(mErrorIcon, duration);
             ViewUtils.hideViewAnimated(mMessage, duration);
             hideEmptyListPlayBar();
+
+            if (mSearchAction == EXTRA_VALUE_PLAY_FIRST_ITEM_FROM_SEARCH) {
+                for (MediaItemMetadata mediaItemMetadata : items) {
+                    if (mediaItemMetadata.isPlayable()) {
+                        mCallbacks.onPlayableItemClicked(mediaItemMetadata);
+                        break;
+                    }
+                }
+            }
         }
+        mSearchAction = EXTRA_VALUE_NO_SEARCH_ACTION;
 
         if (Log.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "onItemsUpdate " + getDebugInfo());
@@ -1071,7 +1085,7 @@ public class BrowseViewController {
         }
 
         // Checks if sources are the same before updating adapter with progress updates.
-        MediaSource browseSource =  mViewModel.getMediaSourceValue();
+        MediaSource browseSource = mViewModel.getMediaSourceValue();
         MediaSource playSource = mPlaybackViewModel.getMediaSource().getValue();
 
         if (browseSource != null && playSource != null && browseSource.equals(playSource)) {

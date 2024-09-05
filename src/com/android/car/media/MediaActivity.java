@@ -18,6 +18,10 @@ package com.android.car.media;
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK;
 
+import static androidx.car.app.mediaextensions.MediaIntentExtras.EXTRA_KEY_MEDIA_ID;
+import static androidx.car.app.mediaextensions.MediaIntentExtras.EXTRA_KEY_SEARCH_ACTION;
+import static androidx.car.app.mediaextensions.MediaIntentExtras.EXTRA_KEY_SEARCH_QUERY;
+import static androidx.car.app.mediaextensions.MediaIntentExtras.EXTRA_VALUE_NO_SEARCH_ACTION;
 import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_HIDE;
 import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_ACTION_SHOW;
 import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_COMPONENT_BROWSE_LIST;
@@ -27,7 +31,6 @@ import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VI
 
 import static com.android.car.apps.common.util.LiveDataFunctions.dataOf;
 import static com.android.car.apps.common.util.VectorMath.EPSILON;
-import static com.android.car.media.MediaDispatcherActivity.KEY_MEDIA_ID;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityManager.TaskDescription;
@@ -95,6 +98,7 @@ import java.util.Objects;
 @OptIn(markerClass = androidx.car.app.annotations2.ExperimentalCarApi.class)
 public class MediaActivity extends FragmentActivity implements MediaActivityController.Callbacks {
     private static final String TAG = "MediaActivity";
+    private static final String KEY_INTENT_TIMESTAMP = "com.android.car.media.KEY_INTENT_TIMESTAMP";
 
     /** Configuration (controlled from resources) */
     private int mFadeDuration;
@@ -123,6 +127,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
     private float mCloseVectorX;
     private float mCloseVectorY;
     private float mCloseVectorNorm;
+    private long mLatestIntentTimestamp = -1;
 
     /**
      * Possible modes of the application UI
@@ -164,14 +169,25 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
      * @param mediaId optional media id of the node to browse to.
      */
     public static Intent createMediaActivityIntent(Context context, MediaSource source,
-            @Nullable String mediaId) {
+            @Nullable String mediaId, @Nullable String searchQuery,
+            @Nullable Integer searchAction) {
         Intent newIntent = new Intent(context, MediaActivity.class);
         ComponentName mbs = source.getBrowseServiceComponentName();
         newIntent.setData(Uri.parse("custom:/" + mbs.flattenToString()));
 
         if (mediaId != null) {
-            newIntent.putExtra(KEY_MEDIA_ID, mediaId);
+            newIntent.putExtra(EXTRA_KEY_MEDIA_ID, mediaId);
         }
+
+        if (searchQuery != null) {
+            newIntent.putExtra(EXTRA_KEY_SEARCH_QUERY, searchQuery);
+        }
+
+        if (searchAction != null) {
+            newIntent.putExtra(EXTRA_KEY_SEARCH_ACTION, searchAction.intValue());
+        }
+
+        newIntent.putExtra(KEY_INTENT_TIMESTAMP, System.currentTimeMillis());
 
         newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         return newIntent;
@@ -188,7 +204,36 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
 
     @Nullable
     private String getIntentMediaId(Intent intent) {
-        return (intent.hasExtra(KEY_MEDIA_ID)) ? intent.getStringExtra(KEY_MEDIA_ID) : null;
+        return (intent.hasExtra(EXTRA_KEY_MEDIA_ID)) ? intent.getStringExtra(EXTRA_KEY_MEDIA_ID)
+                : null;
+    }
+
+    @Nullable
+    private String getIntentSearchQuery(Intent intent) {
+        return (intent.hasExtra(EXTRA_KEY_SEARCH_QUERY))
+                ? intent.getStringExtra(EXTRA_KEY_SEARCH_QUERY) : null;
+    }
+
+    private long getIntentTimestamp(Intent intent) {
+        return intent.getLongExtra(KEY_INTENT_TIMESTAMP, -1);
+    }
+
+    private int getIntentSearchAction(Intent intent) {
+        return intent.getIntExtra(EXTRA_KEY_SEARCH_ACTION, EXTRA_VALUE_NO_SEARCH_ACTION);
+    }
+
+    private boolean shouldHandleIntent(Intent intent) {
+        if (!intent.hasExtra(KEY_INTENT_TIMESTAMP)) {
+            Log.e(TAG, "The intent should have a time stamp.");
+            return true;
+        }
+
+        long intentTimestamp = intent.getLongExtra(KEY_INTENT_TIMESTAMP, 0);
+        if (intentTimestamp > mLatestIntentTimestamp) {
+            return true;
+        }
+
+        return false;
     }
 
     @Override
@@ -212,6 +257,8 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         super.onCreate(savedInstanceState);
         setContentView(R.layout.media_activity);
 
+        mLatestIntentTimestamp = savedInstanceState != null
+                ? savedInstanceState.getLong(KEY_INTENT_TIMESTAMP, -1) : -1;
         Intent intent = getIntent();
         MediaSource source = null;
         if (intent != null) {
@@ -280,7 +327,9 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
 
         mPlaybackContainer.setOnTouchListener(new ClosePlaybackDetector(this));
 
-        mMediaActivityController.navigateTo(getIntentMediaId(intent));
+        if (shouldHandleIntent(intent)) {
+            navigateToIntentContent(intent);
+        }
     }
 
     @Override
@@ -294,6 +343,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
 
         MediaSource current = getInnerViewModel().getMediaSourceValue();
         MediaSource source = getIntentSource(intent);
+        Log.i(TAG, "onNewIntent source: " + source);
         if (!Objects.equals(current, source)) {
             Log.e(TAG, "Received incorrect source: " + source + " expected: " + current);
             return;
@@ -302,9 +352,25 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         // Try to reconnect in case the source crashed or was killed.
         getInnerViewModel().getMediaSourceViewModel(MEDIA_SOURCE_MODE_BROWSE).maybeReconnect();
 
+        navigateToIntentContent(intent);
+    }
+
+    private void navigateToIntentContent(Intent intent) {
         String mediaId = getIntentMediaId(intent);
-        Log.i(TAG, "onNewIntent source: " + source + " mediaId: " + mediaId);
-        mMediaActivityController.navigateTo(mediaId);
+        String searchQuery = getIntentSearchQuery(intent);
+        mLatestIntentTimestamp = getIntentTimestamp(intent);
+        if (mediaId != null) {
+            mMediaActivityController.navigateTo(mediaId);
+        } else if (searchQuery != null) {
+            int searchAction = getIntentSearchAction(intent);
+            mMediaActivityController.navigateToQuery(searchQuery, searchAction);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putLong(KEY_INTENT_TIMESTAMP, mLatestIntentTimestamp);
     }
 
     @Override
@@ -579,7 +645,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         ComponentName mbs = source.getBrowseServiceComponentName();
         newIntent.putExtra(CarMediaIntents.EXTRA_MEDIA_COMPONENT, mbs.flattenToString());
         if (mediaItem != null && !TextUtils.isEmpty(mediaItem.getId())) {
-            newIntent.putExtra(KEY_MEDIA_ID, mediaItem.getId());
+            newIntent.putExtra(EXTRA_KEY_MEDIA_ID, mediaItem.getId());
         }
         startActivity(newIntent);
     }
