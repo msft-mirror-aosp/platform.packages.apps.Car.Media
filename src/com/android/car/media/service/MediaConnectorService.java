@@ -214,7 +214,7 @@ public class MediaConnectorService extends LifecycleService {
         // Since this service is started from CarMediaService (which runs in background), we need
         // to call startForeground to prevent the system from stopping this service and ANRing.
         Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_music)
+                .setSmallIcon(com.android.car.media.common.R.drawable.ic_music)
                 .setContentTitle(getResources().getString(R.string.service_notification_title))
                 .build();
         if (Build.VERSION.SDK_INT < 34) {

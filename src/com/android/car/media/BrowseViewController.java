@@ -461,7 +461,7 @@ public class BrowseViewController {
         mErrorIcon = mContent.findViewById(R.id.error_icon);
         mMessage = mContent.findViewById(R.id.error_message);
         mFadeDuration = mContent.getContext().getResources().getInteger(
-                R.integer.new_album_art_fade_in_duration);
+                com.android.car.media.common.R.integer.new_album_art_fade_in_duration);
 
         mPlaybackViewModel = mViewModel.getPlaybackViewModel(MEDIA_SOURCE_MODE_PLAYBACK);
         mPlaybackViewModelBrowseSource = mViewModel.getPlaybackViewModel(MEDIA_SOURCE_MODE_BROWSE);

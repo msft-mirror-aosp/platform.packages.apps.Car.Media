@@ -239,7 +239,7 @@ public class BrowseViewHolder extends RecyclerView.ViewHolder {
                     browseViewData));
             ImageView imageView =
                     customActionView.findViewById(R.id.browse_item_custom_action);
-            imageView.setImageResource(R.drawable.car_ui_icon_overflow_menu);
+            imageView.setImageResource(com.android.car.ui.R.drawable.car_ui_icon_overflow_menu);
             mCustomActionsContainer.addView(customActionView);
         }
     }

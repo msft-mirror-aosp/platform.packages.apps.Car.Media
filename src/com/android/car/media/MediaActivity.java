@@ -253,7 +253,8 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
                 localViewModel.getMediaItemsRepository(MEDIA_SOURCE_MODE_PLAYBACK), maxArtSize);
         mMiniPlaybackControls.setOnClickListener(view -> changeMode(Mode.PLAYBACK));
 
-        mFadeDuration = res.getInteger(R.integer.new_album_art_fade_in_duration);
+        mFadeDuration = res.getInteger(
+            com.android.car.media.common.R.integer.new_album_art_fade_in_duration);
         mBrowseContainer = findViewById(R.id.fragment_container);
         mErrorContainer = findViewById(R.id.error_container);
         mPlaybackContainer = findViewById(R.id.playback_container);
@@ -459,7 +460,8 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
             String negativeButtonText,
             @Nullable Drawable icon,
             MediaSource mediaSource) {
-        boolean showTitleIcon = getResources().getBoolean(R.bool.show_playback_source_id);
+        boolean showTitleIcon = getResources().getBoolean(
+                com.android.car.media.common.R.bool.show_playback_source_id);
         String title = mediaSource != null ? mediaSource.getDisplayName(this).toString() : "";
 
         AlertDialogBuilder dialog = new AlertDialogBuilder(this);
@@ -484,7 +486,8 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         int offset = getResources().getDimensionPixelOffset(R.dimen.toast_error_offset_y);
         mToast.setGravity(Gravity.BOTTOM, 0, offset);
 
-        boolean showIcon = getResources().getBoolean(R.bool.show_playback_source_id);
+        boolean showIcon = getResources().getBoolean(
+                com.android.car.media.common.R.bool.show_playback_source_id);
 
         if (icon != null && showIcon) {
             View view = getLayoutInflater().inflate(R.layout.toast_error, null);

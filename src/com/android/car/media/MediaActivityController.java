@@ -316,7 +316,8 @@ public class MediaActivityController extends ViewControllerBase {
             mToolbarSearchResultsView.setLayoutParams(params);
             mToolbarSearchResultsView.setLayoutManager(new LinearLayoutManager(activity));
             mToolbarSearchResultsView.setBackground(
-                    activity.getDrawable(R.drawable.car_ui_ime_wide_screen_background));
+                    activity.getDrawable(
+                        com.android.car.ui.R.drawable.car_ui_ime_wide_screen_background));
 
             mAppBarController.setSearchConfig(SearchConfig.builder()
                     .setSearchResultsView(mToolbarSearchResultsView)

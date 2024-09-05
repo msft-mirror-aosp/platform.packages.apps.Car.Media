@@ -102,7 +102,7 @@ public class BrowseActionsHeader extends LinearLayout implements ActionsHeader {
                     v ->
                             mOverflowClickListener.onOverFlowCLicked(
                                     actions.subList(maxVisibleActions, actions.size())));
-            icon.setImageResource(R.drawable.car_ui_icon_overflow_menu);
+            icon.setImageResource(com.android.car.ui.R.drawable.car_ui_icon_overflow_menu);
             mActionsContainer.addView(actionView);
         }
     }
