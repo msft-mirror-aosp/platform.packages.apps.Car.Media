@@ -207,9 +207,9 @@
     <dimen name="blocking_activity_artist_width">500dp</dimen>
     <dimen name="blocking_activity_time_text_padding">@dimen/car_ui_padding_0</dimen>
     <dimen name="blocking_activity_play_pause_height">80dp</dimen>
-    <dimen name="blocking_activity_play_pause_width">188dp</dimen>
+    <dimen name="blocking_activity_play_pause_width">240dp</dimen>
     <dimen name="blocking_activity_action_item_height">@dimen/blocking_activity_play_pause_height</dimen>
-    <dimen name="blocking_activity_action_item_width">120dp</dimen>
+    <dimen name="blocking_activity_action_item_width">128dp</dimen>
     <dimen name="blocking_activity_action_item_radius">40dp</dimen>
     <dimen name="blocking_activity_action_item_horizontal_margin">@dimen/car_ui_padding_2</dimen>
     <dimen name="blocking_activity_album_art_max_size">401dp</dimen>

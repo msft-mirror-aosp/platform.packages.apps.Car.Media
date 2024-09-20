@@ -127,12 +127,11 @@ public class MediaBlockingActivityController extends PlaybackCardController {
             Context context = mView.getContext();
 
             if (mSkipPreviousDrawable == null) {
-                mSkipPreviousDrawable = context.getDrawable(
-                        com.android.car.media.common.R.drawable.ic_skip_previous);
+                mSkipPreviousDrawable = context
+                        .getDrawable(R.drawable.ic_blocking_activity_skip_previous);
             }
             if (mSkipNextDrawable == null) {
-                mSkipNextDrawable = context.getDrawable(
-                        com.android.car.media.common.R.drawable.ic_skip_next);
+                mSkipNextDrawable = context.getDrawable(R.drawable.ic_blocking_activity_skip_next);
             }
             if (mActionItemBackgroundDrawable == null) {
                 mActionItemBackgroundDrawable =

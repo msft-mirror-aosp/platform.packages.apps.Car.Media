@@ -56,11 +56,16 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="drawable" name="blocking_activity_action_item_background"/>
       <item type="drawable" name="blocking_activity_app_icon_background"/>
       <item type="drawable" name="blocking_activity_exit_button_background"/>
+      <item type="drawable" name="blocking_activity_play_pause_background"/>
       <item type="drawable" name="blocking_activity_seekbar_progress"/>
       <item type="drawable" name="blocking_activity_seekbar_thumb"/>
       <item type="drawable" name="browser_progress_new_indicator"/>
       <item type="drawable" name="error_illustration"/>
       <item type="drawable" name="ic_arrow_back"/>
+      <item type="drawable" name="ic_blocking_activity_pause"/>
+      <item type="drawable" name="ic_blocking_activity_play_arrow"/>
+      <item type="drawable" name="ic_blocking_activity_skip_next"/>
+      <item type="drawable" name="ic_blocking_activity_skip_previous"/>
       <item type="drawable" name="ic_chevron_right"/>
       <item type="drawable" name="ic_equalizer"/>
       <item type="drawable" name="ic_expand_less"/>

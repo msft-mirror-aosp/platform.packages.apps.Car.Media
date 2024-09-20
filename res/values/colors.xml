@@ -46,4 +46,7 @@
         media_browse_grid_icons_item.xml -->
     <color name="browse_icon_tint">@color/icon_tint</color>
 
+    <!--  Color used for the blocking activity action item buttons  -->
+    <color name="blocking_activity_action_item_background">#262B2E</color>
+
 </resources>
