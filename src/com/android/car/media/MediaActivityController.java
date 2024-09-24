@@ -20,6 +20,7 @@ import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK;
 import static android.view.accessibility.AccessibilityNodeInfo.ACTION_FOCUS;
 
+import static androidx.car.app.mediaextensions.MediaIntentExtras.EXTRA_VALUE_NO_SEARCH_ACTION;
 import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_COMPONENT_BROWSE_LIST;
 import static androidx.car.app.mediaextensions.analytics.event.AnalyticsEvent.VIEW_COMPONENT_BROWSE_TABS;
 
@@ -106,6 +107,8 @@ public class MediaActivityController extends ViewControllerBase {
     private boolean mAcceptTabSelection = true;
 
     private String mPendingMediaId;
+    private String mPendingQuery;
+    private int mPendingSearchAction;
 
     /**
      * Media items to display as tabs. If null, it means we haven't finished loading them yet. If
@@ -136,7 +139,7 @@ public class MediaActivityController extends ViewControllerBase {
         /** Called once the list of the root node's children has been loaded. */
         void onRootLoaded();
 
-        /** Called when switching to pbv without changing playback content*/
+        /** Called when switching to pbv without changing playback content */
         void openPlaybackView();
 
         /** Returns whether the entire browse view is visible. */
@@ -273,6 +276,8 @@ public class MediaActivityController extends ViewControllerBase {
 
                 if (mPendingMediaId != null) {
                     navigateTo(mPendingMediaId);
+                } else if (mPendingQuery != null && canSearch) {
+                    navigateToQuery(mPendingQuery, mPendingSearchAction);
                 }
                 break;
             case DISCONNECTING:
@@ -316,7 +321,8 @@ public class MediaActivityController extends ViewControllerBase {
             mToolbarSearchResultsView.setLayoutParams(params);
             mToolbarSearchResultsView.setLayoutManager(new LinearLayoutManager(activity));
             mToolbarSearchResultsView.setBackground(
-                    activity.getDrawable(R.drawable.car_ui_ime_wide_screen_background));
+                    activity.getDrawable(
+                        com.android.car.ui.R.drawable.car_ui_ime_wide_screen_background));
 
             mAppBarController.setSearchConfig(SearchConfig.builder()
                     .setSearchResultsView(mToolbarSearchResultsView)
@@ -397,7 +403,8 @@ public class MediaActivityController extends ViewControllerBase {
             case SEARCH_RESULTS:
                 BrowseViewController result = BrowseViewController.newSearchResultsController(
                         mBrowseCallbacks, mBrowseArea, mMediaItemsRepository);
-                result.updateSearchQuery(mViewModel.getSearchQuery());
+                result.updateSearchQuery(mViewModel.getSearchQuery(), mPendingSearchAction);
+                mPendingSearchAction = EXTRA_VALUE_NO_SEARCH_ACTION;
                 return result;
             default:
                 if (entry.mItem == null) {
@@ -454,7 +461,8 @@ public class MediaActivityController extends ViewControllerBase {
             BrowseStack.BrowseEntry entry = mBrowseStack.peek();
             if ((entry != null) && (entry.getController() != null)) {
                 BrowseViewController controller = entry.getController();
-                controller.updateSearchQuery(query);
+                controller.updateSearchQuery(query, mPendingSearchAction);
+                mPendingSearchAction = EXTRA_VALUE_NO_SEARCH_ACTION;
             } else {
                 Log.e(TAG, "onSearch needs entry and controller!! " + entry);
             }
@@ -553,6 +561,22 @@ public class MediaActivityController extends ViewControllerBase {
         }
 
         return BrowseEntryType.LINK;
+    }
+
+    /** Fetches the results for a search query and displays them. */
+    public void navigateToQuery(@Nullable String query, int searchAction) {
+        mPendingQuery = query;
+        mPendingSearchAction = searchAction;
+        if (TextUtils.isEmpty(query)) {
+            return;
+        }
+
+        BrowsingState state = mMediaItemsRepository.getBrowsingState().getValue();
+        if ((state != null) && state.mConnectionStatus == CONNECTED) {
+            mViewModel.setSearchQuery(query);
+            showSearchResults();
+            mPendingQuery = null;
+        }
     }
 
     /** Fetches the given media item and displays it. Can be called before being connected. */
@@ -714,7 +738,6 @@ public class MediaActivityController extends ViewControllerBase {
 
         updateAppBar();
         mAppBarController.setSearchQuery(mViewModel.getSearchQuery());
-
     }
 
     @Override
@@ -823,7 +846,7 @@ public class MediaActivityController extends ViewControllerBase {
                 // or when the tab actually changes.
                 showCurrentNode(true);
             }
-        }  finally {
+        } finally {
             mAcceptTabSelection = true;
         }
         updateAppBar();

@@ -28,7 +28,6 @@ import androidx.annotation.Nullable;
 
 import com.android.car.apps.common.CommonFlags;
 import com.android.car.apps.common.imaging.ImageBinder;
-import com.android.car.media.R;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.ui.toolbar.Tab;
 
@@ -76,7 +75,7 @@ public class TabBinder<T extends ImageBinder.ImageRef> extends ImageBinder<T> {
         if (flags.shouldFlagImproperImageRefs()) {
             if (drawable instanceof BitmapDrawable) {
                 int tint = mContext.getColor(
-                        R.color.improper_image_refs_tint_color);
+                        com.android.car.apps.common.R.color.improper_image_refs_tint_color);
                 drawable.setColorFilter(new PorterDuffColorFilter(tint, PorterDuff.Mode.SRC_ATOP));
                 shouldUseToolbarTint = false;
             }

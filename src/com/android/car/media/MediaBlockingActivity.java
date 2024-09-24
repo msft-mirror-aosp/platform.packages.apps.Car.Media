@@ -16,15 +16,12 @@
 
 package com.android.car.media;
 
-import static android.car.drivingstate.CarDrivingStateEvent.DRIVING_STATE_PARKED;
-
-import android.car.Car;
-import android.car.drivingstate.CarDrivingStateManager;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -49,8 +46,7 @@ public class MediaBlockingActivity extends AppCompatActivity {
 
     private static final String TAG = "MediaBlockingActivity";
 
-    private Car mCar;
-    private CarDrivingStateManager mCarDrivingStateManager;
+    private MediaModels mMediaModels;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,17 +55,24 @@ public class MediaBlockingActivity extends AppCompatActivity {
         setContentView(R.layout.media_blocking_activity);
 
         Intent intent = getIntent();
+        int exitButtonVisibility = intent.getIntExtra(
+                IntentUtils.EXTRA_MEDIA_BLOCKING_ACTIVITY_EXIT_BUTTON_VISIBILITY, View.VISIBLE);
+        // Ensure the visibility value is valid
+        if (exitButtonVisibility != View.VISIBLE && exitButtonVisibility != View.INVISIBLE
+                && exitButtonVisibility != View.GONE) {
+            exitButtonVisibility = View.VISIBLE;
+        }
 
         if (!intent.hasExtra(Intent.EXTRA_COMPONENT_NAME)) {
             Log.i(TAG, "Caller must provide valid media activity extra");
-            setupController(/* mediaSource= */ null);
+            setupController(/* mediaSource= */ null, exitButtonVisibility);
             return;
         }
         String targetMediaApp = intent.getStringExtra(Intent.EXTRA_COMPONENT_NAME);
         ComponentName componentName = ComponentName.unflattenFromString(targetMediaApp);
         if (componentName == null) {
             Log.i(TAG, "Caller must provide valid media activity extra");
-            setupController(/* mediaSource= */ null);
+            setupController(/* mediaSource= */ null, exitButtonVisibility);
             return;
         }
         MediaSource mediaSource = findMediaSource(componentName);
@@ -77,34 +80,7 @@ public class MediaBlockingActivity extends AppCompatActivity {
             Log.i(TAG, "Unable to find media session associated with " + componentName);
         }
 
-        setupController(mediaSource);
-
-        boolean shouldDismissOnPark  = intent.getBooleanExtra(
-                IntentUtils.EXTRA_MEDIA_BLOCKING_ACTIVITY_DISMISS_ON_PARK, true);
-
-        if (shouldDismissOnPark) {
-            Car.createCar(this, null, Car.CAR_WAIT_TIMEOUT_WAIT_FOREVER,
-                    (car, ready) -> {
-                        if (!ready) {
-                            cleanupCarManagers();
-                        } else {
-                            mCar = car;
-                            mCarDrivingStateManager = (CarDrivingStateManager)
-                                    mCar.getCarManager(Car.CAR_DRIVING_STATE_SERVICE);
-                            if (mCarDrivingStateManager.getCurrentCarDrivingState().eventValue
-                                    == DRIVING_STATE_PARKED) {
-                                launchActivityAndFinish(mediaSource);
-                            }
-                            mCarDrivingStateManager.registerListener(
-                                    carDrivingStateEvent -> {
-                                        if (carDrivingStateEvent.eventValue
-                                                == DRIVING_STATE_PARKED) {
-                                            launchActivityAndFinish(mediaSource);
-                                        }
-                                    });
-                        }
-                    });
-        }
+        setupController(mediaSource, exitButtonVisibility);
     }
 
     @Override
@@ -117,7 +93,17 @@ public class MediaBlockingActivity extends AppCompatActivity {
             finish();
         }
 
-        cleanupCarManagers();
+        cleanup();
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+
+        finish();
     }
 
     /**
@@ -137,24 +123,28 @@ public class MediaBlockingActivity extends AppCompatActivity {
         return null;
     }
 
-    private void setupController(MediaSource mediaSource) {
+    private void setupController(MediaSource mediaSource, int exitButtonVisibility) {
         ViewGroup mRootView = requireViewById(R.id.media_blocking_activity_root);
 
-        MediaModels mediaModels = new MediaModels(this, mediaSource);
+        mMediaModels = new MediaModels(this, mediaSource);
         PlaybackCardViewModel viewModel =
                 new ViewModelProvider(this).get(PlaybackCardViewModel.class);
         if (viewModel.needsInitialization()) {
-            viewModel.init(mediaModels);
+            viewModel.init(mMediaModels);
         }
         MediaBlockingActivityController controller =
                 (MediaBlockingActivityController) new MediaBlockingActivityController.Builder()
-                        .setModels(mediaModels.getPlaybackViewModel(), viewModel,
-                                mediaModels.getMediaItemsRepository())
-                        .setViewGroup(mRootView)
-                        .build();
+                    .setExitButtonVisibility(exitButtonVisibility)
+                    .setExitButtonOnClick(view -> launchActivityAndFinish(mediaSource))
+                    // Unable to get MediaSource information, assume a crash and recompute ABA
+                    .setNullPlaybackStateListener(() -> finish())
+                    .setModels(mMediaModels.getPlaybackViewModel(), viewModel,
+                            mMediaModels.getMediaItemsRepository())
+                    .setViewGroup(mRootView)
+                    .build();
 
         if (mediaSource == null) {
-            controller.showViews(/* showMedia= */ false);
+            controller.showFallbackView(/* showFallbackView= */ true);
         }
     }
 
@@ -169,15 +159,7 @@ public class MediaBlockingActivity extends AppCompatActivity {
         finish();
     }
 
-    private void cleanupCarManagers() {
-        if (mCarDrivingStateManager != null) {
-            mCarDrivingStateManager.unregisterListener();
-            mCarDrivingStateManager = null;
-        }
-
-        if (mCar != null) {
-            mCar.disconnect();
-            mCar = null;
-        }
+    private void cleanup() {
+        mMediaModels.onCleared();
     }
 }

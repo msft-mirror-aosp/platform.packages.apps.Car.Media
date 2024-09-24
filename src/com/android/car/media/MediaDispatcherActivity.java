@@ -1,17 +1,25 @@
 package com.android.car.media;
 
 import static android.car.media.CarMediaIntents.EXTRA_MEDIA_COMPONENT;
+import static android.car.media.CarMediaIntents.EXTRA_SEARCH_QUERY;
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
+
+import static androidx.car.app.mediaextensions.MediaIntentExtras.ACTION_MEDIA_TEMPLATE_V2;
+import static androidx.car.app.mediaextensions.MediaIntentExtras.EXTRA_KEY_MEDIA_ID;
+import static androidx.car.app.mediaextensions.MediaIntentExtras.EXTRA_KEY_SEARCH_ACTION;
+import static androidx.car.app.mediaextensions.MediaIntentExtras.EXTRA_VALUE_NO_SEARCH_ACTION;
 
 import android.car.Car;
 import android.car.media.CarMediaIntents;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.fragment.app.FragmentActivity;
 
 import com.android.car.media.common.source.CarMediaManagerHelper;
@@ -31,13 +39,12 @@ public class MediaDispatcherActivity extends FragmentActivity {
     private static final String TAG = "MediaDispatcherActivity";
     private static Set<String> sCustomMediaComponents = null;
 
-    static final String KEY_MEDIA_ID = "com.android.car.media.intent.extra.MEDIA_ID";
-
     static boolean isCustomMediaSource(Resources res, @Nullable MediaSource source) {
         if (sCustomMediaComponents == null) {
             sCustomMediaComponents = new HashSet<>();
             sCustomMediaComponents.addAll(
-                    Arrays.asList(res.getStringArray(R.array.custom_media_packages)));
+                    Arrays.asList(res.getStringArray(
+                        com.android.car.media.common.R.array.custom_media_packages)));
         }
 
         return (source != null)
@@ -54,15 +61,25 @@ public class MediaDispatcherActivity extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        dispatch(this, getIntent(), CarMediaManagerHelper.getInstance(this));
+        finish();
+    }
 
-        Intent intent = getIntent();
+    /** !!VisibleForTesting!! */
+    @VisibleForTesting
+    public static void dispatch(Context ctx, Intent intent, CarMediaManagerHelper helper) {
         String action = null;
         String componentName = null;
         String mediaId = null;
+        String searchQuery = null;
+        int searchAction = EXTRA_VALUE_NO_SEARCH_ACTION;
         if (intent != null) {
             action = intent.getAction();
             componentName = intent.getStringExtra(EXTRA_MEDIA_COMPONENT);
-            mediaId = intent.getStringExtra(KEY_MEDIA_ID);
+            mediaId = intent.getStringExtra(EXTRA_KEY_MEDIA_ID);
+            searchQuery = intent.getStringExtra(EXTRA_SEARCH_QUERY);
+            searchAction = intent.getIntExtra(EXTRA_KEY_SEARCH_ACTION,
+                    EXTRA_VALUE_NO_SEARCH_ACTION);
         }
 
         if (Log.isLoggable(TAG, Log.INFO)) {
@@ -70,17 +87,17 @@ public class MediaDispatcherActivity extends FragmentActivity {
         }
 
         MediaSource mediaSrc = null;
-        if (CarMediaIntents.ACTION_MEDIA_TEMPLATE.equals(action)) {
+        if (CarMediaIntents.ACTION_MEDIA_TEMPLATE.equals(action)
+                || ACTION_MEDIA_TEMPLATE_V2.equals(action)) {
             if (componentName != null) {
                 ComponentName mediaSrcComp = ComponentName.unflattenFromString(componentName);
                 if (mediaSrcComp != null) {
-                    mediaSrc = MediaSource.create(this, mediaSrcComp);
+                    mediaSrc = MediaSource.create(ctx, mediaSrcComp);
                 }
             }
         }
 
         // Retrieve the current source if none was set, otherwise save the given source.
-        CarMediaManagerHelper helper = CarMediaManagerHelper.getInstance(getApplication());
         if (mediaSrc == null) {
             mediaSrc = helper.getAudioSource(MEDIA_SOURCE_MODE_BROWSE).getValue();
         } else {
@@ -88,12 +105,13 @@ public class MediaDispatcherActivity extends FragmentActivity {
         }
 
         Intent newIntent = null;
-        if ((mediaSrc != null) && isCustomMediaSource(getResources(), mediaSrc)) {
+        if ((mediaSrc != null) && isCustomMediaSource(ctx.getResources(), mediaSrc)) {
             // Launch custom app (e.g. Radio)
             String srcPackage = mediaSrc.getPackageName();
-            newIntent = getPackageManager().getLaunchIntentForPackage(srcPackage);
+            newIntent = ctx.getPackageManager().getLaunchIntentForPackage(srcPackage);
             if (newIntent != null) {
                 newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                newIntent.putExtra(EXTRA_MEDIA_COMPONENT, componentName);
             }
             if (Log.isLoggable(TAG, Log.DEBUG)) {
                 Log.d(TAG, "Getting launch intent for package : " + srcPackage + (newIntent != null
@@ -103,14 +121,14 @@ public class MediaDispatcherActivity extends FragmentActivity {
 
         // Launch media center only if there is a media source
         if ((newIntent == null) && (mediaSrc != null)) {
-            newIntent = MediaActivity.createMediaActivityIntent(this, mediaSrc, mediaId);
+            newIntent = MediaActivity.createMediaActivityIntent(ctx, mediaSrc, mediaId,
+                searchQuery, searchAction);
         }
 
         if (newIntent != null) {
-            startActivity(newIntent);
+            ctx.startActivity(newIntent);
         } else {
             Log.e(TAG, "No intent to launch, mediaSrc: " + mediaSrc);
         }
-        finish();
     }
 }

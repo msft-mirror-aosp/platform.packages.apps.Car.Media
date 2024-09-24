@@ -195,7 +195,7 @@ public class NowPlayingController extends PlaybackCardController {
         }
 
         mShowLinearProgressBar = mView.getContext().getResources().getBoolean(
-                R.bool.show_linear_progress_bar);
+                com.android.car.media.common.R.bool.show_linear_progress_bar);
 
         initPlaybackControls(mView.findViewById(R.id.playback_controls));
 
@@ -253,8 +253,10 @@ public class NowPlayingController extends PlaybackCardController {
         mPlaybackControls.setModel(mDataModel, getActivity());
         mPlaybackControls.registerExpandCollapseCallback((expanding) -> {
             Resources res = getActivity().getResources();
-            int millis = expanding ? res.getInteger(R.integer.control_bar_expand_anim_duration) :
-                    res.getInteger(R.integer.control_bar_collapse_anim_duration);
+            int millis = expanding ? res.getInteger(
+                    com.android.car.apps.common.R.integer.control_bar_expand_anim_duration) :
+                    res.getInteger(
+                        com.android.car.apps.common.R.integer.control_bar_collapse_anim_duration);
 
             if (mControlBarScrim != null) {
                 mControlBarScrim.setClickable(expanding);

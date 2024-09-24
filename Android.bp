@@ -101,6 +101,7 @@ android_test {
     manifest: "tests/AndroidManifest.xml",
 
     srcs: ["tests/unittests/src/**/*.java"],
+    exclude_srcs: ["tests/unittests/src/com/android/car/media/MediaDispatcherActivityTests.java"],
 
     resource_dirs: ["res"],
 

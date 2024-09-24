@@ -26,7 +26,6 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
                      tools:ignore="QueryAllPackagesPermission" />
-    <uses-permission android:name="android.car.permission.CAR_DRIVING_STATE" />
 
     <!-- To connect to media browser services in other apps, media browser clients
     that target Android 11 need to add the following in their manifest -->
@@ -73,6 +72,10 @@
             </intent-filter>
             <intent-filter>
                 <action android:name="android.car.intent.action.MEDIA_TEMPLATE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="androidx.car.app.mediaextensions.action.MEDIA_TEMPLATE_V2" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
