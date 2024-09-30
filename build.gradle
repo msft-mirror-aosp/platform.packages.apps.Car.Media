@@ -54,15 +54,14 @@ android {
     }
 
     signingConfigs {
-        aaos {
-            storeFile file(gradle.ext.aaosCertPath)
-            storePassword 'carapps'
-            keyAlias 'carapps'
-            keyPassword 'carapps'
+        platformGoogle {
+            storeFile file(gradle.ext.platformGoogleCertPath)
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
         }
-
-        platform {
-            storeFile file(gradle.ext.platformCertPath)
+        platformAosp {
+            storeFile file(gradle.ext.platformAospCertPath)
             storePassword 'android'
             keyAlias 'androiddebugkey'
             keyPassword 'android'
@@ -71,16 +70,16 @@ android {
 
     flavorDimensions "signingkey"
     productFlavors {
-        aaos {
-            dimension "signingkey"
-            signingConfig signingConfigs.aaos
-        }
-        platform {
-            isDefault true
-            dimension "signingkey"
-            if (file(gradle.ext.platformCertPath).exists()) {
-                signingConfig signingConfigs.platform
+        if (file(gradle.ext.platformGoogleCertPath).exists()) {
+            platformGoogle {
+                isDefault true
+                dimension "signingkey"
+                signingConfig signingConfigs.platformGoogle
             }
+        }
+        platformAosp {
+            dimension "signingkey"
+            signingConfig signingConfigs.platformAosp
         }
     }
 
