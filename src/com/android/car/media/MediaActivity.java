@@ -116,6 +116,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
 
     private Toast mToast;
     private AlertDialog mDialog;
+    private String mDialogMessage;
 
     /** Current state */
     private Mode mMode;
@@ -442,6 +443,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
                 if (mMediaActivityController.browseTreeHasChildrenList()) {
                     showToastOrDialog(displayedMessage, intent, label, mediaSource);
                 } else {
+                    maybeCancelDialog(displayedMessage);
                     boolean isDistractionOptimized =
                             intent != null && CarPackageManagerUtils.isDistractionOptimized(
                                     mCarPackageManager, intent);
@@ -538,12 +540,20 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
                 .setPositiveButton(positiveBtnText,
                         (dialogInterface, i) -> IntentUtils.sendIntent(intent))
                 .show();
+        mDialogMessage = message;
+    }
+
+    private void maybeCancelDialog(String message) {
+        if (Objects.equals(message, mDialogMessage)) {
+            maybeCancelDialog();
+        }
     }
 
     private void maybeCancelDialog() {
         if (mDialog != null) {
             mDialog.cancel();
             mDialog = null;
+            mDialogMessage = null;
         }
     }
 
