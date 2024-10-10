@@ -695,6 +695,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
                         VIEW_COMPONENT_PLAYBACK, VIEW_ACTION_HIDE);
                 break;
             case FATAL_ERROR:
+                getInnerViewModel().setSearchQuery(null);
                 getMediaItemsRepository().getAnalyticsManager().sendViewChangedEvent(
                         VIEW_COMPONENT_ERROR_MESSAGE, VIEW_ACTION_HIDE);
                 break;
