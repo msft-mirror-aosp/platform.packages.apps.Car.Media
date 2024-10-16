@@ -27,7 +27,7 @@ android_library {
 
     libs: ["android.car-system-stubs"],
     min_sdk_version: "30", // Media requires apis that became public in R.
-    target_sdk_version: "31",
+    target_sdk_version: "34",
     sdk_version: "system_current",
 
     optimize: {
@@ -41,6 +41,7 @@ android_library {
     static_libs: [
         "androidx.legacy_legacy-support-v4",
         "androidx.recyclerview_recyclerview",
+        "androidx.media3.media3-session",
         "androidx-constraintlayout_constraintlayout-solver",
         "androidx-constraintlayout_constraintlayout",
         "androidx.lifecycle_lifecycle-common-java8",
@@ -66,7 +67,7 @@ android_app {
 
     libs: ["android.car-system-stubs"],
     min_sdk_version: "30", // Media requires apis that became public in R.
-    target_sdk_version: "31",
+    target_sdk_version: "34",
     sdk_version: "system_current",
 
     optimize: {
@@ -95,7 +96,7 @@ android_test {
     privileged: true,
 
     min_sdk_version: "30",
-    target_sdk_version: "31",
+    target_sdk_version: "34",
     sdk_version: "system_current",
 
     manifest: "tests/AndroidManifest.xml",
