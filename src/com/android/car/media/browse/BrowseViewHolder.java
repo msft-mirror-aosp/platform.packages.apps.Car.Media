@@ -16,7 +16,10 @@
 
 package com.android.car.media.browse;
 
+import static java.util.Collections.emptyList;
+
 import android.content.Context;
+import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Size;
@@ -36,6 +39,7 @@ import com.android.car.media.MediaAppConfig;
 import com.android.car.media.R;
 import com.android.car.media.common.CustomBrowseAction;
 import com.android.car.media.common.MediaItemMetadata;
+import com.android.car.media.common.ui.PlaybackCardControllerUtilities;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,30 +50,46 @@ import java.util.stream.Collectors;
  */
 public class BrowseViewHolder extends RecyclerView.ViewHolder {
 
-    public static final String TAG = "BrowseViewHolder";
+    private static final String TAG = "BrowseViewHolder";
 
-    private final TextView mTitle;
-    private final TextView mSubtitle;
-    private final ImageView mAlbumArt;
-    private final View mMediaItemClickTarget;
-    private final ImageView mRightArrow;
-    private final ImageView mTitleDownloadIcon;
-    private final ImageView mTitleExplicitIcon;
-    private final ImageView mSubTitleDownloadIcon;
-    private final ImageView mSubTitleExplicitIcon;
-    private final ProgressBar mProgressbar;
-    private final ImageView mNewMediaDot;
-    private final ViewGroup mCustomActionsContainer;
+    protected final TextView mTitle;
+    protected final TextView mSubtitle;
+    protected final ImageView mAlbumArt;
+    protected final View mMediaItemClickTarget;
+    protected final ImageView mRightArrow;
+    protected final ImageView mTitleDownloadIcon;
+    protected final ImageView mTitleExplicitIcon;
+    protected final ImageView mSubTitleDownloadIcon;
+    protected final ImageView mSubTitleExplicitIcon;
+    protected final ProgressBar mProgressbar;
+    protected final ImageView mNewMediaDot;
+    protected final ViewGroup mCustomActionsContainer;
+    protected final ViewGroup mIndicatorIconsContainer;
+    protected final int mMaxIndicatorIcons;
 
-    private final Size mMaxArtSize;
-    private final ImageViewBinder<MediaItemMetadata.ArtworkRef> mAlbumArtBinder;
-    private final List<ImageViewBinder<ImageBinder.ImageRef>>
-            mBrowseActionIcons;
+    protected final Size mMaxArtSize;
+    protected final ImageViewBinder<MediaItemMetadata.ArtworkRef> mAlbumArtBinder;
+    protected final List<ImageViewBinder<ImageBinder.ImageRef>> mBrowseActionIcons;
+
+    /**
+     * Produces BrowseViewHolder instances. An OEM extension can be used by overlaying
+     * R.string.config_BrowseViewHolderFactory_className.
+     */
+    public static class Factory {
+
+        /** Default constructor */
+        public Factory() {}
+
+        /** Creates a new {@link BrowseViewHolder} instance. */
+        public BrowseViewHolder create(View itemView, ImageBinder.PlaceholderType placeholderType) {
+            return new BrowseViewHolder(itemView, placeholderType);
+        }
+    }
 
     /**
      * Creates a {@link BrowseViewHolder} for the given view.
      */
-    BrowseViewHolder(View itemView, ImageBinder.PlaceholderType placeholderType) {
+    public BrowseViewHolder(View itemView, ImageBinder.PlaceholderType placeholderType) {
         super(itemView);
         mTitle = itemView.findViewById(com.android.car.media.R.id.title);
         mSubtitle = itemView.findViewById(com.android.car.media.R.id.subtitle);
@@ -97,6 +117,10 @@ public class BrowseViewHolder extends RecyclerView.ViewHolder {
         mAlbumArtBinder = new ImageViewBinder<>(placeholderType, mMaxArtSize, mAlbumArt, false);
         mCustomActionsContainer =
                 itemView.findViewById(com.android.car.media.R.id.browse_item_actions_container);
+        mIndicatorIconsContainer =
+                itemView.findViewById(com.android.car.media.R.id.indicator_icons_container);
+        mMaxIndicatorIcons = itemView.getResources().getInteger(
+                com.android.car.media.common.R.integer.max_indicator_icons_per_media_item);
         mBrowseActionIcons = new ArrayList<>();
     }
 
@@ -110,6 +134,8 @@ public class BrowseViewHolder extends RecyclerView.ViewHolder {
         boolean hasMediaItemExtras = hasMediaItem && metadata.getExtras() != null;
         boolean showSubtitle = hasMediaItem && !TextUtils.isEmpty(metadata.getSubtitle());
         boolean hasBrowseCustomActions = !data.mCustomBrowseActions.isEmpty();
+        List<Uri> indicatorUris = hasMediaItem ? metadata.getSmallIconsUriList() : emptyList();
+        boolean hasIndicators = indicatorUris.size() > 0;
 
         if (mTitle != null) {
             mTitle.setText(data.mText != null ? data.mText :
@@ -117,7 +143,7 @@ public class BrowseViewHolder extends RecyclerView.ViewHolder {
         }
         if (mSubtitle != null) {
             mSubtitle.setText(hasMediaItem ? metadata.getSubtitle() : null);
-            ViewUtils.setVisible(mSubtitle, showSubtitle);
+            ViewUtils.setVisible(mSubtitle, showSubtitle || hasIndicators);
         }
 
         mAlbumArtBinder.setImage(context, hasMediaItem ? metadata.getArtworkKey() : null);
@@ -129,12 +155,21 @@ public class BrowseViewHolder extends RecyclerView.ViewHolder {
 
         // Adjust the positioning of the explicit and downloaded icons. If there is a subtitle, then
         // the icons should show on the subtitle row, otherwise they should show on the title row.
-        boolean downloaded = hasMediaItem && metadata.isDownloaded();
-        boolean explicit = hasMediaItem && metadata.isExplicit();
+        // If any indicator icons are sent, they are supposed to include explicit and downloaded
+        // icons (to avoid style mismatch), so metadata.isDownloaded() and metadata.isExplicit()
+        // must be be ignored.
+        boolean downloaded = !hasIndicators && hasMediaItem && metadata.isDownloaded();
+        boolean explicit = !hasIndicators && hasMediaItem && metadata.isExplicit();
         ViewUtils.setVisible(mTitleDownloadIcon, !showSubtitle && downloaded);
         ViewUtils.setVisible(mTitleExplicitIcon, !showSubtitle && explicit);
         ViewUtils.setVisible(mSubTitleDownloadIcon, showSubtitle && downloaded);
         ViewUtils.setVisible(mSubTitleExplicitIcon, showSubtitle && explicit);
+
+        if (hasMediaItem) {
+            PlaybackCardControllerUtilities.bindIndicatorIcons(mIndicatorIconsContainer,
+                    com.android.car.media.common.R.layout.indicator_icon, indicatorUris,
+                    mMaxIndicatorIcons, mMaxArtSize);
+        }
 
         if (hasMediaItemExtras) {
             bindProgressUI(metadata);
@@ -187,14 +222,14 @@ public class BrowseViewHolder extends RecyclerView.ViewHolder {
      * Binds UI for playback progress and new media indicator
      * @param mediaItemMetadata
      */
-    private void bindProgressUI(MediaItemMetadata mediaItemMetadata) {
+    protected void bindProgressUI(MediaItemMetadata mediaItemMetadata) {
         int playbackStatus = mediaItemMetadata.getPlaybackStatus();
         BrowseAdapterUtils.handleNewMediaIndicator(playbackStatus, mNewMediaDot);
         double progress = mediaItemMetadata.getProgress();
         BrowseAdapterUtils.setPlaybackProgressIndicator(mProgressbar, progress);
     }
 
-    private void bindBrowseCustomActions(Context context, BrowseViewData browseViewData) {
+    protected void bindBrowseCustomActions(Context context, BrowseViewData browseViewData) {
         int maxVisibleActions = context.getResources().getInteger(R.integer.max_visible_actions);
 
         if (mCustomActionsContainer == null) {

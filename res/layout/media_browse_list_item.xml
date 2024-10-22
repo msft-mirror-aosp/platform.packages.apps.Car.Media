@@ -96,9 +96,22 @@
         android:src="@drawable/ic_explicit_black"
         android:tint="@color/icon_tint"
         app:layout_constraintStart_toEndOf="@+id/download_icon_with_subtitle"
-        app:layout_constraintEnd_toStartOf="@+id/subtitle"
+        app:layout_constraintEnd_toStartOf="@+id/indicator_icons_container"
         app:layout_constraintTop_toTopOf="@+id/subtitle"
         app:layout_constraintBottom_toBottomOf="@+id/subtitle"/>
+
+    <LinearLayout
+        android:id="@+id/indicator_icons_container"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/media_browse_indicator_size"
+        android:gravity="start|center_vertical"
+        android:orientation="horizontal"
+        android:layout_marginEnd="6dp"
+        app:layout_constraintStart_toEndOf="@+id/text_start_guideline"
+        app:layout_constraintEnd_toStartOf="@+id/subtitle"
+        app:layout_constraintTop_toBottomOf="@+id/title"
+        app:layout_constraintBottom_toBottomOf="@+id/browse_item_progress_bar"
+    />
 
     <TextView
         android:id="@+id/subtitle"
@@ -108,8 +121,9 @@
         android:singleLine="true"
         app:layout_constraintTop_toBottomOf="@+id/title"
         app:layout_constraintBottom_toBottomOf="@+id/browse_item_progress_bar"
-        app:layout_constraintStart_toEndOf="@+id/explicit_icon_with_subtitle"
-        app:layout_constraintEnd_toStartOf="@+id/text_end_guideline"/>
+        app:layout_constraintStart_toEndOf="@+id/indicator_icons_container"
+        app:layout_constraintEnd_toStartOf="@+id/text_end_guideline"
+    />
 
     <ProgressBar
         android:id="@+id/browse_item_progress_bar"

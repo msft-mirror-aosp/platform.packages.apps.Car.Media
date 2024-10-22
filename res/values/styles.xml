@@ -77,6 +77,7 @@
     </style>
 
     <style name="QueueListItemTitlesContainerStyle">
+        <item name="android:orientation">vertical</item>
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_weight">1</item>
@@ -96,7 +97,8 @@
         <item name="android:singleLine">true</item>
         <item name="android:includeFontPadding">false</item>
         <item name="android:gravity">center_vertical</item>
-        <item name="android:visibility">gone</item>
+        <item name="android:visibility">visible</item>
+        <item name="android:textColor">@color/secondary_text_color</item>
     </style>
 
     <style name="QueueListItemTimeStyle" parent="TextAppearance.Body3">
