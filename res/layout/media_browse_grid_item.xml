@@ -102,6 +102,20 @@
         app:layout_constraintTop_toTopOf="@+id/subtitle"
         app:layout_constraintStart_toEndOf="@+id/download_icon_with_subtitle"/>
 
+    <LinearLayout
+        android:id="@+id/indicator_icons_container"
+        android:layout_width="wrap_content"
+        android:layout_height="24dp"
+        android:gravity="start|center_vertical"
+        android:orientation="horizontal"
+        android:layout_marginEnd="6dp"
+        android:layout_marginTop="2dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/subtitle"
+        app:layout_constraintTop_toBottomOf="@+id/title"
+        app:layout_constraintBottom_toBottomOf="@+id/browse_item_progress_bar"
+    />
+
     <TextView
         android:id="@+id/subtitle"
         style="@style/BrowseGridSubtitleStyle"

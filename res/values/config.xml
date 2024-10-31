@@ -18,4 +18,10 @@
     <string name="config_nowPlayingControllerBuilder_className" translatable="false">
         com.android.car.media.NowPlayingController$Builder
     </string>
+    <!-- Name of the factory class that will produce BrowseViewHolder instances.
+         Overlay so that your own extension can be used, allowing deeper customizations of the
+         browse view. -->
+    <string name="config_BrowseViewHolderFactory_className" translatable="false">
+        com.android.car.media.browse.BrowseViewHolder$Factory
+    </string>
 </resources>
