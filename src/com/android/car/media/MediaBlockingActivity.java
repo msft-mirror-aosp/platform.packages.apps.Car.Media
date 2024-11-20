@@ -16,6 +16,7 @@
 
 package com.android.car.media;
 
+import android.app.ActivityOptions;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
@@ -152,7 +153,7 @@ public class MediaBlockingActivity extends AppCompatActivity {
         if (mediaSource != null) {
             // Relaunch blocked app in case it crashed or isn't behind the blocking activity anymore
             new Handler(getMainLooper()).postDelayed(() ->
-                    startActivity(mediaSource.getIntent()),
+                    mediaSource.launchActivity(this, ActivityOptions.makeBasic()),
                     R.integer.blocking_activity_relaunch_time_ms);
         }
 

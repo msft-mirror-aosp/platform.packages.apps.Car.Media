@@ -31,6 +31,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.car.media.R;
 import com.android.car.media.common.CustomBrowseAction;
 import com.android.car.media.common.MediaItemMetadata;
 
@@ -77,6 +78,8 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
 
     @NonNull
     private final Context mContext;
+    @NonNull
+    private BrowseViewHolder.Factory mBrowseViewHolderFactory;
     @NonNull
     private final List<Observer> mObservers = new ArrayList<>();
     @Nullable
@@ -198,6 +201,16 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
     public BrowseAdapter(@NonNull Context context) {
         super(DIFF_CALLBACK);
         mContext = context;
+        try {
+            String className = mContext.getResources().getString(
+                    R.string.config_BrowseViewHolderFactory_className);
+            mBrowseViewHolderFactory =
+                    (BrowseViewHolder.Factory) Class.forName(className).newInstance();
+        } catch (IllegalAccessException | InstantiationException | ClassNotFoundException e) {
+            Log.e(TAG, "Exception " + e.getClass()
+                    + " when instantiating the BrowseViewHolder.Factory via reflection");
+            mBrowseViewHolderFactory = new BrowseViewHolder.Factory();
+        }
     }
 
     /**
@@ -252,7 +265,7 @@ public class BrowseAdapter extends ListAdapter<BrowseViewData, BrowseViewHolder>
         BrowseItemViewType browseViewType = BrowseItemViewType.values()[viewType];
         int layoutId = browseViewType.getLayoutId();
         View view = LayoutInflater.from(mContext).inflate(layoutId, parent, false);
-        return new BrowseViewHolder(view, browseViewType.getPlaceholderType());
+        return mBrowseViewHolderFactory.create(view, browseViewType.getPlaceholderType());
     }
 
     @Override

@@ -56,11 +56,16 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="drawable" name="blocking_activity_action_item_background"/>
       <item type="drawable" name="blocking_activity_app_icon_background"/>
       <item type="drawable" name="blocking_activity_exit_button_background"/>
+      <item type="drawable" name="blocking_activity_play_pause_background"/>
       <item type="drawable" name="blocking_activity_seekbar_progress"/>
       <item type="drawable" name="blocking_activity_seekbar_thumb"/>
       <item type="drawable" name="browser_progress_new_indicator"/>
       <item type="drawable" name="error_illustration"/>
       <item type="drawable" name="ic_arrow_back"/>
+      <item type="drawable" name="ic_blocking_activity_pause"/>
+      <item type="drawable" name="ic_blocking_activity_play_arrow"/>
+      <item type="drawable" name="ic_blocking_activity_skip_next"/>
+      <item type="drawable" name="ic_blocking_activity_skip_previous"/>
       <item type="drawable" name="ic_chevron_right"/>
       <item type="drawable" name="ic_equalizer"/>
       <item type="drawable" name="ic_expand_less"/>
@@ -119,6 +124,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="fpv"/>
       <item type="id" name="fragment_container"/>
       <item type="id" name="imageDownloadTask"/>
+      <item type="id" name="indicator_icons_container"/>
       <item type="id" name="inner_separator"/>
       <item type="id" name="item_container"/>
       <item type="id" name="logo_separator"/>
@@ -149,6 +155,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="queue_fragment_container"/>
       <item type="id" name="queue_list"/>
       <item type="id" name="queue_list_bottom_constraint"/>
+      <item type="id" name="queue_list_item_icons"/>
       <item type="id" name="queue_list_item_subtitle"/>
       <item type="id" name="queue_list_item_title"/>
       <item type="id" name="queue_list_item_titles_container"/>
@@ -211,6 +218,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="string" name="blocking_activity_time_separator"/>
       <item type="string" name="browser_loading"/>
       <item type="string" name="cannot_connect_to_app"/>
+      <item type="string" name="config_BrowseViewHolderFactory_className"/>
       <item type="string" name="config_nowPlayingControllerBuilder_className"/>
       <item type="string" name="dash_separator"/>
       <item type="string" name="fragment_playback_title"/>
