@@ -25,7 +25,7 @@
     <string name="media_browse_more" msgid="6330295386693311592">"Más…"</string>
     <string name="media_app_title" msgid="94717597743776797">"Multimedia"</string>
     <string name="search_hint" msgid="5401750426238148416">"Busca artistas y más"</string>
-    <string name="fragment_playback_title" msgid="5014481549024607614">"Está Sonando"</string>
+    <string name="fragment_playback_title" msgid="5014481549024607614">"Está sonando"</string>
     <string name="service_notification_title" msgid="8085444675783592744">"Estableciendo conexión con la fuente de contenido multimedia"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"Configuración de sonido"</string>
     <string name="menu_item_app_selector_title" msgid="4587248991114338595">"Cambiar de app"</string>

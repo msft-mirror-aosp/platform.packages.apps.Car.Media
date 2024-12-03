@@ -25,7 +25,7 @@
     <string name="media_browse_more" msgid="6330295386693311592">"مزید…"</string>
     <string name="media_app_title" msgid="94717597743776797">"میڈیا"</string>
     <string name="search_hint" msgid="5401750426238148416">"گانے، فنکاران، اور مزید تلاش کریں..."</string>
-    <string name="fragment_playback_title" msgid="5014481549024607614">"Now Playing"</string>
+    <string name="fragment_playback_title" msgid="5014481549024607614">"ابھی چل رہا"</string>
     <string name="service_notification_title" msgid="8085444675783592744">"میڈیا سے منسلک ہو رہا ہے"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"آواز کی ترتیبات"</string>
     <string name="menu_item_app_selector_title" msgid="4587248991114338595">"ایپس پر سوئچ کریں"</string>

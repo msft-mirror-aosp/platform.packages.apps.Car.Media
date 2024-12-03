@@ -25,7 +25,7 @@
     <string name="media_browse_more" msgid="6330295386693311592">"სხვა…"</string>
     <string name="media_app_title" msgid="94717597743776797">"მედია"</string>
     <string name="search_hint" msgid="5401750426238148416">"სიმღ., მუსიკოს. და ა.შ. ძიება..."</string>
-    <string name="fragment_playback_title" msgid="5014481549024607614">"რა უკრავს"</string>
+    <string name="fragment_playback_title" msgid="5014481549024607614">"ახლა უკრავს"</string>
     <string name="service_notification_title" msgid="8085444675783592744">"მიმდინარეობს მედიასთან დაკავშირება"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"ხმის პარამეტრები"</string>
     <string name="menu_item_app_selector_title" msgid="4587248991114338595">"აპების გადართვა"</string>
