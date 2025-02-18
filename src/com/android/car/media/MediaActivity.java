@@ -154,13 +154,10 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         // different MediaActivity instance.
         models[MEDIA_SOURCE_MODE_BROWSE] = new MediaModels(app, browsedSource);
 
-        // Create the models for the playback mode.
-        if (getResources().getBoolean(R.bool.show_playback_media_source)) {
-            models[MEDIA_SOURCE_MODE_PLAYBACK] = app.getMediaModelsForPlaybackMode();
-        } else {
-            // No media continuity, use the browse mode models
-            models[MEDIA_SOURCE_MODE_PLAYBACK] = models[MEDIA_SOURCE_MODE_BROWSE];
-        }
+        // Use the browse mode models for the playback source to remove the media continuity UI,
+        // as that was creating a confusing mental model which is very different from the phone
+        // experience.
+        models[MEDIA_SOURCE_MODE_PLAYBACK] = models[MEDIA_SOURCE_MODE_BROWSE];
 
         localViewModel.init(models);
     }

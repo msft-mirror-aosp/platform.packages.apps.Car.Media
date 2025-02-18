@@ -25,7 +25,7 @@
     <string name="media_browse_more" msgid="6330295386693311592">"ଅଧିକ…"</string>
     <string name="media_app_title" msgid="94717597743776797">"ମିଡିଆ"</string>
     <string name="search_hint" msgid="5401750426238148416">"ଗୀତ, କଳାକାର, ଏବଂ ଅନେକ ସନ୍ଧାନ କରନ୍ତୁ..."</string>
-    <string name="fragment_playback_title" msgid="5014481549024607614">"ଏବେ ଚାଲୁଅଛି"</string>
+    <string name="fragment_playback_title" msgid="5014481549024607614">"ଏବେ ପ୍ଲେ ହେଉଛି"</string>
     <string name="service_notification_title" msgid="8085444675783592744">"ମିଡ଼ିଆ ସହ ସଂଯୋଗ ହେଉଛି"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"ସାଉଣ୍ଡ ସେଟିଂସ୍"</string>
     <string name="menu_item_app_selector_title" msgid="4587248991114338595">"ଆପଗୁଡ଼ିକୁ ବଦଳାନ୍ତୁ"</string>
