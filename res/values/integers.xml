@@ -43,6 +43,7 @@
 
     <!-- Views to hide when the queue is visible (to show when the queue becomes invisible). -->
     <integer-array name="playback_views_to_hide_when_queue_is_visible">
+        <item>@id/metadata_loading_indicator</item>
         <item>@id/metadata_container</item>
         <item>@id/playback_seek_bar_container</item>
     </integer-array>
