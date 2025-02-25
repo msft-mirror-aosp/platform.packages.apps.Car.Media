@@ -26,6 +26,8 @@
     <string name="media_app_title" msgid="94717597743776797">"Mídia"</string>
     <string name="search_hint" msgid="5401750426238148416">"Pesq. músicas e mais"</string>
     <string name="fragment_playback_title" msgid="5014481549024607614">"Tocando agora"</string>
+    <!-- no translation found for playback_loading (1473250715262983667) -->
+    <skip />
     <string name="service_notification_title" msgid="8085444675783592744">"Conectando à mídia"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"Configurações de som"</string>
     <string name="menu_item_app_selector_title" msgid="4587248991114338595">"Trocar de app"</string>
