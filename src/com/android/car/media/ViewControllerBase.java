@@ -43,6 +43,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.android.car.apps.common.util.CarPackageManagerUtils;
+import com.android.car.apps.common.util.IntentUtils;
 import com.android.car.media.common.browse.MediaBrowserViewModelImpl;
 import com.android.car.media.common.browse.MediaItemsRepository;
 import com.android.car.media.common.source.MediaBrowserConnector;
@@ -126,11 +127,11 @@ abstract class ViewControllerBase implements InsetsChangedListener {
                     AnalyticsEvent.VIEW_COMPONENT_SETTINGS_VIEW, AnalyticsEvent.VIEW_ACTION_SHOW);
             try {
                 if (mCurrentSourceBrowserSettings != null) {
-                    mCurrentSourceBrowserSettings.send();
+                    IntentUtils.sendIntent(mCurrentSourceBrowserSettings);
                 } else if (mCurrentSourcePreferences != null) {
                     mActivity.startActivity(mCurrentSourcePreferences);
                 }
-            } catch (ActivityNotFoundException | PendingIntent.CanceledException e) {
+            } catch (ActivityNotFoundException e) {
                 if (Log.isLoggable(TAG, Log.ERROR)) {
                     Log.e(TAG, "onSettingsSelection " + e);
                 }
