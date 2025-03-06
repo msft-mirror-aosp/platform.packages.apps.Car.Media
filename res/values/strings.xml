@@ -35,6 +35,8 @@
     <!-- Title to display when in playback view. [CHAR LIMIT=50] -->
     <string name="fragment_playback_title">Now Playing</string>
 
+    <!-- Displayed while the playback metadata is being retrieved. [CHAR LIMIT=57] -->
+    <string name="playback_loading">@string/browser_loading</string>
 
     <!-- Title string for the service used to bind to the current media source -->
     <string name="service_notification_title">Connecting to media</string>

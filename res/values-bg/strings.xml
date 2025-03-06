@@ -26,6 +26,8 @@
     <string name="media_app_title" msgid="94717597743776797">"Мултимедия"</string>
     <string name="search_hint" msgid="5401750426238148416">"Търсете песни, изпълнители и др..."</string>
     <string name="fragment_playback_title" msgid="5014481549024607614">"Сега слушате"</string>
+    <!-- no translation found for playback_loading (1473250715262983667) -->
+    <skip />
     <string name="service_notification_title" msgid="8085444675783592744">"Установява се връзка с мултимедията"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"Настройки за звука"</string>
     <string name="menu_item_app_selector_title" msgid="4587248991114338595">"Превключване на приложенията"</string>

@@ -20,6 +20,19 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
+    <!-- Bound to PlaybackCardController#mMetaDataLoadingIndicator. -->
+    <TextView
+            android:id="@+id/metadata_loading_indicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:text="@string/playback_loading"
+            android:visibility="gone"
+            style="@style/MetadataPlaybackLoadingStyle"/>
+
     <ImageView
         android:id="@+id/album_art"
         android:layout_width="@dimen/playback_album_art_size"

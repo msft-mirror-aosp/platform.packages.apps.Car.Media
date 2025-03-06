@@ -2,6 +2,9 @@
 # Please update this list if you find better candidates.
 arnaudberry@google.com
 
+# For Gradle-related and upload config changes
+per-file *.gradle, *.gradle.kts, PREUPLOAD.cfg = froeht@google.com
+
 # For urgent reviews only
 dnek@google.com
 stenning@google.com
