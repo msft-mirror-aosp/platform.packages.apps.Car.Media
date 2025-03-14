@@ -78,7 +78,7 @@ import java.util.Objects;
  * Controls the views of the {@link MediaActivity}.
  * TODO: finish moving control code out of MediaActivity (b/179292809).
  */
-@OptIn(markerClass = androidx.car.app.annotations2.ExperimentalCarApi.class)
+@OptIn(markerClass = androidx.car.app.annotations.ExperimentalCarApi.class)
 public class MediaActivityController extends ViewControllerBase {
 
     private static final String TAG = "MediaActivityCtr";

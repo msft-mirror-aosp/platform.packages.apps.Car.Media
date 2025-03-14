@@ -74,7 +74,7 @@ import java.util.List;
  * It observes a {@link PlaybackViewModel} and updates its information depending on the currently
  * playing media source through the {@link android.media.session.MediaSession} API.
  */
-@OptIn(markerClass = androidx.car.app.annotations2.ExperimentalCarApi.class)
+@OptIn(markerClass = androidx.car.app.annotations.ExperimentalCarApi.class)
 public class NowPlayingController extends PlaybackCardController {
     private static final String TAG = "NowPlayingController";
 

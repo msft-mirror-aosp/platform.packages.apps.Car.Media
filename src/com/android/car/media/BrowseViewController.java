@@ -124,7 +124,7 @@ import java.util.stream.Collectors;
  * The content view is initialized with 0 alpha and needs to be animated or set to to full opacity
  * to become visible.
  */
-@OptIn(markerClass = androidx.car.app.annotations2.ExperimentalCarApi.class)
+@OptIn(markerClass = androidx.car.app.annotations.ExperimentalCarApi.class)
 public class BrowseViewController {
     private static final String TAG = "BrowseViewController";
 

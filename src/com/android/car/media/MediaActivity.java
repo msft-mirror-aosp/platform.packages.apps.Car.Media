@@ -95,7 +95,7 @@ import java.util.Objects;
  * This activity controls the UI of media. It also updates the connection status for the media app
  * by broadcast.
  */
-@OptIn(markerClass = androidx.car.app.annotations2.ExperimentalCarApi.class)
+@OptIn(markerClass = androidx.car.app.annotations.ExperimentalCarApi.class)
 public class MediaActivity extends FragmentActivity implements MediaActivityController.Callbacks {
     private static final String TAG = "MediaActivity";
     private static final String KEY_INTENT_TIMESTAMP = "com.android.car.media.KEY_INTENT_TIMESTAMP";

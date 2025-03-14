@@ -58,7 +58,7 @@ import com.android.car.ui.toolbar.ToolbarController;
  * Functionality common to content view controllers. It mainly handles the AppBar view,
  * which is common to all of them.
  */
-@OptIn(markerClass = androidx.car.app.annotations2.ExperimentalCarApi.class)
+@OptIn(markerClass = androidx.car.app.annotations.ExperimentalCarApi.class)
 abstract class ViewControllerBase implements InsetsChangedListener {
     private static final String TAG = "ViewControllerBase";
 
