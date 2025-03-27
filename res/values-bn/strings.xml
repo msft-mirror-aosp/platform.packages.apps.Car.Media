@@ -26,6 +26,8 @@
     <string name="media_app_title" msgid="94717597743776797">"মিডিয়া"</string>
     <string name="search_hint" msgid="5401750426238148416">"গান, শিল্পী ও অনেক কিছু খুঁজুন..."</string>
     <string name="fragment_playback_title" msgid="5014481549024607614">"এখন চলছে"</string>
+    <!-- no translation found for playback_loading (1473250715262983667) -->
+    <skip />
     <string name="service_notification_title" msgid="8085444675783592744">"মিডিয়াতে কানেক্ট করা হচ্ছে"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"সাউন্ড সেটিংস"</string>
     <string name="menu_item_app_selector_title" msgid="4587248991114338595">"অ্যাপ সুইচ করুন"</string>
