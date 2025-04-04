@@ -28,8 +28,6 @@ android {
         targetSdkVersion 34
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         testInstrumentationRunnerArguments clearPackageData: 'true', coverage: 'true'
-        versionCode gradle.ext.getVersionCode()
-        versionName gradle.ext.getVersionName()
     }
 
     lintOptions {
