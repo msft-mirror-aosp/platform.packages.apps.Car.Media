@@ -113,6 +113,7 @@ dependencies {
 
     implementation files(gradle.ext.lib_car_system_stubs)
 
+    api project(':oem-token-lib')
     implementation project(":car-ui-lib")
     implementation project(":car-apps-common")
     implementation project(":car-media-common")
@@ -139,6 +140,8 @@ dependencies {
 
     androidTestUtil libs.androidx.orchestrator
 }
+
+android.aaptOptions.additionalParameters "-I", "${projectDir}/../libs/car-ui-lib/oem-tokens/shared-lib/prebuilt/token-shared-lib.apk"
 
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
