@@ -16,8 +16,6 @@
 
 package com.android.car.media;
 
-import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
-import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK;
 import static android.view.accessibility.AccessibilityNodeInfo.ACTION_FOCUS;
 
 import static androidx.car.app.mediaextensions.MediaIntentExtras.EXTRA_VALUE_NO_SEARCH_ACTION;
@@ -132,9 +130,6 @@ public class MediaActivityController extends ViewControllerBase {
 
         /** Invoked when the user clicks on a browsable item. */
         void onPlayableItemClicked(@NonNull MediaItemMetadata item);
-
-        /** Invoked when a user clicks on mini player in empty browse view */
-        void onBrowseEmptyListPlayItemClicked();
 
         /** Called once the list of the root node's children has been loaded. */
         void onRootLoaded();
@@ -298,7 +293,7 @@ public class MediaActivityController extends ViewControllerBase {
 
         FragmentActivity activity = callbacks.getActivity();
         mCallbacks = callbacks;
-        mMediaItemsRepository = viewModel.getMediaItemsRepository(MEDIA_SOURCE_MODE_BROWSE);
+        mMediaItemsRepository = viewModel.getMediaItemsRepository();
         mBrowseStack = mViewModel.getBrowseStack();
         mBrowseArea = mContent.requireViewById(R.id.browse_content_area);
         mFpv = activity.requireViewById(R.id.fpv);
@@ -381,9 +376,9 @@ public class MediaActivityController extends ViewControllerBase {
             NowPlayingController.Builder builder =
                     (NowPlayingController.Builder) Class.forName(className).newInstance();
             mNowPlayingController = (NowPlayingController) builder
-                    .setModels(viewModel.getPlaybackViewModel(MEDIA_SOURCE_MODE_PLAYBACK),
+                    .setModels(viewModel.getPlaybackViewModel(),
                             viewModel,
-                            viewModel.getMediaItemsRepository(MEDIA_SOURCE_MODE_PLAYBACK))
+                            viewModel.getMediaItemsRepository())
                     .setViewGroup(playbackView)
                     .build();
         } catch (IllegalAccessException | InstantiationException | ClassNotFoundException e) {
@@ -481,11 +476,6 @@ public class MediaActivityController extends ViewControllerBase {
         public void goToMediaItem(@NonNull MediaItemMetadata item) {
             hideKeyboard();
             navigateTo(item);
-        }
-
-        @Override
-        public void onBrowseEmptyListPlayItemClicked() {
-            mCallbacks.onBrowseEmptyListPlayItemClicked();
         }
 
         @Override

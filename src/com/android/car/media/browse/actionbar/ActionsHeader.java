@@ -48,9 +48,6 @@ public interface ActionsHeader {
     /** Clears all actions */
     void clearActions();
 
-    /** Sets Actions Header title */
-    void setTitle(CharSequence sourceName);
-
     /** Sets if toolbar is visible*/
     void setVisibility(boolean shouldShow);
 
