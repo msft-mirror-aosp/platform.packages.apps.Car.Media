@@ -25,7 +25,6 @@ android_library {
 
     resource_dirs: ["res"],
 
-    libs: ["android.car-system-stubs"],
     min_sdk_version: "30", // Media requires apis that became public in R.
     target_sdk_version: "34",
     sdk_version: "system_current",
@@ -37,8 +36,8 @@ android_library {
     dex_preopt: {
         enabled: false,
     },
-
     static_libs: [
+
         "androidx.legacy_legacy-support-v4",
         "androidx.recyclerview_recyclerview",
         "androidx.media3.media3-session",
@@ -51,7 +50,13 @@ android_library {
         "car-media-extensions-prebuilt",
         "car-ui-lib-prebuilt",
         "car-uxr-client-lib-prebuilt",
+        "oem-token-lib"
     ],
+
+    libs: [
+        "android.car-system-stubs",
+        "token-shared-lib",
+    ]
 }
 
 android_app {
@@ -65,7 +70,6 @@ android_app {
 
     privileged: true,
 
-    libs: ["android.car-system-stubs"],
     min_sdk_version: "30", // Media requires apis that became public in R.
     target_sdk_version: "34",
     sdk_version: "system_current",
@@ -81,6 +85,11 @@ android_app {
     static_libs: [
         "car-media-app-source"
     ],
+
+    libs: [
+        "android.car-system-stubs",
+        "token-shared-lib",
+    ]
 }
 
 //############################################################
@@ -112,6 +121,7 @@ android_test {
         "android.car-stubs",
         "android.car-system-stubs",
         "android.test.mock.stubs",
+        "token-shared-lib",
     ],
 
     // Include the testing libraries
@@ -127,7 +137,8 @@ android_test {
         "mockito-target-inline-minus-junit4",
         "platform-test-annotations",
         "truth",
-        "car-media-app-source"
+        "car-media-app-source",
+        "oem-token-lib"
     ],
 
     jni_libs: [

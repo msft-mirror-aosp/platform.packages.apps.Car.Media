@@ -43,6 +43,8 @@
         android:icon="@drawable/ic_music"
         android:supportsRtl="true">
 
+        <uses-library android:name="com.android.oem.tokens" android:required="false"/>
+
         <meta-data
             android:name="android.car.application"
             android:resource="@xml/automotive_app_desc" />
