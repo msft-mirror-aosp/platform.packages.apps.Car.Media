@@ -142,5 +142,6 @@
         <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
         <item name="android:textStyle">normal</item>
         <item name="android:background">@drawable/blocking_activity_exit_button_background</item>
+        <item name="android:textColor">@color/blocking_activity_exit_button_text</item>
     </style>
 </resources>

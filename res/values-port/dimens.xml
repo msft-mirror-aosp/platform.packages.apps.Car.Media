@@ -22,4 +22,9 @@
 
     <!-- x-axis margin of playback seekbar -->
     <dimen name="playback_seekbar_margin_x">@dimen/car_ui_padding_5</dimen>
+
+    <!-- MediaBlockingActivity -->
+    <dimen name="blocking_activity_app_icon_vertical_margin">10dp</dimen>
+    <dimen name="blocking_activity_seekbar_margin">@dimen/car_ui_padding_5</dimen>
+    <dimen name="blocking_activity_default_vertical_margin">@dimen/car_ui_padding_6</dimen>
 </resources>
