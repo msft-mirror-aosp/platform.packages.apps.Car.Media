@@ -18,30 +18,13 @@ package com.android.car.media.browse;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Size;
-
-import androidx.annotation.NonNull;
-import androidx.lifecycle.LifecycleOwner;
-
-import com.android.car.apps.common.BackgroundImageView;
-import com.android.car.apps.common.imaging.ImageBinder;
-import com.android.car.media.common.MediaItemMetadata;
-import com.android.car.media.common.MetadataController;
-import com.android.car.media.common.playback.PlaybackViewModel;
 
 
 /**
- * This is a CarControlBar used for displaying Media content, including metadata for the currently
- * playing song and basic controls.
+ * @deprecated please remove from RROs.
  */
+@Deprecated
 public class BrowseMiniMediaItemView extends BrowseMiniMediaItemBar {
-
-    private static final String TAG = "Media.ControlBar";
-
-    private MetadataController mMetadataController;
-    private ImageBinder<MediaItemMetadata.ArtworkRef> mArtBinder = null;
-    private PlaybackViewModel mPlaybackViewModel;
-
 
     public BrowseMiniMediaItemView(Context context) {
         this(context, null);
@@ -52,30 +35,6 @@ public class BrowseMiniMediaItemView extends BrowseMiniMediaItemBar {
     }
 
     public BrowseMiniMediaItemView(Context context, AttributeSet attrs, int defStyleAttrs) {
-        super(context, attrs, defStyleAttrs, com.android.car.media.R.layout.browse_mini_bar_view);
-        BackgroundImageView artBackground =
-                findViewById(com.android.car.apps.common.R.id.art_background);
-        if (artBackground != null) {
-            int max = getResources()
-                    .getInteger(
-                            com.android.car.media.common.R.integer.media_items_bitmap_max_size_px);
-            Size maxArtSize = new Size(max, max);
-            mArtBinder = new ImageBinder<>(ImageBinder.PlaceholderType.BACKGROUND, maxArtSize,
-                    artBackground::setBackgroundDrawable);
-        }
-    }
-
-    /** Connects the bar to the {@link PlaybackViewModel}. */
-    public void setModel(@NonNull PlaybackViewModel model, @NonNull LifecycleOwner owner,
-                         @NonNull Size maxArtSize) {
-        mMetadataController = new MetadataController(owner, model, null, mTitle, mSubtitle, null,
-                null, null, null, null, null, mContentTile, mAppIcon, maxArtSize, null, null);
-        mPlaybackViewModel = model;
-
-        if (mArtBinder != null) {
-            mPlaybackViewModel.getMetadata().observe(owner,
-                    item -> mArtBinder.setImage(getContext(),
-                            item != null ? item.getArtworkKey() : null));
-        }
+        super(context, attrs, defStyleAttrs);
     }
 }

@@ -16,9 +16,6 @@
 
 package com.android.car.media;
 
-
-import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
-
 import android.app.PendingIntent;
 import android.car.content.pm.CarPackageManager;
 import android.content.ActivityNotFoundException;
@@ -58,7 +55,7 @@ import com.android.car.ui.toolbar.ToolbarController;
  * Functionality common to content view controllers. It mainly handles the AppBar view,
  * which is common to all of them.
  */
-@OptIn(markerClass = androidx.car.app.annotations2.ExperimentalCarApi.class)
+@OptIn(markerClass = androidx.car.app.annotations.ExperimentalCarApi.class)
 abstract class ViewControllerBase implements InsetsChangedListener {
     private static final String TAG = "ViewControllerBase";
 
@@ -78,7 +75,7 @@ abstract class ViewControllerBase implements InsetsChangedListener {
             ViewGroup container, @LayoutRes int resource) {
         mActivity = activity;
         mViewModel = new ViewModelProvider(activity).get(MediaActivity.ViewModel.class);
-        mMediaItemsRepository = mViewModel.getMediaItemsRepository(MEDIA_SOURCE_MODE_BROWSE);
+        mMediaItemsRepository = mViewModel.getMediaItemsRepository();
         Resources res = mActivity.getResources();
         mFadeDuration = res.getInteger(
             com.android.car.media.common.R.integer.new_album_art_fade_in_duration);

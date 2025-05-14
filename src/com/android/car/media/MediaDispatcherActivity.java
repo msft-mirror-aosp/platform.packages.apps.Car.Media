@@ -3,6 +3,8 @@ package com.android.car.media;
 import static android.car.media.CarMediaIntents.EXTRA_MEDIA_COMPONENT;
 import static android.car.media.CarMediaIntents.EXTRA_SEARCH_QUERY;
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_BROWSE;
+import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
+import static android.content.pm.PackageManager.DONT_KILL_APP;
 
 import static androidx.car.app.mediaextensions.MediaIntentExtras.ACTION_MEDIA_TEMPLATE_V2;
 import static androidx.car.app.mediaextensions.MediaIntentExtras.EXTRA_KEY_MEDIA_ID;
@@ -14,6 +16,9 @@ import android.car.media.CarMediaIntents;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.content.pm.ServiceInfo;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.util.Log;
@@ -38,6 +43,10 @@ public class MediaDispatcherActivity extends FragmentActivity {
 
     private static final String TAG = "MediaDispatcherActivity";
     private static Set<String> sCustomMediaComponents = null;
+    private static final String CAL_MEDIA_ACTIVITY_COMPONENT =
+            "androidx.car.app.media.CalMediaActivityComponent";
+    public static final String FEATURE_CAR_APP_LIBRARY_MEDIA =
+            "android.software.car.templates_host.media";
 
     static boolean isCustomMediaSource(Resources res, @Nullable MediaSource source) {
         if (sCustomMediaComponents == null) {
@@ -121,8 +130,10 @@ public class MediaDispatcherActivity extends FragmentActivity {
 
         // Launch media center only if there is a media source
         if ((newIntent == null) && (mediaSrc != null)) {
+            if (maybeLaunchCalComponentForMediaSource(ctx, mediaSrc)) return;
+            Log.d(TAG, "starting MBS for " + mediaSrc.getPackageName());
             newIntent = MediaActivity.createMediaActivityIntent(ctx, mediaSrc, mediaId,
-                searchQuery, searchAction);
+                    searchQuery, searchAction);
         }
 
         if (newIntent != null) {
@@ -130,5 +141,62 @@ public class MediaDispatcherActivity extends FragmentActivity {
         } else {
             Log.e(TAG, "No intent to launch, mediaSrc: " + mediaSrc);
         }
+    }
+
+    private static boolean maybeLaunchCalComponentForMediaSource(
+            Context ctx, MediaSource mediaSrc) {
+        if (mediaSrc == null || mediaSrc.getBrowseServiceComponentName() == null) return false;
+        PackageManager packageManager = ctx.getPackageManager();
+        // Check for CAL Activity as MBS replacement only on systems that support the
+        // CAL Media feature
+        if (packageManager.hasSystemFeature(FEATURE_CAR_APP_LIBRARY_MEDIA)) {
+            try {
+                // Check if the metadata of the MBS contains a CarAppActivity or
+                // Trampoline Activity component and enable and launch it
+                ServiceInfo serviceInfo = packageManager.getServiceInfo(
+                        mediaSrc.getBrowseServiceComponentName(),
+                        PackageManager.GET_META_DATA);
+                Bundle metaData = serviceInfo.metaData;
+                if (metaData != null
+                        && metaData.containsKey(CAL_MEDIA_ACTIVITY_COMPONENT)) {
+                    String calTrampoline = metaData.getString(
+                            CAL_MEDIA_ACTIVITY_COMPONENT);
+                    Log.i(TAG, "Found CAL Activity Trampoline for MBS "
+                            + mediaSrc.getBrowseServiceComponentName() + " as "
+                            + calTrampoline);
+                    Intent calAppIntent = new Intent();
+                    if (calTrampoline == null
+                            || ComponentName.unflattenFromString(calTrampoline) == null) {
+                        Log.i(TAG, "Application set a null CarAppActivity Component for "
+                                + mediaSrc.getBrowseServiceComponentName());
+                        return false;
+                    }
+                    calAppIntent.setComponent(
+                            ComponentName.unflattenFromString(calTrampoline));
+                    ResolveInfo calResolveInfo = packageManager.resolveActivity(
+                            calAppIntent, PackageManager.MATCH_DISABLED_COMPONENTS);
+                    if (calResolveInfo != null) {
+                        Log.i(TAG, "Enabling and launching component: "
+                                + calAppIntent.getComponent());
+                        packageManager.setComponentEnabledSetting(
+                                calAppIntent.getComponent(),
+                                COMPONENT_ENABLED_STATE_ENABLED, DONT_KILL_APP
+                        );
+                        ctx.startActivity(calAppIntent);
+                        return true;
+                    } else {
+                        Log.i(TAG, "Activity not found: "
+                                + calAppIntent.getComponent());
+                    }
+                } else {
+                    Log.i(TAG, "Application did not set CarAppActivity component for "
+                            + mediaSrc.getBrowseServiceComponentName());
+                }
+            } catch (PackageManager.NameNotFoundException e) {
+                Log.e(TAG, "Exception trying to find MBS service info for "
+                        + mediaSrc.getPackageName());
+            }
+        }
+        return false;
     }
 }

@@ -114,10 +114,6 @@ public class BrowseActionsHeader extends LinearLayout implements ActionsHeader {
     }
 
     @Override
-    public void setTitle(CharSequence sourceName) {
-    }
-
-    @Override
     public void setVisibility(boolean shouldShow) {
         setVisibility(shouldShow ? View.VISIBLE : View.GONE);
     }

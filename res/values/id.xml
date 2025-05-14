@@ -8,4 +8,13 @@
   <item type="id" name="menu_item_selector"/>
   <item type="id" name="menu_item_selector_with_source_logo"/>
   <item type="id" name="menu_item_setting"/>
+  <item type="id" name="browse_mini_item_bar"/> <!-- Obsolete. -->
+  <item type="id" name="container_browse_mini_item_bar"/> <!-- Obsolete. -->
+  <item type="id" name="browse_mini_control_bar_title"/> <!-- Obsolete. -->
+  <item type="id" name="browse_mini_control_bar_subtitle"/> <!-- Obsolete. -->
+  <item type="id" name="browse_mini_control_bar_content_tile"/> <!-- Obsolete. -->
+  <item type="id" name="browse_mini_control_bar_app_icon"/> <!-- Obsolete. -->
+  <item type="id" name="browse_mini_control_bar_layout"/> <!-- Obsolete. -->
+  <item type="id" name="browse_mini_control_bar_metadata_background"/> <!-- Obsolete. -->
+  <item type="id" name="browse_mini_control_bar"/> <!-- Obsolete. -->
 </resources>
