@@ -741,10 +741,12 @@ public class MediaActivityController extends ViewControllerBase {
     }
 
     void onPlaybackControlsChanged(boolean visible) {
-        mPlaybackControlsVisible = visible;
-        for (BrowseStack.BrowseEntry entry : mBrowseStack.getEntries()) {
-            if (entry.getController() != null) {
-                entry.getController().onPlaybackControlsChanged(mPlaybackControlsVisible);
+        if (mPlaybackControlsVisible != visible) {
+            mPlaybackControlsVisible = visible;
+            for (BrowseStack.BrowseEntry entry : mBrowseStack.getEntries()) {
+                if (entry.getController() != null) {
+                    entry.getController().onPlaybackControlsChanged(mPlaybackControlsVisible);
+                }
             }
         }
     }
