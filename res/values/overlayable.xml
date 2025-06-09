@@ -39,8 +39,12 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="bool" name="use_media_source_color_for_progress_bar"/>
       <item type="bool" name="use_media_source_logo_for_app_selector_in_playback_view"/>
       <item type="color" name="blocking_activity_exit_button_selector"/>
+      <item type="color" name="blocking_activity_exit_button_text"/>
       <item type="color" name="progress_bar_highlight"/>
       <item type="dimen" name="blocking_activity_album_art_corner_ratio"/>
+      <item type="dimen" name="blocking_activity_app_icon_vertical_margin"/>
+      <item type="dimen" name="blocking_activity_default_vertical_margin"/>
+      <item type="dimen" name="blocking_activity_seekbar_margin"/>
       <item type="dimen" name="browse_fragment_bottom_padding"/>
       <item type="dimen" name="browse_fragment_top_padding"/>
       <item type="dimen" name="browse_fragment_top_padding_stacked"/>
@@ -90,6 +94,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="blocking_activity_exit_button"/>
       <item type="id" name="blocking_activity_media_views_group"/>
       <item type="id" name="blocking_activity_no_media_text"/>
+      <item type="id" name="blocking_activity_seekbar_guideline"/>
       <item type="id" name="browse_content_area"/>
       <item type="id" name="browse_item_actions_container"/>
       <item type="id" name="browse_item_custom_action"/>
@@ -192,9 +197,6 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="interpolator" name="trim_end_interpolator"/>
       <item type="interpolator" name="trim_start_interpolator"/>
       <item type="layout" name="browse_custom_action"/>
-      <item type="layout" name="browse_mini_bar"/>
-      <item type="layout" name="browse_mini_bar_container"/>
-      <item type="layout" name="browse_mini_bar_view"/>
       <item type="layout" name="browse_node"/>
       <item type="layout" name="fragment_browse"/>
       <item type="layout" name="fragment_error"/>

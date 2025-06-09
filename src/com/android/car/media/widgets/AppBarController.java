@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
  * Media template application bar. This class wraps a {@link ToolbarController} and
  * adds media-specific methods to it like {@link #setItems} and {@link #setSearchSupported}.
  */
-@OptIn(markerClass = androidx.car.app.annotations2.ExperimentalCarApi.class)
+@OptIn(markerClass = androidx.car.app.annotations.ExperimentalCarApi.class)
 public class AppBarController {
     private static final int MEDIA_UX_RESTRICTION_DEFAULT =
             CarUxRestrictions.UX_RESTRICTIONS_NO_SETUP;

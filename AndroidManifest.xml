@@ -26,6 +26,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
                      tools:ignore="QueryAllPackagesPermission" />
+    <uses-permission android:name="android.permission.CHANGE_COMPONENT_ENABLED_STATE" />
 
     <!-- To connect to media browser services in other apps, media browser clients
     that target Android 11 need to add the following in their manifest -->
@@ -41,6 +42,8 @@
         android:theme="@style/Theme.Media"
         android:icon="@drawable/ic_music"
         android:supportsRtl="true">
+
+        <uses-library android:name="com.android.oem.tokens" android:required="false"/>
 
         <meta-data
             android:name="android.car.application"

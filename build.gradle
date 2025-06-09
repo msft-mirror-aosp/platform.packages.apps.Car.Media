@@ -28,8 +28,6 @@ android {
         targetSdkVersion 34
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         testInstrumentationRunnerArguments clearPackageData: 'true', coverage: 'true'
-        versionCode gradle.ext.getVersionCode()
-        versionName gradle.ext.getVersionName()
     }
 
     lintOptions {
@@ -105,43 +103,43 @@ android {
 }
 
 dependencies {
-    implementation "androidx.preference:preference:1.1.1"
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.0'
-
-    def lifecycle_version = "2.2.0"
-    implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
-    // Not available in 2.3+
-    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
+    implementation libs.androidx.preference
+    implementation libs.androidx.constraintlayout
+    implementation libs.androidx.lifecycle.common.java8
+    implementation libs.androidx.media
+    implementation libs.androidx.car.app
 
     implementation files(gradle.ext.lib_car_system_stubs)
 
-    implementation "androidx.media:media:1.7.0"
-
+    api project(':oem-token-lib')
     implementation project(":car-ui-lib")
     implementation project(":car-apps-common")
     implementation project(":car-media-common")
     implementation project(":car-media-extensions")
     implementation project(":car-uxr-client-lib")
+    implementation libs.androidx.lifecycle.service
 
     //Test libs
-    testImplementation 'org.hamcrest:hamcrest-library:1.3'
-    testImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-    testImplementation 'androidx.test.espresso:espresso-contrib:3.3.0'
-    testImplementation 'com.google.truth:truth:1.1.3'
-    testImplementation 'androidx.test.ext:junit:1.1.3'
-    testImplementation 'junit:junit:4.12'
+    testImplementation libs.hamcrest.library
+    testImplementation libs.androidx.espresso.core
+    testImplementation libs.androidx.espresso.contrib
+    testImplementation libs.google.truth
+    testImplementation libs.androidx.junit
+    testImplementation libs.junit
     testImplementation libs.robolectric
-    testImplementation "org.mockito:mockito-core:5.7.0"
-    testImplementation 'androidx.test:runner:1.4.0'
-    testImplementation 'androidx.test:rules:1.4.0'
+    testImplementation libs.mockito.core
+    testImplementation libs.androidx.test.runner
+    testImplementation libs.androidx.test.rules
     // This is needed to be able to spy certain classes with Mockito
     // It's major/minor version must match Mockito's.
     androidTestImplementation libs.dexmaker.mockito.inline
     // Required for instrumented tests
-    testImplementation 'com.android.support:support-annotations:28.0.0'
+    testImplementation libs.androidx.annotation
 
-    androidTestUtil 'androidx.test:orchestrator:1.1.0'
+    androidTestUtil libs.androidx.orchestrator
 }
+
+android.aaptOptions.additionalParameters "-I", "${projectDir}/../libs/car-ui-lib/oem-tokens/shared-lib/prebuilt/token-shared-lib.apk"
 
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
