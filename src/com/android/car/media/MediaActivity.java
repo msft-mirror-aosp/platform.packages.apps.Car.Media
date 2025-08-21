@@ -112,7 +112,6 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
 
     private Toast mToast;
     private AlertDialog mDialog;
-    private String mDialogMessage;
 
     /** Current state */
     private Mode mMode;
@@ -413,6 +412,8 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         @Override
         public void handleNewPlaybackState(String displayedMessage, PendingIntent intent,
                 boolean canAutoLaunch, String label, MediaSource mediaSource) {
+            maybeCancelToast();
+            maybeCancelDialog();
 
             boolean isFatalError = false;
             if (!TextUtils.isEmpty(displayedMessage)) {
@@ -420,7 +421,6 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
                 if (mMediaActivityController.browseTreeHasChildrenList()) {
                     showToastOrDialog(displayedMessage, intent, label, mediaSource);
                 } else {
-                    maybeCancelDialog(displayedMessage);
                     boolean isDistractionOptimized =
                             intent != null && CarPackageManagerUtils.isDistractionOptimized(
                                     mCarPackageManager, intent);
@@ -443,11 +443,9 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
             String displayedMessage, PendingIntent intent, String label, MediaSource mediaSource) {
         Drawable icon = mediaSource != null ? mediaSource.getIcon() : null;
         if (intent != null && !isUxRestricted()) {
-            maybeCancelDialog();
             showDialog(intent, displayedMessage, label,
                     getString(android.R.string.cancel), icon, mediaSource);
         } else {
-            maybeCancelToast();
             showToast(displayedMessage, icon);
         }
     }
@@ -480,20 +478,12 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
                 .setPositiveButton(positiveBtnText,
                         (dialogInterface, i) -> IntentUtils.sendIntent(intent))
                 .show();
-        mDialogMessage = message;
-    }
-
-    private void maybeCancelDialog(String message) {
-        if (Objects.equals(message, mDialogMessage)) {
-            maybeCancelDialog();
-        }
     }
 
     private void maybeCancelDialog() {
         if (mDialog != null) {
             mDialog.cancel();
             mDialog = null;
-            mDialogMessage = null;
         }
     }
 
