@@ -224,6 +224,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="string" name="cannot_connect_to_app"/>
       <item type="string" name="config_BrowseViewHolderFactory_className"/>
       <item type="string" name="config_nowPlayingControllerBuilder_className"/>
+      <item type="string" name="audio_settings_action"/>
       <item type="string" name="dash_separator"/>
       <item type="string" name="fragment_playback_title"/>
       <item type="string" name="media_app_title"/>

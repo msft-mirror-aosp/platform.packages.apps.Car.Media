@@ -24,7 +24,6 @@ import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.media.audiofx.AudioEffect;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -137,7 +136,8 @@ abstract class ViewControllerBase implements InsetsChangedListener {
 
         @Override
         protected void onEqualizerSelection() {
-            Intent i = new Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL);
+            String audioSettingsAction = mActivity.getString(R.string.audio_settings_action);
+            Intent i = new Intent(audioSettingsAction);
             // Using startActivityForResult so that the control panel app can track changes for
             // the launching package name.
             mActivity.startActivityForResult(i, 0);
