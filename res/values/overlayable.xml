@@ -90,11 +90,10 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="artist"/>
       <item type="id" name="background_scrim"/>
       <item type="id" name="blocking_activity_background"/>
-      <item type="id" name="blocking_activity_content_guideline"/>
       <item type="id" name="blocking_activity_exit_button"/>
       <item type="id" name="blocking_activity_media_views_group"/>
       <item type="id" name="blocking_activity_no_media_text"/>
-      <item type="id" name="blocking_activity_seekbar_guideline"/>
+      <item type="id" name="bottom_controls_bar"/>
       <item type="id" name="browse_content_area"/>
       <item type="id" name="browse_item_actions_container"/>
       <item type="id" name="browse_item_custom_action"/>
@@ -135,6 +134,7 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="max_time"/>
       <item type="id" name="media_activity_root"/>
       <item type="id" name="media_blocking_activity_root"/>
+      <item type="id" name="media_content_block"/>
       <item type="id" name="media_item_click_target"/>
       <item type="id" name="media_widget_app_icon"/>
       <item type="id" name="menu_item_equalizer"/>
@@ -166,9 +166,11 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="queue_list_item_titles_container"/>
       <item type="id" name="queue_list_top_constraint"/>
       <item type="id" name="right_arrow"/>
+      <item type="id" name="seekbar_container_wrapper"/>
       <item type="id" name="separator"/>
       <item type="id" name="spacer"/>
       <item type="id" name="subtitle"/>
+      <item type="id" name="text_column"/>
       <item type="id" name="text_end_guideline"/>
       <item type="id" name="text_start_guideline"/>
       <item type="id" name="thumbnail"/>
