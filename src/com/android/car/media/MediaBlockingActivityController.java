@@ -23,9 +23,8 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.View.OnClickListener;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
-
-import androidx.constraintlayout.widget.Group;
 
 import com.android.car.apps.common.RoundedDrawable;
 import com.android.car.apps.common.UxrButton;
@@ -40,7 +39,7 @@ import com.android.car.media.common.ui.PlaybackCardController;
 public class MediaBlockingActivityController extends PlaybackCardController {
 
     private static final String TAG = "MediaBlockingActivityController";
-    private final Group mMediaViews;
+    private final RelativeLayout mMediaViews;
     private final TextView mNoMediaView;
     private final NullPlaybackStateListener mNullPlaybackStateListener;
     private Drawable mSkipPreviousDrawable;

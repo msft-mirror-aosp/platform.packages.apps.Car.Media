@@ -24,4 +24,8 @@
     <string name="config_BrowseViewHolderFactory_className" translatable="false">
         com.android.car.media.browse.BrowseViewHolder$Factory
     </string>
+    <!-- Intent used to launch audio settings. Overlay to redirect to a different component. -->
+    <string name="audio_settings_action"  translatable="false">
+        android.media.action.DISPLAY_AUDIO_EFFECT_CONTROL_PANEL
+    </string>
 </resources>
