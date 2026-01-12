@@ -28,7 +28,7 @@
     <string name="fragment_playback_title" msgid="5014481549024607614">"درحال پخش"</string>
     <!-- no translation found for playback_loading (1473250715262983667) -->
     <skip />
-    <string name="service_notification_title" msgid="8085444675783592744">"درحال اتصال به رسانه"</string>
+    <string name="service_notification_title" msgid="8085444675783592744">"درحال متصل شدن به رسانه"</string>
     <string name="menu_item_sound_settings_title" msgid="58887078120809669">"تنظیمات صدا"</string>
     <string name="menu_item_app_selector_title" msgid="4587248991114338595">"عوض کردن برنامه"</string>
     <string name="blocking_activity_exit_button" msgid="2311235552215881142">"خروج از نمای رانندگی"</string>
