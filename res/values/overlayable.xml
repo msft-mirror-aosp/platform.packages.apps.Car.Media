@@ -185,6 +185,63 @@ REGENERATE USING packages/apps/Car/tests/tools/rro/generate-overlayable.py
       <item type="id" name="ui_content_start_guideline"/>
       <item type="id" name="ui_content_top_guideline"/>
       <item type="id" name="ui_content_top_guideline2"/>
+      <item type="attr" name="oemColorPrimary" />
+      <item type="attr" name="oemColorOnPrimary" />
+      <item type="attr" name="oemColorPrimaryContainer" />
+      <item type="attr" name="oemColorOnPrimaryContainer" />
+      <item type="attr" name="oemColorPrimaryInverse" />
+      <item type="attr" name="oemColorSecondary" />
+      <item type="attr" name="oemColorOnSecondary" />
+      <item type="attr" name="oemColorSecondaryContainer" />
+      <item type="attr" name="oemColorOnSecondaryContainer" />
+      <item type="attr" name="oemColorTertiary" />
+      <item type="attr" name="oemColorOnTertiary" />
+      <item type="attr" name="oemColorTertiaryContainer" />
+      <item type="attr" name="oemColorOnTertiaryContainer" />
+      <item type="attr" name="oemColorError" />
+      <item type="attr" name="oemColorOnError" />
+      <item type="attr" name="oemColorErrorContainer" />
+      <item type="attr" name="oemColorOnErrorContainer" />
+      <item type="attr" name="oemColorSurface" />
+      <item type="attr" name="oemColorOnSurface" />
+      <item type="attr" name="oemColorSurfaceVariant" />
+      <item type="attr" name="oemColorOnSurfaceVariant" />
+      <item type="attr" name="oemColorSurfaceInverse" />
+      <item type="attr" name="oemColorOnSurfaceInverse" />
+      <item type="attr" name="oemColorOutline" />
+      <item type="attr" name="oemColorScrim" />
+      <item type="attr" name="oemColorOutlineVariant" />
+      <item type="attr" name="oemColorSurfaceTint" />
+      <item type="attr" name="oemColorSurfaceDim" />
+      <item type="attr" name="oemColorSurfaceBright" />
+      <item type="attr" name="oemColorSurfaceContainer" />
+      <item type="attr" name="oemColorSurfaceContainerLow" />
+      <item type="attr" name="oemColorSurfaceContainerLowest" />
+      <item type="attr" name="oemColorSurfaceContainerHigh" />
+      <item type="attr" name="oemColorSurfaceContainerHighest" />
+      <item type="attr" name="oemColorShadow" />
+      <item type="attr" name="oemTextAppearanceDisplayLarge" />
+      <item type="attr" name="oemTextAppearanceDisplayMedium" />
+      <item type="attr" name="oemTextAppearanceDisplaySmall" />
+      <item type="attr" name="oemTextAppearanceHeadlineLarge" />
+      <item type="attr" name="oemTextAppearanceHeadlineMedium" />
+      <item type="attr" name="oemTextAppearanceHeadlineSmall" />
+      <item type="attr" name="oemTextAppearanceTitleLarge" />
+      <item type="attr" name="oemTextAppearanceTitleMedium" />
+      <item type="attr" name="oemTextAppearanceTitleSmall" />
+      <item type="attr" name="oemTextAppearanceLabelLarge" />
+      <item type="attr" name="oemTextAppearanceLabelMedium" />
+      <item type="attr" name="oemTextAppearanceLabelSmall" />
+      <item type="attr" name="oemTextAppearanceBodyLarge" />
+      <item type="attr" name="oemTextAppearanceBodyMedium" />
+      <item type="attr" name="oemTextAppearanceBodySmall" />
+      <item type="attr" name="oemShapeCornerNone" />
+      <item type="attr" name="oemShapeCornerExtraSmall" />
+      <item type="attr" name="oemShapeCornerSmall" />
+      <item type="attr" name="oemShapeCornerMedium" />
+      <item type="attr" name="oemShapeCornerLarge" />
+      <item type="attr" name="oemShapeCornerExtraLarge" />
+      <item type="attr" name="oemShapeCornerFull" />
       <item type="integer" name="blocking_activity_relaunch_time_ms"/>
       <item type="integer" name="fragment_playback_queue_fade_duration_ms"/>
       <item type="integer" name="max_tabs"/>
