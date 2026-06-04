@@ -38,9 +38,11 @@ import android.car.Car;
 import android.car.content.pm.CarPackageManager;
 import android.car.drivingstate.CarUxRestrictions;
 import android.car.media.CarMediaIntents;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -125,6 +127,8 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
     private float mCloseVectorNorm;
     private long mLatestIntentTimestamp = -1;
 
+    private PackageChangedReceiver mPackageChangedReceiver;
+
     /**
      * Possible modes of the application UI
      * Todo: refactor into non exclusive flags to allow concurrent modes (eg: play details & browse)
@@ -149,6 +153,22 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         // as that was creating a confusing mental model which is very different from the phone
         // experience.
         localViewModel.init(new MediaModels(app, browsedSource));
+    }
+
+    private class PackageChangedReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Uri data = intent.getData();
+            if (data != null) {
+                String packageName = data.getSchemeSpecificPart();
+                if (!TextUtils.isEmpty(packageName)) {
+                    mMediaActivityController.onPackageChanged(packageName);
+                    if (mErrorController != null) {
+                        mErrorController.onPackageChanged(packageName);
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -306,6 +326,12 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
         mMediaActivityController = new MediaActivityController(this, getInnerViewModel(),
                 mCarPackageManager, mBrowseContainer, mPlaybackContainer);
 
+        mPackageChangedReceiver = new PackageChangedReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_PACKAGE_CHANGED);
+        filter.addDataScheme("package");
+        registerReceiver(mPackageChangedReceiver, filter);
+
         mPlaybackContainer.setOnTouchListener(new ClosePlaybackDetector(this));
 
         if (shouldHandleIntent(intent)) {
@@ -380,6 +406,7 @@ public class MediaActivity extends FragmentActivity implements MediaActivityCont
             mCar.disconnect();
             mCar = null;
         }
+        unregisterReceiver(mPackageChangedReceiver);
         mMediaActivityController.onDestroy();
         super.onDestroy();
     }
