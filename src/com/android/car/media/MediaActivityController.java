@@ -266,6 +266,12 @@ public class MediaActivityController extends ViewControllerBase {
                     MediaItemMetadata fakeRootItem = MediaItemMetadata.createEmptyRootData(rootId);
                     mBrowseStack.pushRoot(fakeRootItem, BrowseViewController.newRootController(
                             fakeRootItem, mBrowseCallbacks, mBrowseArea, mMediaItemsRepository));
+                } else {
+                    // Make sure that all controllers are recreated if needed,
+                    // otherwise node updates would be missed (eg: after re-enabling bluetooth).
+                    for (BrowseStack.BrowseEntry entry : mBrowseStack.getEntries()) {
+                        maybeRecreateController(entry, true);
+                    }
                 }
                 showCurrentNode(true);
 
@@ -639,15 +645,11 @@ public class MediaActivityController extends ViewControllerBase {
         controller.onPlaybackControlsChanged(mPlaybackControlsVisible);
     }
 
-    private void showCurrentNode(boolean show) {
-        BrowseStack.BrowseEntry entry = mBrowseStack.peek();
-        if (entry == null) {
-            Log.e(TAG, "Can't show a null entry!");
-            return;
-        }
-
+    private BrowseViewController maybeRecreateController(
+            BrowseStack.BrowseEntry entry,
+            boolean createIfMissing) {
         BrowseViewController controller = entry.getController();
-        if (controller == null && show) {
+        if (controller == null && createIfMissing) {
             // Controller was previously destroyed by a media source or UI config change, recreate.
             controller = recreateController(entry);
             if (controller != null) {
@@ -655,7 +657,17 @@ public class MediaActivityController extends ViewControllerBase {
                 entry.setRecreatedController(controller);
             }
         }
+        return controller;
+    }
 
+    private void showCurrentNode(boolean show) {
+        BrowseStack.BrowseEntry entry = mBrowseStack.peek();
+        if (entry == null) {
+            Log.e(TAG, "Can't show a null entry!");
+            return;
+        }
+
+        BrowseViewController controller = maybeRecreateController(entry, show);
         if (controller != null) {
             showHideContentAnimated(show, controller.getContent(), mViewAnimEndListener);
             controller.onShow(show, entry.mType);

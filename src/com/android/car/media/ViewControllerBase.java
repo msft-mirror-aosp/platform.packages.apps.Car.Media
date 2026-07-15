@@ -50,6 +50,8 @@ import com.android.car.ui.baselayout.InsetsChangedListener;
 import com.android.car.ui.core.CarUi;
 import com.android.car.ui.toolbar.ToolbarController;
 
+import java.util.Objects;
+
 /**
  * Functionality common to content view controllers. It mainly handles the AppBar view,
  * which is common to all of them.
@@ -160,6 +162,26 @@ abstract class ViewControllerBase implements InsetsChangedListener {
         mAppBarController.setHasEqualizer(mShouldShowSoundSettings);
     }
 
+    /**
+     * Called after an ACTION_PACKAGE_CHANGED notification with the packageName that changed.
+     */
+    public void onPackageChanged(@NonNull String packageName) {
+        // Handle package changed to ensure preferences intent is resolved to the correct activity
+        // when the media app dynamically enables or disables its components.
+        MediaBrowserConnector.BrowsingState browsingState =
+                mMediaItemsRepository.getBrowsingState().getValue();
+        if (browsingState == null || browsingState.mConnectionStatus !=
+                MediaBrowserConnector.ConnectionStatus.CONNECTED) {
+            // Source preferences will be updated when status changes to CONNECTED
+            return;
+        }
+
+        if (Objects.equals(packageName, browsingState.mMediaSource.getPackageName())) {
+            Log.i(TAG, "Updating source preferences due to package changed");
+            updateSourcePreferences(browsingState);
+        }
+    }
+
     private void onMediaBrowsingStateChanged(MediaBrowserConnector.BrowsingState newBrowsingState) {
         if (newBrowsingState == null) {
             Log.e(TAG, "Null browsing state (no media source!)");
@@ -210,6 +232,8 @@ abstract class ViewControllerBase implements InsetsChangedListener {
                 if (Log.isLoggable(TAG, Log.INFO)) {
                     Log.i(TAG, "Source: " + state.mMediaSource + " has prefs intent");
                 }
+            } else {
+                resetPreferencesState();
             }
         }
     }

@@ -22,8 +22,12 @@ import static androidx.media.utils.MediaConstants.BROWSER_ROOT_HINTS_KEY_ROOT_CH
 import static com.android.car.media.common.MediaConstants.KEY_ROOT_HINT_MAX_QUEUE_ITEMS_WHILE_RESTRICTED;
 
 import android.app.Application;
+import android.content.res.Configuration;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+
+import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.source.MediaBrowserConnector;
 import com.android.car.media.common.source.MediaModels;
 import com.android.car.media.widgets.AppBarController;
@@ -33,6 +37,12 @@ import com.android.car.media.widgets.AppBarController;
 public class CarMediaApp extends Application {
 
     private MediaModels mMediaModelsPlayback = null;
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        MediaItemMetadata.clearPlaceholderCache();
+    }
 
     @Override
     public void onCreate() {
